@@ -1,41 +1,45 @@
-# Website
+# weaviate 中文文档
 
-This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
+本站基于
 
-### Installation
+# 网站
+
+此网站使用 [Docusaurus 2](https://docusaurus.io/) 构建，这是一款现代的静态网站生成器。
+
+### 安装
 
 ```
 $ yarn
 ```
 
-### Local Development
+### 本地开发
 
 ```
 $ yarn start
 ```
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+这个命令会启动一个本地开发服务器并自动打开浏览器窗口。大多数改动都能实时反映，无需重启服务器。
 
-### Build
+### 构建
 
 ```
 $ yarn build
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+此命令将静态内容生成到 `build` 目录，可以使用任何静态内容托管服务进行托管。
 
-### Deployment
+### 部署
 
-Using SSH:
+使用 SSH:
 
 ```
 $ USE_SSH=true yarn deploy
 ```
 
-Not using SSH:
+不使用 SSH:
 
 ```
-$ GIT_USER=<Your GitHub username> yarn deploy
+$ GIT_USER=<你的GitHub用户名> yarn deploy
 ```
 
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+如果你使用 GitHub pages 进行托管，这个命令是一个方便的方式来构建网站并推送到 `gh-pages` 分支。

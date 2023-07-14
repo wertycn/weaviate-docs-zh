@@ -1,74 +1,73 @@
 ---
-title: Multimodal Embedding Models
-slug: multimodal-models
 authors: zain
 date: 2023-06-27
+description: ML Models that can see, read, hear and more!
 image: ./img/hero.png
-tags: ['concepts']
-description: "ML Models that can see, read, hear and more!"
-
+slug: multimodal-models
+tags:
+- concepts
+title: Multimodal Embedding Models
 ---
 
-![Multimodal Models](./img/hero.png)
+![多模态模型](./img/hero.png)
 
-<!-- truncate -->
+<!-- 截断 -->
 
-## The Multisensory Nature of Human Learning
+## 人类学习的多感官特性
 
-Humans have a remarkable ability to learn and build world models through the integration of multiple sensory inputs. Our combination of senses work synergistically to provide us with rich and diverse information about our environment. By combining and interpreting these sensory inputs, we are able to form a coherent understanding of the world, make predictions, and acquire new knowledge very efficiently.
+人类具有通过整合多种感官输入来学习和建立世界模型的非凡能力。我们的感官组合协同工作，为我们提供了丰富多样的关于环境的信息。通过结合和解释这些感官输入，我们能够形成对世界的连贯理解，进行预测，并且高效地获取新知识。
 
-The process of learning through multi-sensory inputs begins from the early stages of human development. Infants explore the world through their senses, touching, tasting, listening, and observing objects and people around them. This sensory exploration helps them link different perspectives of the same experience to create a holistic understanding of their environment.
+通过多感官输入学习的过程始于人类发展的早期阶段。婴儿通过触摸、品尝、听觉和观察周围的物体和人来探索世界。这种感官探索帮助他们将同一经历的不同视角联系起来，形成对环境的整体理解。
 
-This fusion of multisensory data when learning new concepts is also partially responsible for why humans can learn with very few data points - making us great few-shot learners. Let's imagine you are trying to teach the concept of a dog to a child. The next time you see a dog at the park you point it out and say “This is a dog!”. Let's say that this is a single observation/data point - in the supervised machine-learning sense. From this single data point, the child receives an abundance of information: they see how the dog moves, interacts, and reacts to the world around it, hear how the dog barks, see how the fur on the dog blows in the wind, can touch the dog to see how it feels and even smell the dog. So, from this single “data point” the child extracts a very rich representation of multiple interdependent modalities of data that very distinctly define the concept of a dog.
+这种在学习新概念时融合多感官数据的方式，部分原因是为什么人类可以用很少的数据点进行学习，使我们成为优秀的少样本学习者。让我们想象一下，你正在尝试向一个孩子教授狗的概念。下次你在公园看到一只狗时，你指出它并说：“这是一只狗！”假设这是一个单独的观察/数据点-从监督式机器学习的意义上讲。从这个单一的数据点，孩子获得了丰富的信息：他们看到狗如何移动、互动，并对周围的世界做出反应，听到狗叫，看到狗的毛在风中飘动，可以触摸狗来感受它的触感，甚至闻到狗的气味。因此，从这个单一的“数据点”中，孩子提取出了多个相互依赖的数据形式的丰富表示，这些数据形式非常明确地定义了狗的概念。
 
-![dogs](./img/dogs.jpg)
+![狗](./img/dogs.jpg)
 
-Over time and with age, this fusion of sensory inputs gets more refined and nuanced and allows infants to develop higher levels of abstraction and understanding of objects' properties, such as shape, texture, and weight.
+随着时间的推移和年龄的增长，这种感官输入的融合变得更加精细和细致，使婴儿能够对物体的属性，如形状、质地和重量，进行更高层次的抽象和理解。
 
-Humans are such good multimodal reasoning engines that we do it without noticing - let's consider a practical scenario. Imagine you’re on an airplane and only have your wireless headset that cannot be plugged into the in-flight entertainment system - a predicament I find myself in more often than not these days!😅 So you start watching a movie with no sound and for the most part, you notice that you can get a pretty good, although imperfect, understanding of what’s going on. Now imagine you turn on the captions, and now you can understand pretty much everything that’s going on and you can even fill in sound effects with your imagination supported by the modalities of data you have available.
+人类是如此出色的多模态推理引擎，以至于我们在不知不觉中就能做到这一点-让我们考虑一个实际的场景。想象一下，你正在飞机上，只有无线耳机，无法插入机上娱乐系统-这是我最近经常遇到的一个困境！😅所以你开始看一部没有声音的电影，大部分时间，你会注意到你可以得到一个相当不错的，虽然不完美的对正在发生的事情的理解。现在想象一下，你打开字幕，现在你几乎可以理解发生的一切，甚至可以通过你可用的数据模态来想象填充声音效果。
 
-In order for our machine learning models to interact more naturally with data, the way we do, and ultimately be more general and powerful reasoning engines we need them to understand a data point through its corresponding image, video, text, audio, tactile and other representations - it needs to be able to preserve the meaning behind all of these data modalities once embedded in high dimensional vector space as demonstrated in Figure1 below. For example, in order to understand what a train is, we need our ML models to “see” and “hear” the train move, “feel” the motion of the ground near the train, and “read” about it. This is easier said and understood than done. Having a model that jointly comprehends all of these data modalities is very difficult, let's discuss some of the challenges that stand between us and truly multimodal models.
+为了使我们的机器学习模型能够与数据更自然地进行交互，以我们的方式进行推理，并最终成为更通用和强大的推理引擎，我们需要它们通过相应的图像、视频、文本、音频、触觉和其他表示形式来理解数据点-它需要能够在嵌入到高维向量空间后保持所有这些数据模态的含义，如下图所示。例如，为了理解火车是什么，我们的机器学习模型需要“看到”和“听到”火车的移动，“感受”火车附近地面的运动，并“阅读”相关信息。这说起来容易，做起来却非常困难。拥有能够共同理解所有这些数据模态的模型是非常困难的，让我们讨论一下我们与真正的多模态模型之间的一些挑战。
 
 <figure>
 
 ![vectorspace](./img/vectorspace.png)
-<figcaption>Figure 1. Shows a joint embedding space of a multimodal model that understands both text and images. Notice how objects that are similar are closer together and dissimilar objects are farther apart, this means that the model preserves semantic similarity within and across modalities.</figcaption>
+<figcaption>图1. 显示了一个同时理解文本和图像的多模态模型的联合嵌入空间。请注意，相似的对象彼此更接近，不相似的对象则更远，这意味着模型在模态内部和跨模态之间保留了语义相似性。</figcaption>
 
 </figure>
 
-## Addressing Challenges of Learning Multimodal Embeddings
+## 解决学习多模态嵌入的挑战
 
-### 1. Lack of Rich & Aligned Multimodal Datasets
+### 1. 缺乏丰富和对齐的多模态数据集
 
-Collecting and preparing multimodal datasets is very challenging. Each modality requires specific data collection techniques and preprocessing steps. Furthermore aligning and normalizing the data across modalities is crucial to ensure compatibility. This is quite challenging due to differences in data formats, temporal alignment, and semantic alignment. If the data is stitched together from different datasets and is not aligned properly then it becomes very difficult for the machine-learning model to extract and learn interdependencies between the modalities.
+收集和准备多模态数据是非常具有挑战性的。每种模态都需要特定的数据收集技术和预处理步骤。此外，跨模态对齐和规范化数据对于确保兼容性至关重要。由于数据格式、时间对齐和语义对齐的差异，这是相当具有挑战性的。如果数据从不同的数据集拼接在一起并且没有正确对齐，那么机器学习模型很难提取和学习模态之间的相互依赖关系。
 
-Current approaches address this by taking multiple rich datasets and fusing them across data modalities where possible. So for example you might be able to combine the image/video of a lion from a computer vision dataset with the roar of a lion from an audio dataset but perhaps not with motion since you might not have motion data for a lion. There are also attempts to collect richer multimodal datasets such as the [EGO4D](https://ego4d-data.org/docs/) which collects multiple data modalities for a given scenario. EGO4D actually captures motion/tactile data by capturing accelerometer and gyroscopic data temporally aligned with video captures of activities! The problem with this is that generating a rich multimodal dataset is very costly and even impractical in some cases.
+目前的方法是通过使用多个丰富的数据集，并在可能的情况下跨数据模态进行融合来解决这个问题。例如，您可以将计算机视觉数据集中的狮子的图像/视频与音频数据集中的狮子的吼声结合起来，但可能无法与运动数据结合，因为您可能没有狮子的运动数据。还有一些尝试收集更丰富的多模态数据集，例如[EGO4D](https://ego4d-data.org/docs/)，该数据集为给定的场景收集多个数据模态。EGO4D实际上通过在活动的视频捕获中临时对齐加速度计和陀螺仪数据来捕获运动/触觉数据！但是，生成丰富的多模态数据集成本非常高昂，甚至在某些情况下是不切实际的。
 
-### 2. Model Architecture
+### 2. 模型架构
 
-Designing the architecture for a single model that can process multimodal data is difficult. Usually, machine learning models are specialists in one domain of data - for example computer vision or natural language. Training a single, jack-of-all-modalities model is very difficult.
+设计一个能够处理多模态数据的单一模型的架构是困难的。通常，机器学习模型在数据领域中是专家，比如计算机视觉或自然语言。训练一个能够处理多种模态的模型是非常困难的。
 
-Current multimodal approaches like [ImageBind](https://arxiv.org/abs/2305.05665) from FAIR, Meta AI(which combines image, speech, text, video, motion and depth/thermal data) approach this problem by taking separate specialist pre-trained models for each modality and then finetuning them to bind their latent space representations using a contrastive loss function; which essentially pulls together representations of similar examples across modalities closer together and pushes apart distinct examples in a joint vector space. The key insight is that all combinations of paired modalities are not necessary to train such a joint embedding, and only image-paired data is sufficient to align and bind the modalities together. The limitation however is that adding and finetuning a separate pretrained model for every modality or task becomes prohibitively expensive and is not scalable.
+当前的多模态方法（如FAIR的ImageBind和Meta AI）通过为每种模态采用独立的专家预训练模型，然后使用对比损失函数对它们的潜在空间表示进行微调，从而解决了这个问题。对于相似的样本，它将不同模态的表示拉近，将不同的样本推开，使它们在一个联合向量空间中更接近。关键的洞察力在于，并不需要训练所有组合的配对模态来构建这样的联合嵌入，只需要图像-配对数据就足以将模态对齐和绑定在一起。然而，限制在于为每种模态或任务添加和微调单独的预训练模型变得非常昂贵且不可扩展。
 
-### 3. Model Interpretability
+### 3. 模型可解释性
 
-Understanding and interpreting the decisions made by multimodal models can be challenging. The fusion of different modalities may introduce complexities in interpreting the learned representations and attributing importance to each modality. Consider, for example, searching in the learned joint embedding space of a multimodal model what accelerometer motion data is closest to a person giving a speech about globalization. The lesson is that some modalities or data objects just don’t pair together naturally.
+理解和解释多模态模型所做的决策可能具有挑战性。不同模态的融合可能会在解释学习到的表示和归因每个模态的重要性时引入复杂性。例如，考虑在多模态模型的学习联合嵌入空间中搜索最接近一个关于全球化演讲的人的加速度运动数据。教训是，有些模态或数据对象并不自然地配对在一起。
 
-The ImageBind model handles this by using the image representation as ground truth and pulling all other concepts closer to image representations which then establishes a naturally learned alignment between other modalities. These image representations are initialized with large-scale vision-language models such as CLIP, thereby leveraging the rich image and text representations of these models. Some of these alignments are explained directly (comparing a video of a person delivering a speech to audio of the speech) while other pairs of modalities are explained through their relation to an intermediate modality(understanding the relation between motion data and text data by seeing how they both relate to video/image data). With that said in other cases a logical explanation of why two examples are close together might not be possible without a close examination of the training sets.
+ImageBind模型通过使用图像表示作为ground truth，并将所有其他概念拉近到图像表示中，从而在其他模态之间建立了自然学习的对齐。这些图像表示是使用诸如CLIP之类的大规模视觉-语言模型进行初始化的，从而利用了这些模型的丰富图像和文本表示。一些对齐是直接解释的（比如将一个人发表演讲的视频与演讲的音频进行比较），而其他模态对之间的关系则通过它们与中间模态的关系进行解释（通过观察它们与视频/图像数据的关系来理解运动数据和文本数据之间的关系）。然而，在其他情况下，如果不对训练集进行仔细检查，可能无法对为什么两个示例彼此靠近给出逻辑上的解释。
 
-### 4. Heterogeneity and Training Optimization
+### 4. 异构性和训练优化
 
-Handling modality imbalance(we have a lot of image and text data and significantly less motion and tactile data) makes it very difficult to learn all modalities equally well; this takes careful tuning of the contribution of each modality during training and optimizing the fusion mechanism to prevent dominance by a single modality. Data imbalance is one consideration but even more important to consider is how much unique information a modality brings - this is known as heterogeneity. Assessing heterogeneity accurately allows you to decide which modalities are different enough to be separately processed and which modality pairs interact differently and thus should be differently fused.
+处理模态不平衡（我们有大量图像和文本数据，而运动和触觉数据较少）使得学习所有模态变得非常困难；这需要在训练过程中仔细调整每个模态的贡献，并优化融合机制，以防止单一模态的主导。数据不平衡是一个考虑因素，但更重要的是要考虑每个模态带来多少独特信息-这被称为异质性。准确评估异质性可以帮助您决定哪些模态具有足够的差异以进行单独处理，以及哪些模态对交互的方式有不同影响，因此应该进行不同的融合。
 
-[HighMMT](https://arxiv.org/abs/2203.01311) has been proposed to handle high-modality scenarios involving a large set of diverse modalities. HighMMT uses two new information-theoretic metrics for heterogeneity quantification, enabling it to automatically prioritize the fusion of modalities that contain unique information or unique interactions. This results in a **single model** that scales up to 10 modalities and 15 tasks from 5 different research areas, demonstrating a crucial scaling behavior not found in ImageBind: performance continues to improve with each modality added, and it transfers to entirely new modalities and tasks during fine-tuning.
+[HighMMT](https://arxiv.org/abs/2203.01311)提出了处理涉及大量多样性模态的高多模态场景。HighMMT使用了两个新的信息论度量指标来量化异质性，使其能够自动优先融合包含独特信息或独特交互的模态。这导致了一个**单一模型**，可以扩展到10个模态和来自5个不同研究领域的15个任务，展示了在ImageBind中找不到的关键的扩展行为：性能随着每个模态的增加而不断提高，并且在微调过程中可以迁移到全新的模态和任务。
 
-In conclusion, efforts on developing multimodal models attempt to mimic human learning by combining different inputs, such as images, text, and audio, to improve the performance and robustness of machine learning systems. By leveraging multi-sensory inputs, these models can learn to recognize complex multimodal patterns, understand context across modes, and generate more comprehensive and accurate outputs even in the absence of some modalities. The main goal is to give these models the ability to interact with data in a more natural way thus enabling them to be more powerful and general reasoning engines.
+总之，发展多模态模型的努力旨在通过结合图像、文本和音频等不同输入，模仿人类学习，以提高机器学习系统的性能和鲁棒性。通过利用多种感官输入，这些模型可以学习识别复杂的多模态模式，跨模态理解上下文，并在缺少某些模态的情况下生成更全面和准确的输出。主要目标是使这些模型能够以更自然的方式与数据交互，从而使它们成为更强大和通用的推理引擎。
 
-## Multimodal Models in Weaviate
+## Weaviate中的多模态模型
 
-Currently, the only out-of-the-box multimodal module that can be configured and used with Weaviate is `multi2vec-clip` which can be used to project images and text into a joint embedding space and then perform a `nearVector` or `nearImage` search over these two modalities. Outside of this, you can only use multimodal models if they are hosted on Huggingface or if you have your own proprietary multimodal models. We know that our users love multimodal models and we’ve been cooking up more OOTB integrations with cutting-edge multimodal models so that it’s easy for you to start using them in your vector search pipelines. Be on the lookout for new multimodal search capabilities soon, I “hear” it's going to be amazing.😉
+目前，Weaviate唯一可配置和使用的开箱即用的多模态模块是`multi2vec-clip`，它可以用于将图像和文本投影到一个联合嵌入空间中，然后在这两个模态上执行`nearVector`或`nearImage`搜索。除此之外，您只能使用在Huggingface上托管的多模态模型，或者您拥有自己专有的多模态模型。我们知道我们的用户喜欢多模态模型，我们正在开发更多与先进的多模态模型的开箱即用集成，以便您可以轻松地在您的向量搜索流程中使用它们。请密切关注即将推出的新的多模态搜索功能，我“听说”它将会很棒。😉
 
 import WhatNext from '/_includes/what-next.mdx'
 
 <WhatNext />
-

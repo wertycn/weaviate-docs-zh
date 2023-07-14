@@ -1,51 +1,54 @@
 ---
-title: How we solved a race condition with the Lock Striping pattern
-slug: Lock-striping-pattern
-authors: [dirk]
+authors:
+- dirk
 date: 2022-10-25
-tags: ['engineering']
+description: The Lock Striping pattern is a great way to solve race conditions without
+  sacrificing performance. Lean about Weaviate's improvements.
 image: ./img/hero.png
-description: "The Lock Striping pattern is a great way to solve race conditions without sacrificing performance. Lean about Weaviate's improvements."
+slug: Lock-striping-pattern
+tags:
+- engineering
+title: How we solved a race condition with the Lock Striping pattern
 ---
-![How we solved a race condition with the Lock Striping pattern](./img/hero.png)
 
-<!-- truncate -->
+![如何使用锁条纹模式解决竞态条件的问题](./img/hero.png)
 
-## Lock striping in database design
-Database design comes with interesting challenges. Like, dealing with race conditions when importing data in parallel streams. But for every new challenge, there is a clever solution. One of those clever solutions is Lock striping. It refers to an arrangement where locking occurs on multiple buckets or 'stripes'.
+<!-- 省略 -->
 
-Are you curious about, the challenge that we faced, which solutions we considered, and what was our final solution? Read on 😀.
+## 数据库设计中的锁条纹
+数据库设计带来了一些有趣的挑战，比如在并行流中导入数据时处理竞态条件。但是，对于每一个新的挑战，都有一个巧妙的解决方案。其中之一就是锁条纹。它指的是在多个桶或“条纹”上进行锁定的一种排列方式。
 
-## Background
-Databases must be able to import data quickly and reliably while maintaining data integrity and reducing time overhead. Weaviate is no exception to this! Given that our users populate Weaviate with hundreds of millions of data objects (if not more), we appreciate that import performance is of the highest ... *import-ance* (sorry) 🥁.
+你是否好奇我们面临的挑战、我们考虑的解决方案以及我们的最终解决方案是什么？继续阅读 😀。
 
-Weaviate offers and strongly recommends the [batch import feature](/developers/weaviate/tutorials/import#import-setup) for adding data objects in bulk. To further speed up the import process, you can use parallelization, which lets you run multiple batches concurrently. Each object in these batches is then checked for duplicates and assigned a unique internal DocID used by Weaviate to access objects.
+## 背景
+数据库在保持数据完整性和减少时间开销的同时，必须能够快速可靠地导入数据。Weaviate也不例外！考虑到我们的用户可能向Weaviate中填充数亿个数据对象（甚至更多），我们非常重视导入性能... *import-ance*（抱歉，这是个双关语）🥁。
 
-We uncovered that there could be a race condition in this process. Sometimes when multiple batches contained identical objects with the same UUID, they could be added more than once to Weaviate, each time with different DocIDs. This, in turn, could cause issues within Weaviate.
+Weaviate提供并强烈推荐使用[批量导入功能](/developers/weaviate/tutorials/import#import-setup)来批量添加数据对象。为了进一步加快导入过程，您可以使用并行化，这样可以同时运行多个批次。然后，这些批次中的每个对象都会被检查是否存在重复，并分配一个唯一的内部DocID，Weaviate将使用该ID来访问对象。
 
-Luckily, we've addressed this issue without sacrificing performance (yay!🥳). Here's our journey that got us to the current solution.
+我们发现在这个过程中可能存在竞态条件。有时候，当多个批次包含具有相同UUID的相同对象时，它们可能会被添加多次到Weaviate中，每次都有不同的DocID。这可能会导致Weaviate内部出现问题。
 
-## Our initial solutions
-In the initial solution, we added a lock (sync.Mutex in Go), so that now only a single goroutine can hold the lock, check for duplicate UUIDs, and assign DocIDs. This lock makes sure that the race does not occur anymore, but as an unintended side-effect the import time increased by ~20% due to lock-congestion.
+幸运的是，我们在不牺牲性能的情况下解决了这个问题（耶！🥳）。以下是我们走过的旅程，带领我们找到了当前的解决方案。
 
-Upon further consideration, our team concluded that while using a single lock is effective, it's also overkill. Almost all objects are unique and it is not a problem to process those concurrently. We found that what we really needed was just a lock for each unique UUID. Cleverly, this approach would ensure that only one object per UUID is handled at each point in time, so that Weaviate cannot add multiple instances of objects with the same UUID. Meanwhile, it would still allow full parallelization of import processes to maximize performance.
+## 我们的初始解决方案
+在初始解决方案中，我们添加了一个锁（在Go中使用sync.Mutex），这样现在只有一个goroutine可以持有锁，检查重复的UUID并分配DocIDs。这个锁确保不再出现竞争，但是由于锁阻塞，意外的副作用是导入时间增加了约20%。
 
-![Single-lock solution](./img/single-lock-solution.png)
+经过进一步的考虑，我们的团队得出结论，虽然使用单一锁是有效的，但也有些过度。几乎所有的对象都是唯一的，可以同时处理这些对象并不成问题。我们发现，我们真正需要的是每个唯一UUID的锁。巧妙的是，这种方法可以确保在任何时间点上，每个UUID只处理一个对象，这样Weaviate就不能添加具有相同UUID的多个对象实例。与此同时，它仍然可以充分并行化导入过程，以最大化性能。
 
-As it often happens, implementing a lock-per-key solution created a different issue. Due to the large dataset size mentioned earlier, there can be millions or even billions of objects with unique UUIDs in Weaviate, and creating a lock for each of them would require a lot of memory. We found an elegant solution that is in-between both of the solutions above - a **lock striping** pattern.
+![单锁解决方案](./img/single-lock-solution.png)
 
-## Solving both challenges
-Based on the UUID we assign each object to one of the 128 locks. This process is deterministic so objects with an identical UUID will always use the same lock. This gives us the best of both worlds: we have a small, fixed number of locks, but it still guarantees that two objects with the same UUID are never processed concurrently. With 128 locks, we only have 1/128th of the congestion of a single lock while still only using 128 * 8B = 1KB of memory. With the **lock striping** pattern, the import time is the same as without a lock, and we fixed the race condition without any negative performance impact.
+正如经常发生的情况一样，实现每个键一个锁的解决方案会带来不同的问题。由于之前提到的大数据集的大小，Weaviate 中可能有数百万甚至数十亿个具有唯一 UUID 的对象，为每个对象创建一个锁将需要大量的内存。我们找到了一个优雅的解决方案，介于上述两种解决方案之间 - 一种**锁分条纹**模式。
 
-![lock striping solution](./img/lock-striping-solution.png)
+## 解决这两个挑战
+基于我们为每个对象分配的UUID，我们将每个对象分配给128个锁中的一个。这个过程是确定性的，因此具有相同UUID的对象始终使用相同的锁。这使我们既拥有了少量且固定的锁，又能保证具有相同UUID的两个对象永远不会同时处理。使用128个锁，我们只有单个锁的1/128的拥塞，并且只使用128 * 8B = 1KB的内存。使用**锁分段**模式，导入时间与不使用锁时相同，同时我们修复了竞态条件而没有任何负面的性能影响。
 
-We are very pleased to introduce this solution, which should eliminate the above issues that can be caused by data duplication at import. Additionally, we are also very happy to have arrived at a solution that comes with no data import performance penalty, having seen the mammoth datasets that our users often deal with.
+![锁条解决方案](./img/lock-striping-solution.png)
 
-## Update Weaviate
-The **lock striping** pattern was introduced in Weaviate `v1.15.4`. So if you are a Weaviate user, we encourage you to update Weaviate to the latest release to take advantage of this improvement as well as many others.
+我们非常高兴地介绍这个解决方案，它应该消除由导入数据重复引起的上述问题。此外，我们也非常高兴找到了一个解决方案，它不会对数据导入性能产生任何影响，因为我们看到我们的用户通常处理的是庞大的数据集。
 
-Thank you for reading, and see you next time!
+## 更新 Weaviate
+**Lock striping**模式是在Weaviate `v1.15.4`中引入的。因此，如果您是Weaviate的用户，我们鼓励您将Weaviate更新到最新版本，以便享受此改进以及其他许多改进。
 
+感谢您的阅读，下次见！
 
 import WhatNext from '/_includes/what-next.mdx'
 

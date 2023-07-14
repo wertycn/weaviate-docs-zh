@@ -1,77 +1,80 @@
 ---
-title: How to build an Image Search Application with Weaviate
-slug: how-to-build-an-image-search-application-with-weaviate
-authors: [erika]
+authors:
+- erika
 date: 2022-10-18
-tags: ['how-to']
+description: Learn how to use build an image search application using the Img2vec-neural
+  module in Weaviate.
 image: ./img/hero.png
-description: "Learn how to use build an image search application using the Img2vec-neural module in Weaviate."
+slug: how-to-build-an-image-search-application-with-weaviate
+tags:
+- how-to
+title: How to build an Image Search Application with Weaviate
 ---
-![How to build an Image Search Application with Weaviate](./img/hero.png)
 
-<!-- truncate -->
+![如何使用Weaviate构建图像搜索应用程序](./img/hero.png)
 
-Recently, I was working with my colleague Marcin (an engineer from Weaviate core) on a really cool demo project. The idea was to build an image-search application for dogs, which allows a user to provide a picture of a dog, and the app would respond with the most similar breed. And if a user provides a picture of their partner (I might've tested this on my boyfriend 😄), it returns the breed most similar to them.
+<!-- 省略 -->
 
-Once we had the demo up and running, I thought this was a perfect opportunity to share it. This blog post is the foundation for you to build another application around image recognition or product search.
+最近，我和我的同事Marcin（来自Weaviate核心团队的工程师）一起合作做了一个非常酷的演示项目。这个项目的想法是构建一个用于狗的图像搜索应用程序，用户可以提供一张狗的图片，应用程序会返回最相似的品种。如果用户提供了他们伴侣的照片（我可能在我的男朋友身上测试了这个 😄），它会返回与其最相似的品种。
 
-This blog post will guide you to build a full-stack web application in **Python** with **Weaviate** and **Flask**. By the time you are done with the post, you will have built an image-search app! The application will take an image of a dog and return an image from the database that best matches the type of dog in an **instant**.
+一旦我们完成了演示的搭建，我认为这是一个很好的机会来分享。这篇博文为您构建另一个基于图像识别或产品搜索的应用程序打下了基础。
 
-You are probably already aware that Weaviate can power 🚀 fast vector searches with documents. What you might not be aware of is that it can also power vectorization and searching through other data types, whether it be audio, images, or others.
+本博客文章将指导您使用**Python**、**Weaviate**和**Flask**构建一个全栈Web应用程序。在完成阅读后，您将构建一个图像搜索应用程序！该应用程序将接收一张狗的图片，并立即返回数据库中与该狗的品种最匹配的图片。
 
-This blog post assumes you are familiar with vector search, as well as with spinning up an instance of Weaviate using Docker. If not, that's okay - these guides will help you!
-* [Learn about Weaviate](/developers/weaviate/concepts)
-* [Weaviate Installation](/developers/weaviate/installation)
-* [Docker Installation](https://docs.docker.com/engine/install/)
+你可能已经知道Weaviate可以用来进行快速的向量搜索。但你可能不知道的是，它还可以用来进行其他数据类型的向量化和搜索，无论是音频、图像还是其他类型的数据。
 
+本博客文章假设你已经熟悉向量搜索，并且知道如何使用Docker启动Weaviate实例。如果不熟悉，没关系-这些指南会帮助你！
+* [了解Weaviate](/developers/weaviate/concepts)
+* [Weaviate安装](/developers/weaviate/installation)
+* [Docker安装](https://docs.docker.com/engine/install/)
 
-[Check out this article](/blog/why-is-vector-search-so-fast) to learn more about why vector databases are so fast and how they work.
+[查看这篇文章](/blog/why-is-vector-search-so-fast)了解更多关于为什么向量数据库如此快速以及它们的工作原理。
 
-We will provide code snippets in this post, but you can check out the full code base in the [Weaviate Examples GitHub repo](https://github.com/weaviate/weaviate-examples) under the `nearest-neighbor-dog-search` directory. We encourage you to follow along with us by cloning the repository!
+我们将在本文中提供代码片段，但您可以在[Weaviate Examples GitHub仓库](https://github.com/weaviate/weaviate-examples)的`nearest-neighbor-dog-search`目录下找到完整的代码库。我们鼓励您通过克隆该仓库与我们一起跟随！
 
-This blog post covers:
-1. [Image Vectorization](#image-vectorization)
-2. [Weaviate Database](#weaviate-database)
-3. [Flask Application](#flask-application)
+本博文涵盖以下内容：
+1. [图像向量化](#image-vectorization)
+2. [Weaviate数据库](#weaviate-database)
+3. [Flask应用程序](#flask-application)
 
-## Image Vectorization
+## 图像向量化
 
-In this demo, we will search through a dataset of dog images. The current dataset has ten images of different dog breeds; however, you have the flexibility to change the dataset. Although I use dog pictures for the app, you can easily substitute the dog pictures for any images to make this your own use case 🤔.
+在这个演示中，我们将搜索一个包含狗图片的数据集。当前数据集中有十张不同品种的狗的图片；但是，您可以灵活地更改数据集。尽管我在应用程序中使用了狗的图片，但您可以轻松地用任何图片替换狗的图片，以适应您自己的用例🤔。
 
-Note, make sure you add the new images to the `flask-app/static/img` folder and run the `images-to-base64.py` and `upload-data-objects.py` file.
+请注意，确保将新的图片添加到 `flask-app/static/img` 文件夹中，并运行 `images-to-base64.py` 和 `upload-data-objects.py` 文件。
 
-For a use case like ours, where we would like to identify similar types of dogs, the vectorization must work in a way that captures the information about the dog (breed, size, color, etc.).
+对于我们这样的用例，我们希望识别相似类型的狗，向量化必须以一种能够捕捉有关狗的信息（品种、大小、颜色等）的方式工作。
 
-The `img2vec-neural` module in Weaviate is designed to solve this exact problem! The module vectorizes each image to something that represents its contents, so that we can search images based on their semantic similarity. In other words, we can use `img2vec-neural` to query our database to see how similar the dogs are based on the image.
+Weaviate中的`img2vec-neural`模块就是为了解决这个问题而设计的！该模块将每个图像转换为能够代表其内容的向量，以便我们可以基于语义相似性搜索图像。换句话说，我们可以使用`img2vec-neural`对数据库进行查询，看看基于图像的狗之间有多相似。
 
-### Img2vec-neural Module
-[Weaviate's img2vec-neural module](/developers/weaviate/modules/retriever-vectorizer-modules/img2vec-neural) is a flexible vectorizer that enables conversion of images to meaningful vectors. `ResNet-50` is the first model that is supported on Weaviate. `ResNet-50` is a Convolutional Neural Network (CNN) that was trained on the [ImageNet database](https://www.image-net.org/). The model was trained on more than 10 million images and 20,000 classes.
+### Img2vec-neural模块
+[Weaviate的img2vec-neural模块](/developers/weaviate/modules/retriever-vectorizer-modules/img2vec-neural) 是一个灵活的向量化器，可以将图像转换为有意义的向量。`ResNet-50` 是在Weaviate上支持的第一个模型。`ResNet-50` 是一个卷积神经网络（CNN），它是在[ImageNet数据库](https://www.image-net.org/)上训练的。该模型在1000万多幅图像和2万个类别上进行了训练。
 
-## Weaviate Database
-### Setup
-The demo contains a `docker-compose.yml` file, which defines all the Weaviate modules required to run this demo. In this file, you will see the module, which in our case is `img2vec-neural` trained on the `ResNet-50` model. To spin up your Weaviate instance, navigate to the `nearest-neighbor-dog-search` directory from the cloned git repository, and run;
+## Weaviate数据库
+### 设置
+该演示包含一个 `docker-compose.yml` 文件，该文件定义了运行此演示所需的所有 Weaviate 模块。在该文件中，您将看到我们的模块是基于 `ResNet-50` 模型训练的 `img2vec-neural`。要启动您的 Weaviate 实例，请导航到从克隆的 Git 仓库中的 `nearest-neighbor-dog-search` 目录，并运行以下命令；
 
 ```
 docker-compose up -d
 ```
-Once Weaviate is up, check that it is running with:
+一旦 Weaviate 启动，使用以下命令检查它是否正在运行：
 
 ```bash
 python weaviate-test.py
 ```
 
-You should see something like this, and we are ready to go!
+您应该会看到类似这样的内容，我们已经准备好开始了！
 ```
 {"classes": []}
 ```
 
-### Schema Configuration
+### 模式配置
 
-The dataset we're using contains ten dogs, each containing the following properties: breed, image, weight, and filepath. The schema defines a structure into which we will store data in our Weaviate database, where each object type is referred to as a `class`.
+我们使用的数据集包含十只狗，每只狗都包含以下属性: 品种、图片、重量和文件路径。模式定义了我们将在Weaviate数据库中存储数据的结构，其中每个对象类型被称为一个`class`。
 
-This includes the class name, which in our case is "Dog" and the properties, such as `breed`, `image`, and `filepath`. In this case, we also need to add in the vectorizer definition, which is the `img2vec-neural` module, so that Weaviate knows to use that specific vectorizer.
+这包括类名，我们的情况下是"Dog"，以及属性，如`breed`、`image`和`filepath`。在这种情况下，我们还需要添加矢量化器定义，即`img2vec-neural`模块，以便Weaviate知道使用特定的矢量化器。
 
-We will tell Weaviate that breed and filepath values are strings, weight is stored as an integer, and images are stored as a `blob` dataType. Putting it all together, the schema definition should look like the following;
+我们将告诉Weaviate，品种（breed）和文件路径（filepath）的值是字符串，重量（weight）存储为整数，图像存储为`blob`数据类型。将所有这些放在一起，模式定义应如下所示；
 
 ```python
 schema = {
@@ -109,32 +112,32 @@ schema = {
    ]
 }
 ```
-Once you've defined the schema, it is then added to Weaviate.
+一旦定义了模式，就可以将其添加到Weaviate中。
 ```
 client.schema.create(schema)
 ```
 
-Run the `create-schema.py` to add the schema to your Weaviate instance;
+运行`create-schema.py`将模式添加到您的Weaviate实例中；
 
 ```bash
 python create-schema.py
 ```
 
-### Images to Base64
-We are almost ready to populate our Weaviate database full of cute dogs! We first need to encode the images to base64 values. Encoding the images to base64 is a requirement for using the [blob dataType](/developers/weaviate/config-refs/datatypes), which we defined in the schema.
+### 图片转为 Base64
+我们即将准备将我们的 Weaviate 数据库填满可爱的狗狗！首先，我们需要将图片编码为 Base64 值。将图片编码为 Base64 是使用 [blob 数据类型](/developers/weaviate/config-refs/datatypes) 的要求，我们已在模式中定义了该数据类型。
 
-The ten images in the dataset are stored in the `flask-app/static/img` folder. To convert the images to base64 run:
+数据集中的十张图片存储在 `flask-app/static/img` 文件夹中。要将图片转换为 Base64，请运行以下命令：
 
 ```bash
 python images-to-base64.py
 ```
 
-Note, the base64 images are stored in the `base64_images` folder.
+注意，base64 图片存储在 `base64_images` 文件夹中。
 
-### Upload the Data Objects
-Now that we have defined the schema and converted the images to base64 values, we can upload the data objects to Weaviate.
+### 上传数据对象
+现在我们已经定义了模式并将图片转换为 base64 值，我们可以将数据对象上传到 Weaviate。
 
-When uploading your data objects to Weaviate, you want to import your data in batches. The import speed is faster than uploading the objects one by one. Let's configure the batch process to upload in batches of 100, just in case we add more images.
+在将数据对象上传到 Weaviate 时，您希望将数据分批导入。批量导入的速度比逐个上传对象要快。让我们配置批处理过程，以便每次上传100个对象，以防我们添加更多图片。
 
 ```python
 def set_up_batch():
@@ -146,11 +149,11 @@ def set_up_batch():
    )
 ```
 
-We will need to define the data properties that we want to upload. The function below will:
-1. Grab the images in the `base64_images` folder.
-2. Remove the file extension to hold just the breed name.
-3. Set the property values, as defined in the schema.
-4. Upload new data objects to Weaviate
+我们需要定义要上传的数据属性。以下功能将会：
+1. 获取`base64_images`文件夹中的图像。
+2. 去除文件扩展名，只保留品种名称。
+3. 设置属性值，如模式中所定义。
+4. 将新的数据对象上传到Weaviate。
 
 ```python
 def import_data():
@@ -180,7 +183,7 @@ def import_data():
            batch.add_data_object(data_properties, "Dog")
 ```
 
-Now we will connect to the local host and upload the data objects.
+现在我们将连接到本地主机并上传数据对象。
 ```python
 client = weaviate.Client("http://localhost:8080")
 set_up_batch()
@@ -188,25 +191,25 @@ clear_up_dogs()
 import_data()
 ```
 
-Run this file with;
+使用以下命令运行此文件：
 ```bash
 python upload-data-objects.py
 ```
 
-And just like that, you have populated your Weaviate database with pictures of cute dogs and the vector representations of them!
+就像这样，您已经用可爱狗狗的图片和它们的向量表示填充了您的Weaviate数据库！
 
-Here is a recap of what we've done so far:
-1. Defined the Weaviate schema
-2. Converted the images to base64 values
-3. Uploaded the data objects to Weaviate
+以下是我们迄今为止所做的回顾：
+1. 定义了Weaviate模式
+2. 将图片转换为base64值
+3. 将数据对象上传到Weaviate
 
-![Weaviate Dogs](./img/weaviate-dogs1.jpg)
+![Weaviate狗狗](./img/weaviate-dogs1.jpg)
 
-## Flask Application
-[Flask](https://flask.palletsprojects.com/en/2.2.x/) is a web application framework written in Python. Using Flask is a quick and easy way to build a web application, so we will use it in this guide.
+## Flask应用程序
+[Flask](https://flask.palletsprojects.com/en/2.2.x/) 是一个用 Python 编写的 Web 应用程序框架。使用 Flask 是构建 Web 应用程序的一种快速简便的方式，因此我们将在本指南中使用它。
 
-### Application File
-First, we will need to create our Flask application and connect it to our Weaviate client.
+### 应用程序文件
+首先，我们需要创建我们的 Flask 应用程序并将其连接到我们的 Weaviate 客户端。
 
 ```python
 app = Flask(__name__)
@@ -214,7 +217,7 @@ app.config["UPLOAD_FOLDER"] = "/temp_images"
 client = weaviate.Client("http://localhost:8080")
 ```
 
-We will use the [`nearImage`](/developers/weaviate/modules/retriever-vectorizer-modules/img2vec-neural#nearimage-search) operator in Weaviate, so that it will search for images closest to the image uploaded by the user. To do this we will construct the `weaviate_img_search` function to get the relevant results. The response from our search query will include the closest objects in the Dog class. From the response, the function will output the dog image with the breed name and filepath. Note that the query is also formulated so that the response is limited to two results.
+我们将在Weaviate中使用[`nearImage`](/developers/weaviate/modules/retriever-vectorizer-modules/img2vec-neural#nearimage-search)操作符，以便搜索与用户上传的图像最接近的图像。为此，我们将构建`weaviate_img_search`函数来获取相关结果。我们的搜索查询的响应将包括与Dog类中最接近的对象。从响应中，该函数将输出带有品种名称和文件路径的狗的图像。请注意，查询也是这样构建的，以便将响应限制为两个结果。
 
 ```python
 def weaviate_img_search(img_str):
@@ -229,16 +232,16 @@ def weaviate_img_search(img_str):
    return weaviate_results["data"]["Get"]["Dog"]
 ```
 
-How cool is that? We can find visually similar dogs in just a simple query to Weaviate. We could even scale this to millions of images running in milliseconds with [Weaviate's ANN index](/developers/weaviate/concepts/vector-index).
+这很酷，我们可以通过简单的查询Weaviate来找到外观相似的狗。我们甚至可以借助[Weaviate的ANN索引](/developers/weaviate/concepts/vector-index)在毫秒级别上扩展到数百万张图像。
 
-Once we've created the app, we need to define the pages that will be on the website. The homepage will have the ten images of the dogs in our dataset. If you add images, it will also populate on the homepage!
+创建完应用程序后，我们需要定义网站上的页面。首页将显示我们数据集中的十张狗的图片。如果添加了图片，它们也将显示在首页上！
 
-The `/process_image` page will show the uploaded image along with the results from Weaviate. Once we have the image stored and converted to base64, we will send it to the `weaviate_img_search` function to return the results and re-render the page.
+`/process_image`页面将显示上传的图像以及来自Weaviate的结果。一旦我们将图像存储并转换为base64格式，我们将将其发送到`weaviate_img_search`函数以返回结果并重新渲染页面。
 
-The code block below will:
-1. Populate the homepage with the images from the dataset.
-2. Save the uploaded image and convert it to base64
-3. Return the `nearImage` results from Weaviate to return the filepaths and breeds
+下面的代码块将执行以下操作：
+1. 从数据集中填充主页的图像。
+2. 保存上传的图像并将其转换为base64格式。
+3. 返回来自Weaviate的`nearImage`结果，包括文件路径和品种。
 
 ```python
 @app.route("/") # defining the pages that will be on the website
@@ -267,7 +270,7 @@ The code block below will:
            return render_template("index.html", content = results, dog_image = img_str)
 ```
 
-Our `index.html` template has been set up to show images of the returned dog breeds.
+我们的`index.html`模板已经设置好，可以显示返回的狗品种的图片。
 
 ```html
 { % for x in content % }
@@ -278,39 +281,38 @@ Our `index.html` template has been set up to show images of the returned dog bre
 { % endfor % }
 ```
 
-We then run the application as follows:
+我们可以按照以下步骤运行该应用程序：
 ```python
 if __name__ == "__main__":
    app.run()
 ```
 
-Now you will run this file with;
+现在您将使用以下命令运行此文件：
 
 ```bash
 python flask-app/application.py
 ```
-If you navigate to 127.0.0.1, you will see the running web app.
+如果您导航到127.0.0.1，您将看到正在运行的Web应用程序。
 
-Let's test a query to see which dog looks most similar to a Goldendoodle puppy. We can see that the puppy resembles the Goldendoodle and Golden Retriever that are in our database.
+让我们测试一个查询，看看哪种狗最像Goldendoodle小狗。我们可以看到小狗与我们数据库中的Goldendoodle和Golden Retriever相似。
 
 <img
     src={require('./img/results.jpg').default}
-    alt="Results"
+    alt="结果"
     style={{ maxWidth: "70%" }}
 />
 
-And just like that, you've built a complete app! Users can load an image of their favorite dog and see the nearest neighbor breed in the database!
+就这样，您已经构建了一个完整的应用程序！用户可以加载他们最喜欢的狗的图片，并在数据库中查看最接近的品种！
 
-## Summary
-In this demo, we reviewed how to:
-1. Create and upload your data schema
-2. Connect the Weaviate demo to a web application using Flask
-3. Use the nearImage operator in Weaviate
+## 概述
+在这个演示中，我们回顾了如何：
+1. 创建并上传数据模式
+2. 使用Flask将Weaviate演示连接到Web应用程序
+3. 在Weaviate中使用nearImage运算符
 
-And while this example uses a small dataset, Weaviate can power image searches like this at scale with very large datasets and in production environments. We think that you will be impressed at how fast it is, and how quickly you can build amazing search capabilities with image datasets. And when you do - please tell us all about it! We love hearing from our users in our great community.
+虽然这个例子使用的是一个小数据集，但是Weaviate可以在大规模的数据集和生产环境中支持这样的图像搜索。我们相信您会对其速度和快速构建基于图像数据集的强大搜索功能感到印象深刻。当您使用时，请告诉我们您的使用体验！我们非常乐意听取来自我们伟大社区中的用户的声音。
 
-Thanks for reading, and see you soon. You can also check out the other great [Weaviate demos](https://github.com/weaviate/weaviate-examples) on GitHub!
-
+感谢阅读，希望很快再见。您也可以在GitHub上查看其他优秀的[Weaviate演示](https://github.com/weaviate/weaviate-examples)！
 
 import WhatNext from '/_includes/what-next.mdx'
 

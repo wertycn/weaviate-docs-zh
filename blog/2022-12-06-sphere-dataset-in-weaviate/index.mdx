@@ -1,35 +1,38 @@
 ---
-title: The Sphere Dataset in Weaviate
-slug: sphere-dataset-in-weaviate
-authors: [zain]
+authors:
+- zain
 date: 2022-12-6
-tags: ['how-to']
+description: Learn how to import and query the Sphere dataset in Weaviate!
 image: ./img/hero.png
-description: "Learn how to import and query the Sphere dataset in Weaviate!"
+slug: sphere-dataset-in-weaviate
+tags:
+- how-to
+title: The Sphere Dataset in Weaviate
 ---
-![The Sphere Dataset in Weaviate](./img/hero.png)
 
-<!-- truncate -->
+![Weaviate中的Sphere数据集](./img/hero.png)
 
-## What is Sphere?
-[Sphere](https://github.com/facebookresearch/sphere) is an open-source dataset recently [released](https://ai.facebook.com/blog/introducing-sphere-meta-ais-web-scale-corpus-for-better-knowledge-intensive-nlp/) by Meta. It is a collection of 134 million documents (broken up into 906 million 100-word snippets). It is one of the largest knowledge bases that can help solve knowledge-intensive natural language tasks such as question-answering, fact-checking, and much more.
+<!-- 截断 -->
 
-Simply stated, Sphere aims to act as a "universal, uncurated and unstructured source of knowledge." This means that the next time you have a question like: "Was McDonald's, the food chain, founded by the same Ol' McDonald who had a farm?" Sphere will have the relevant knowledge to answer your question and point you toward a relevant article. The potential for this large of a dataset is awe-inspiring and the applications one can dream up are limitless - from combating fake news on social media platforms to helping locate your next dream vacation spot.
+## 什么是Sphere？
+[Sphere](https://github.com/facebookresearch/sphere) 是由 Meta 最近发布的一个开源数据集。它包含了1.34亿个文档（分成了9.06亿个100个单词的片段）。这是一个巨大的知识库，可以帮助解决知识密集型的自然语言任务，如问答、事实核查等。您可以通过[这里](https://ai.facebook.com/blog/introducing-sphere-meta-ais-web-scale-corpus-for-better-knowledge-intensive-nlp/)了解更多信息。
 
-Additionally, Sphere is ideal for hybrid vector search at scale since it is one of the few large scale datasets where vectors are provided in addition to their corresponding text fields. You can learn more about the model that is used to generate these vectors [here](https://huggingface.co/facebook/dpr-question_encoder-single-nq-base). For all of these reasons we wanted to make this resource as accessible to the community as possible.
+简而言之，Sphere旨在成为一个"通用、非筛选和非结构化的知识来源"。这意味着下次当你有一个问题，比如："麦当劳这个连锁餐厅是由那个养农场的老麦当劳创建的吗？" Sphere将会有相关的知识来回答你的问题，并指向一个相关的文章。这个庞大的数据集的潜力令人惊叹，人们可以无限地设想各种应用 - 从在社交媒体平台上打击假新闻，到帮助找到你下一个梦想的度假胜地。
 
-## The Challenges of using Sphere
+另外，Sphere非常适合大规模的混合向量搜索，因为它是少数几个提供向量及其对应文本字段的大规模数据集之一。您可以在[这里](https://huggingface.co/facebook/dpr-question_encoder-single-nq-base)了解用于生成这些向量的模型。出于这些原因，我们希望尽可能让这个资源对社区更加可访问。
 
-The only limitation of this dataset is how difficult it is to access and use for the average developer. In this regard the enormity of the dataset ends up as a double-edged sword. It is challenging to use Sphere in its current open-source format for anyone other than large industry and academic labs - even for them the UX leaves a lot to be desired.
+## 使用Sphere的挑战
 
-*Don't believe me?*
+这个数据集的唯一限制是对于普通开发者来说，获取和使用起来非常困难。在这方面，数据集的庞大规模成为了一把双刃剑。对于除了大型工业和学术实验室之外的任何人来说，使用Sphere的当前开源格式都具有挑战性 - 即使对于它们来说，用户体验还有很大的提升空间。
 
-Try following the [readme](https://github.com/facebookresearch/sphere) to get Sphere set up and usable on your machine. The first limitation you'll run into is that the smallest open-sourced sparse Sphere indices file is a whopping 833 Gigabytes in its compressed format. Once you get past that hurdle,  to start using the Sphere dataset for its intended purpose of hybrid search testing and benchmarking, it requires another herculean effort.
+*不相信我吗？*
 
-## The Sphere Dataset in Weaviate
-In an effort to make this powerful resource accessible to everyone, we are happy to announce that Sphere is now **available** not only in **Weaviate** but also as **JSON** or **Parquet files**. The dataset can be easily imported with Python and Spark! You can import **large vectorized chunks** of Sphere (or the whole thing if you want!) and start searching through it  in just a few lines of code!
+请尝试按照 [readme](https://github.com/facebookresearch/sphere) 的指示，在您的机器上设置并使用 Sphere。您将首先面临的限制是，最小的开源稀疏 Sphere 索引文件在压缩格式下达到了惊人的 833GB。一旦您跨过了这个障碍，为了开始使用 Sphere 数据集来进行混合搜索测试和基准测试，还需要付出另一番艰巨的努力。
 
-The power of the sun in the palm of your hand! *ensues evil maniacal laughter*
+## Weaviate 中的 Sphere 数据集
+为了使这一强大资源能够为每个人所用，我们很高兴地宣布，Sphere现在不仅可以在Weaviate中使用，还可以作为JSON或Parquet文件提供。可以使用Python和Spark轻松导入数据集！您可以导入Sphere的大型矢量化块（或者整个数据集，如果您愿意！），并只需几行代码即可开始搜索！
+
+太阳的力量尽在您的手中！*随之而来的是邪恶的狂笑声*
 
 import sphereVideo from './img/joke2.mp4';
 
@@ -39,22 +42,21 @@ Your browser does not support the video tag.
 </video>
 
 
-Get it? ... It's a Sphere 🥁ba dum tsss🥁 I'll show myself out…
+明白了吗？...这是一个球体🥁咚咚咚🥁我会自己走开的...
 
+有两种方法可以将Sphere数据集导入到Weaviate中。您可以使用Python客户端（少于75行代码）或Weaviate Spark连接器。
 
-There are two ways to import the Sphere dataset into Weaviate. You can use the Python client (less than 75 lines of code) or the Weaviate Spark connector.
+### 使用Python导入Sphere数据集
+安装非常简单，您只需要[Weaviate客户端](/developers/weaviate/client-libraries)。我们提供了一个使用Python客户端和dpr-question_encoder-single-nq-base模型的示例（即用于在Sphere中对对象进行向量化的模块）。
 
-### Importing Sphere with Python
-The setup is quite straightforward, all you need is the [Weaviate Client](/developers/weaviate/client-libraries). We provide an example that uses the Python Client and the dpr-question_encoder-single-nq-base model (i.e., the module that is used to vectorize objects in Sphere).
+我们准备了从100K数据点到完整的Sphere数据集（包含899亿行）的文件。您可以从这里下载它们：
+* [100k行](https://storage.googleapis.com/sphere-demo/sphere.100k.jsonl.tar.gz)
+* [1M行](https://storage.googleapis.com/sphere-demo/sphere.1M.jsonl.tar.gz)
+* [10M行](https://storage.googleapis.com/sphere-demo/sphere.10M.jsonl.tar.gz)
+* [100M行](https://storage.googleapis.com/sphere-demo/sphere.100M.jsonl.tar.gz)
+* [899M行](https://storage.googleapis.com/sphere-demo/sphere.899M.jsonl.tar.gz)
 
-We have prepared files ranging from 100K data points all the way up to the entire Sphere dataset, which consists of 899 million lines. You can download them from here:
-* [100k lines](https://storage.googleapis.com/sphere-demo/sphere.100k.jsonl.tar.gz)
-* [1M lines](https://storage.googleapis.com/sphere-demo/sphere.1M.jsonl.tar.gz)
-* [10M lines](https://storage.googleapis.com/sphere-demo/sphere.10M.jsonl.tar.gz)
-* [100M lines](https://storage.googleapis.com/sphere-demo/sphere.100M.jsonl.tar.gz)
-* [899M lines](https://storage.googleapis.com/sphere-demo/sphere.899M.jsonl.tar.gz)
-
-Once you have the dataset file downloaded and unpacked, the next step is to import the dataset into Weaviate with Python:
+一旦您下载和解压缩了数据集文件，下一步是使用Python将数据集导入Weaviate。
 
 ```python
 import sys
@@ -120,34 +122,33 @@ with open(SPHERE_DATASET) as jsonl_file:
 end = time.time()
 print('Done in', end - start)
 ```
-*Make sure to update the SPHERE_DATASET property to correctly match your `.jsonl` filename.*
+*确保将SPHERE_DATASET属性更新为正确匹配您的`.jsonl`文件名。*
 
-### Importing Sphere with Spark
-If you want to start training large language models for knowledge-intensive tasks on Sphere, then you might want to leverage big data frameworks. This is where Apache Spark enters the picture!
+### 使用Spark导入Sphere
+如果您想在Sphere上开始训练用于知识密集型任务的大型语言模型，那么您可能希望利用大数据框架。这就是Apache Spark的用武之地！
 
-To process Sphere with Spark, you can use [PySpark](https://spark.apache.org/docs/latest/api/python/) and [Weaviate's Python Client](/developers/weaviate/client-libraries/python). The setup is slightly more difficult than simply importing the dataset with python; however, once you do have it setup, it is lightning fast! ⚡
+要使用Spark处理Sphere，您可以使用[PySpark](https://spark.apache.org/docs/latest/api/python/)和[Weaviate的Python客户端](/developers/weaviate/client-libraries/python)。设置过程稍微复杂一些，不仅仅是简单地使用Python导入数据集；然而，一旦设置完成，它的速度非常快！⚡
 
-You can see the step-by-step instructions detailed in this [tutorial](/developers/weaviate/tutorials/spark-connector). The tutorial demonstrates how to get Sphere into a Spark dataframe, import it into Weaviate, and conduct queries. Once you have Sphere imported into your Spark instance you can leverage Spark functionality to start training powerful models. In this particular example we are using the [Weaviate Spark connector](https://github.com/weaviate/weaviate-spark-connector) making it easy to load data from Spark to Weaviate.
+您可以在这个[tutorial](/developers/weaviate/tutorials/spark-connector)中看到详细的一步一步的说明。这个教程演示了如何将Sphere导入到Spark dataframe中，然后将其导入到Weaviate，并进行查询。一旦您将Sphere导入到您的Spark实例中，您就可以利用Spark的功能来开始训练强大的模型。在这个特定的示例中，我们使用了[Weaviate Spark连接器](https://github.com/weaviate/weaviate-spark-connector)，使从Spark加载数据到Weaviate变得非常容易。
 
-We have also prepared two Parquet files one with 1M data points and another with the entire Sphere dataset, which consists of 899 million lines. You can download them into a dataframe as follows:
+我们还准备了两个Parquet文件，一个包含1百万个数据点，另一个包含整个Sphere数据集，该数据集包含8.99亿行。您可以按照以下方式将它们下载到数据框中：
 
 ```
 df = spark.read.parquet("gs://sphere-demo/parquet/sphere.1M.parquet")
 df = spark.read.parquet("gs://sphere-demo/parquet/sphere.899M.parquet")
 ```
-## Searching through Sphere with Weaviate
-Now that the instructions are out of the way lets have some fun and show you the combined power of Sphere on Weaviate! We imported the entire Sphere dataset into Weaviate - yes, all ~899 million objects, see below for proof!
+## 使用 Weaviate 在 Sphere 中进行搜索
+现在，指令已经完成了，让我们来玩一下，展示一下 Weaviate 在 Sphere 上的综合能力！我们将整个 Sphere 数据集导入到了 Weaviate 中 - 是的，所有约 8.99 亿个对象，下面是证据！
 
-![import proof](./img/image4.png)
+![导入证明](./img/image4.png)
 
-Once the Sphere dataset is in Weaviate we can use it in conjunction with all of the functionality that comes with Weaviate.
+一旦 Sphere 数据集在 Weaviate 中，我们就可以与 Weaviate 提供的所有功能一起使用它。
 
-Since the primary usage of Sphere is around conducting large scale hybrid search below you can see an example of where we leverage vector search to find out what Sphere says is the best food to eat in Italy while simultaneously using conventional word matching to ensure the returned objects are from a credible source, the New York Times in this case.
+由于Sphere的主要用途是进行大规模混合搜索，下面是一个示例，我们利用向量搜索来找出Sphere认为意大利最好吃的食物，同时使用传统的词匹配来确保返回的对象来自可靠的来源，本例中是纽约时报。
 
-![query](./img/image1.png)
+![查询](./img/image1.png)
 
-And that's all folks! Now with the Sphere dataset readily available and easy to import into Weaviate anyone can start to build with this powerful tool in conjunction with the loads of awesome features that we already offer in Weaviate. Happy coding!
-
+这就是全部内容！现在，有了Sphere数据集，可以轻松导入到Weaviate中，任何人都可以开始利用这个强大的工具，结合我们在Weaviate中已经提供的许多令人惊喜的功能来构建。祝您编码愉快！
 
 import StayConnected from '/_includes/stay-connected.mdx'
 

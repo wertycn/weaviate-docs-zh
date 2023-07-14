@@ -1,107 +1,108 @@
 ---
-title: Running Large Language Models Privately - privateGPT and Beyond
-slug: private-LLM
 authors: zain
 date: 2023-05-30
+description: A discussion on data privacy and privacy-preserving machine learning
+  for LLMs
 image: ./img/hero.png
-tags: ['concepts','how-to']
-description: "A discussion on data privacy and privacy-preserving machine learning for LLMs"
-
+slug: private-LLM
+tags:
+- concepts
+- how-to
+title: Running Large Language Models Privately - privateGPT and Beyond
 ---
 
 ![Private LLMs](./img/hero.png)
 
 <!-- truncate -->
 
-Large Language Models (LLM’s) have revolutionized how we access and consume information, shifting the pendulum from a search engine market that was predominantly retrieval-based (where we asked for source documents containing concepts relevant to our search query), to one now that is growingly memory-based and performs generative search (where we ask LLMs to generate answers to questions based on their knowledge of and training on massive datasets). More importantly, what’s different this time is that with the advent of widely accessible products like ChatGPT that have exposed the underlying technology of these models to the wider consumer market, we’re seeing these models revolutionize how we work, learn and interact on a scale never seen before.
+大型语言模型（LLM）彻底改变了我们获取和消费信息的方式，将搜索引擎市场从主要基于检索的模式（我们要求找到包含与搜索查询相关概念的源文件）转变为越来越多地基于记忆的生成式搜索模式（我们让LLM根据其对大规模数据集的知识和训练生成问题的答案）。更重要的是，这一次的不同之处在于，随着像ChatGPT这样的广泛可访问的产品将这些模型的基础技术暴露给更广泛的消费者市场，我们正在看到这些模型如何以前所未有的规模改变我们工作、学习和互动的方式。
 
-This wide-scale adoption of LLMs makes the concerns and challenges around privacy and data security paramount, and ones that each organization needs to address. In this blog post we will explore some of the different potential approaches organizations can take to ensure robust data privacy while harnessing the power of these LLMs.
+这种对LLM的广泛采用使得隐私和数据安全的关注和挑战变得至关重要，每个组织都需要解决这些问题。在这篇博文中，我们将探讨一些不同的潜在方法，以确保在利用这些LLM的强大能力的同时保障数据的隐私安全。
 
-## Understanding the Privacy Challenge
+## 理解隐私挑战
 
-LLMs are typically trained on vast amounts of data to develop a statistical understanding of human language patterns. If you’d like to get an introductory explanation of how these models work, please read our previous blogpost: [How LLMs Work](/blog/what-are-llms). The extensive datasets used in training can often contain sensitive information, leading to privacy concerns. Additionally, the traditional approach of relying on cloud-based services to deploy and conduct inference with these models requires organizations to transfer their data to third-party centralized model providers which can lead to data exposure, data breaches, and unauthorized access. This is the very reason large corporations such as Samsung, Apple, Verizon, JPMorgan and many more have [limited their employees from using these services](https://www.hr-brew.com/stories/2023/05/11/these-companies-have-banned-chatgpt-in-the-office).
+LLMs通常会在大量数据上进行训练，以开发对人类语言模式的统计理解。如果您想了解这些模型如何工作的简介解释，请阅读我们之前的博客文章：[LLMs的工作原理](/blog/what-are-llms)。在训练中使用的大规模数据集通常可能包含敏感信息，引发隐私问题。此外，依赖基于云服务来部署和进行推理的传统方法要求组织将其数据转移到第三方集中式模型提供商，这可能导致数据曝光、数据泄露和未经授权的访问。这正是为什么像三星、苹果、威瑞森、摩根大通等大公司已经[限制员工使用这些服务](https://www.hr-brew.com/stories/2023/05/11/these-companies-have-banned-chatgpt-in-the-office)的原因。
 
-To leverage the advantages of generative AI while simultaneously addressing these privacy concerns, the field of privacy-preserving machine learning has emerged, offering techniques and tools that allow for the secure execution of large language models while protecting the confidentiality of sensitive data both during model fine-tuning as well as when providing responses grounded in proprietary data.
+为了充分利用生成式人工智能的优势，同时解决这些隐私问题，隐私保护机器学习领域应运而生，提供了技术和工具，可以在进行模型微调和提供基于专有数据的响应时，确保大型语言模型的安全执行，并保护敏感数据的机密性。
 
-## Potential Solutions to the Privacy Challenge
+## 隐私挑战的潜在解决方案
 
-### Federated Learning
+### 联邦学习
 
-![Federated](./img/federated.png)
+![联邦学习](./img/federated.png)
 
-Federated Learning enables model training without directly accessing or transferring user data. Instead, individual edge devices or servers collaboratively train the model while keeping the data local. This approach ensures that sensitive data remains private, reducing the risk of data breaches during model fine-tuning on custom data.
+联邦学习使得模型训练无需直接访问或传输用户数据。相反，个别边缘设备或服务器通过协同训练模型，同时保持数据本地化。这种方法确保敏感数据保持私密，降低在自定义数据上进行模型微调过程中的数据泄露风险。
 
-More specifically, federated learning is a distributed approach to model training that allows multiple parties to collaborate without the need for centralized data sharing. In traditional machine learning, data is typically collected, centralized, and used for training a model. However, in scenarios where data privacy is a concern, federated learning offers a privacy-preserving alternative.
+更具体地说，联邦学习是一种分布式的模型训练方法，允许多个参与方在无需集中式数据共享的情况下进行合作。在传统的机器学习中，数据通常被收集、集中化，并用于训练模型。然而，在数据隐私成为关注的情况下，联邦学习提供了一种保护隐私的替代方案。
 
-The core idea behind federated learning is to bring the model training process to the data instead of moving the data to a central location where model training occurs. This decentralized approach ensures that sensitive data remains local and does not need to be exposed or transferred. Instead, individual devices or servers participate in the training process by sending model updates to a central server, which aggregates and incorporates these updates to improve the global model.
+联邦学习的核心思想是将模型训练过程带到数据中，而不是将数据转移到模型训练发生的中心位置。这种分散的方法确保敏感数据保持本地化，无需暴露或传输。相反，个体设备或服务器通过向中央服务器发送模型更新来参与训练过程，中央服务器会汇总和整合这些更新，以改进全局模型。
 
-The main challenge here is that training LLMs in central locations with access to large amounts of optimized computing is hard enough, and doing this in a distributed manner significantly complicates matters. You now have to worry about the heterogeneity of the data available on different edge devices that the model is training on, how to securely aggregate the learned weights from all the different edge devices, how to prevent adversaries from inferring private data from the individual model updates, as well as model compression and efficiency since now these edge devices like mobile phones have to upload model updates to be aggregated globally.
+在这里的主要挑战是，即使在具有大量优化计算资源的中央位置训练LLMs已经很困难了，以分布式方式进行训练会显著增加复杂性。现在您需要担心不同边缘设备上可用数据的异质性，模型如何安全地聚合来自所有不同边缘设备的学习权重，如何防止对手从个别模型更新中推断出私密数据，以及模型压缩和效率，因为现在这些边缘设备（如手机）必须上传模型更新以进行全局聚合。
 
-### Homomorphic Encryption
+### 同态加密
 
-![Encryption](./img/encryption.png)
+![加密](./img/encryption.png)
 
-Homomorphic encryption (HE) allows computations to be performed on encrypted data without decrypting it. It is a powerful tool for preserving privacy in scenarios where sensitive data needs to be processed or analyzed while maintaining confidentiality. This technique can be applied to LLMs, enabling private inference while preserving the confidentiality of user inputs. However, it's worth noting that homomorphic encryption can introduce computational overhead, impacting the model's performance.
+同态加密（HE）允许在不解密的情况下对加密数据进行计算。它是在需要处理或分析敏感数据的情况下保护隐私的强大工具。该技术可以应用于LLM（语言模型），在保护用户输入的机密性的同时实现私有推理。然而，值得注意的是，同态加密可能会引入计算开销，影响模型的性能。
 
-In traditional encryption, encrypted data can only be operated on in its decrypted form. HE, on the other hand, enables computations to be carried out directly on encrypted data, producing encrypted results that can be decrypted to obtain the same outcome as if the computations were performed on the original, unencrypted data.
+在传统的加密中，加密数据只能在解密形式下进行操作。而同态加密（HE）则可以直接对加密数据进行计算，生成加密的结果，可以解密以获取与在原始未加密数据上执行计算时相同的结果。
 
-HE enables the secure outsourcing of data processing tasks to third-party service providers or cloud platforms. Data owners can delegate computations without revealing the underlying data, ensuring confidentiality while benefiting from the superior computational resources available to large cloud providers. Allowing computations on encrypted data enables training and inference on sensitive datasets without revealing their contents. HE seems to be a very promising way of achieving privacy-preserving LLM usage simply by encrypting the prompt token and decrypting the generated response.
+HE（同态加密）使得将数据处理任务安全地外包给第三方服务提供商或云平台成为可能。数据所有者可以委托计算任务而不会透露底层数据，确保机密性的同时又能享受大型云服务提供商提供的强大计算资源。允许在加密数据上进行计算，使得在不泄露其内容的情况下对敏感数据集进行训练和推断成为可能。HE似乎是实现保护隐私的LLM（语言模型）使用的一种非常有前景的方法，只需对提示标记进行加密和生成的响应进行解密。
 
-On a practical level however HE does have some disadvantages: it is much harder to implement LLM training and inference with HE data than on unencrypted data, and more compute is required to process encrypted data, which increases processing times and further increases compute requirements which are already very high. You also lose out on model quality and accuracy when training/inferencing on encrypted data (this is because the encryption process adds noise to the data) and thus you have to balance privacy vs. model performance/utility.
+从实际层面来说，同态加密确实有一些缺点：相比于非加密数据，使用同态加密的数据进行语言模型的训练和推断要困难得多，并且处理加密数据需要更多的计算资源，增加了处理时间和计算需求，而这些需求本身已经非常高。当在加密数据上进行训练/推断时，您还会损失模型的质量和准确性（这是因为加密过程会向数据中添加噪音），因此您需要在隐私和模型性能/效用之间进行权衡。
 
-### Locally Deployed LLMs
+### 本地部署的语言模型应用程序
 
-Another option is to run open-source LLMs locally vs running models that can only be accessed by general-purpose black-box APIs. Out of all of the privacy-preserving machine learning techniques presented thus far, this is perhaps the most production-ready and practical solution organizations can implement today. There are already some preliminary solutions that are publicly available that allow you to deploy LLMs locally, including [privateGPT](https://github.com/imartinez/privateGPT) and [h2oGPT](https://github.com/h2oai/h2ogpt). These solutions, which are currently proof of concepts, are taking advantage of the growing zoo of open-source LLMs, including the famous [LLaMA](https://arxiv.org/abs/2302.13971) model from Meta, which is proven to perform quite well with some limited fine-tuning, as presented in this [recent paper](https://arxiv.org/abs/2305.11206).
+另一个选项是在本地运行开源的LLM（语言模型），而不是只能通过通用的黑盒API访问模型。在迄今为止介绍的所有隐私保护机器学习技术中，这可能是组织机构今天可以实施的最适合生产环境且实用的解决方案。已经有一些初步的解决方案公开可用，允许您在本地部署LLM，包括[privateGPT](https://github.com/imartinez/privateGPT)和[h2oGPT](https://github.com/h2oai/h2ogpt)。这些解决方案目前仅是概念验证，利用了日益增长的开源LLM库，包括Meta的著名[LLaMA](https://arxiv.org/abs/2302.13971)模型，该模型已经被证明在进行有限微调的情况下表现出色，正如在这篇[最新论文](https://arxiv.org/abs/2305.11206)中所呈现的。
 
-Let’s dig deeper into locally deployed LLMs, and see how companies can more securely leverage the power of open source software (OSS) LLMs on their own proprietary documents, all in the privacy of their on-prem or hybrid servers.
+让我们深入了解本地部署的LLM，并看看企业如何更安全地利用开源软件（OSS）LLM在自己的专有文档上进行操作，且所有操作都在他们的本地或混合服务器上进行，保护隐私。
 
-## Locally Running LLMs With Custom Data
+## 使用自定义数据在本地运行LLM
 
-Prior to discussing how you can run OSS LLMs locally, let's discuss how you can get any LLM, local or remote, to answer prompts grounded in your custom data. The key ingredient here is to store the documents that you want to use to provide the LLM custom context, in a vector database so that when needed the LLM can look up and retrieve the relevant documents and consume them to learn more context prior to generating a prompt. This not only provides the LLM custom data and context where it previously had none, but it also prevents hallucinations, since you help provide the LLM with relevant information, greatly reducing the chances it will make something up to fulfill the prompt. This process is known as [retrieval augmented generation (RAG)](https://arxiv.org/pdf/2005.11401.pdf) since you are augmenting the generation process of the LLM with retrieved documents from your vector database.
+在讨论如何在本地运行OSS LLM之前，让我们先讨论如何让任何本地或远程的LLM能够回答基于您自定义数据的提示。关键要素是将您想要用于提供LLM自定义上下文的文档存储在向量数据库中，以便在需要时，LLM可以查找和检索相关文档，并在生成提示之前使用它们来学习更多的上下文。这不仅为LLM提供了之前没有的自定义数据和上下文，而且还可以防止产生幻觉，因为您帮助LLM提供了相关信息，大大降低了它编造内容来完成提示的机会。这个过程被称为[检索增强生成（RAG）](https://arxiv.org/pdf/2005.11401.pdf)，因为您正在使用来自向量数据库的检索文档增强LLM的生成过程。
 
-Currently, RAG is a 4-step process illustrated in the figure below:
+目前，RAG是一个包含4个步骤的过程，如下图所示：
 
 <figure>
 
 ![fig1](./img/fig1.png)
-<figcaption> Figure 1. Step 1&2: Query your remotely deployed vector database that stores your proprietary data to retrieve the documents relevant to your current prompt. Step3&4: Stuff the returned documents along with the prompt into the context tokens provided to the remote LLM; which it will then use to generate a custom response. </figcaption>
+<figcaption> 图1. 步骤1和2：查询存储了您的专有数据的远程部署向量数据库，以检索与当前提示相关的文档。步骤3和4：将返回的文档以及提示一起放入提供给远程LLM的上下文标记中，远程LLM将使用这些标记来生成一个定制的响应。</figcaption>
 </figure>
 
-As shown in the above image, this process requires you to remotely store your documents in a cloud-hosted vector database and also call an API which allows you to prompt a remotely deployed LLM. This exact workflow can be replicated using [Weaviate Cloud Services](https://console.weaviate.cloud/) and any one of the generative modules ([OpenAI](/developers/weaviate/modules/reader-generator-modules/generative-openai), [Cohere](/developers/weaviate/modules/reader-generator-modules/generative-cohere), [PaLM](/developers/weaviate/modules/reader-generator-modules/generative-palm)).
+如上图所示，此过程要求您将文档远程存储在云托管的向量数据库中，并调用一个允许您提示远程部署的LLM的API。您可以使用[Weaviate云服务](https://console.weaviate.cloud/)和任何一个生成模块([OpenAI](/developers/weaviate/modules/reader-generator-modules/generative-openai), [Cohere](/developers/weaviate/modules/reader-generator-modules/generative-cohere), [PaLM](/developers/weaviate/modules/reader-generator-modules/generative-palm))来复制这个精确的工作流程。
 
-Now let's discuss how you can modify this setup to achieve a completely local vector database and LLM setup. The first step to a fully local setup is to bring our proprietary data into our local environment. For some organizations, this means running the vector database on premises within their walls. For others this can mean running the vector database on their own self-managed virtual private cloud (VPC). Either of these workflows can be set up with a vector database like Weaviate, enabling a secure and private solution where data included in Step 1&2 doesn’t leave your organization. The generative modules mentioned above can also be used in this setup seamlessly but note that in this setup, retrieved documents included with the prompt will need to be shared with the LLM that is remotely hosted. This is what our modified workflow now looks like:
+现在让我们讨论如何修改这个设置，以实现完全本地的矢量数据库和LLM设置。完全本地设置的第一步是将我们的专有数据带入本地环境中。对于一些组织来说，这意味着在他们的内部运行矢量数据库。对于其他组织来说，这可能意味着在他们自己管理的虚拟私有云（VPC）上运行矢量数据库。使用Weaviate等矢量数据库可以设置这两种工作流程，实现安全和私密的解决方案，其中包含在第1和第2步中的数据不会离开您的组织。上述提到的生成模块也可以在这个设置中无缝使用，但请注意，在这个设置中，与提示一起检索的文档需要与远程托管的LLM共享。我们修改后的工作流程如下所示:
 
 <figure>
 
 ![fig2](./img/fig2.png)
-<figcaption> Figure 2. Step 1&2: Query your locally deployed vector database that stores your proprietary data to retrieve the documents relevant to your current prompt. Step3&4: Stuff the returned documents along with the prompt into the context tokens provided to the remote LLM; which it will then use to generate a custom response. </figcaption>
+<figcaption>图2. 步骤1和2：查询您本地部署的存储专有数据的向量数据库，以检索与当前提示相关的文档。步骤3和4：将返回的文档与提示一起放入提供给远程LLM的上下文标记中；远程LLM将使用这些标记生成自定义响应。</figcaption>
 </figure>
 
-In order to bring the LLMs into your local environment you need to have access to their weights so that you can perform inference with them locally on demand. As a result, you can only use open-source models along with vector databases that can be deployed on-prem or within your VPC for this next setup displayed in Figure 3 below.
+为了将LLMs引入您的本地环境，您需要访问它们的权重，以便您可以根据需要在本地进行推理。因此，您只能使用开源模型以及可以部署在本地或VPC中的向量数据库来进行下一步的设置，如下图3所示。
 
 <figure>
 
 ![fig3](./img/fig3.png)
-<figcaption> Figure 3. Step 1&2: Query your locally deployed vector database that stores your proprietary data to retrieve the documents relevant to your current prompt. Step3&4: Stuff the returned documents along with the prompt into the context tokens provided to the locally running OSS LLM; which it will then use to generate a custom response. </figcaption>
+<figcaption>图3. 第1步和第2步：查询存储您专有数据的本地部署向量数据库，以检索与当前提示相关的文档。第3步和第4步：将返回的文档以及提示一起填充到提供给本地运行的OSS LLM的上下文标记中；然后OSS LLM将使用这些标记生成自定义响应。</figcaption>
 </figure>
 
-With this above setup, now we can conduct RAG completely locally and privately. In order for you to play around with this setup, we have developed a Weaviate integration for privateGPT that implements that above setup [here](https://github.com/hsm207/privateGPT). This integration allows you to vectorize, ingest and query your own custom documents with open source models, as well as having Weaviate act as a vector store, completely locally. You can run this demo offline if you wanted once you have all the required dependencies. If you implement the above demo, one of the limitations you’ll find is the remarkably slow inference times when running the LLM on your own machine. Let's discuss some of the advantages and disadvantages of the above fully local private setup that can be used to perform RAG on your proprietary data.
+通过上述设置，现在我们可以完全在本地和私密地进行RAG。为了让您在此设置中进行操作，我们为privateGPT开发了一个Weaviate集成，实现了上述设置[此处](https://github.com/hsm207/privateGPT)。这个集成允许您使用开源模型对自定义文档进行向量化、摄取和查询，同时将Weaviate作为向量存储完全在本地运行。一旦您拥有所有所需的依赖项，您可以在离线环境中运行此演示。如果您实现了上述演示，您会发现在您自己的计算机上运行LLM时，推理时间非常慢是其中之一的限制。让我们讨论一下完全本地私密设置的一些优点和缺点，这可以用来对您的专有数据进行RAG。
 
-## Advantages and Disadvantages of a Local/Private Setup
+## 本地/私有设置的优缺点
 
-The advantages of locally deploying your vector database and LLM models first and foremost is the data privacy guarantee: user and proprietary data now remain within the local infrastructure, reducing chances of exposure to external entities and mitigating third-party risk. If you keep your VectorDB+LLM local, another advantage is the reduction of the attack surface and potential vulnerabilities associated with network communications and unauthorized data access. These privacy guarantees can facilitate compliance with data protection and privacy regulations which are pivotal for regulated businesses that operate in healthcare, finance, etc.
+将向量数据库和LLM模型在本地部署的优势首先是数据隐私保证：用户和专有数据现在保留在本地基础设施中，降低了暴露给外部实体的机会，减轻了第三方风险。如果将VectorDB+LLM保持在本地，另一个优势是减少与网络通信和未经授权的数据访问相关的攻击面和潜在漏洞。这些隐私保证可以促进符合数据保护和隐私法规，这对于在医疗保健、金融等受监管业务中运营的企业至关重要。
 
-On the other hand, a RAG stack running locally or on your VPC is constrained by the compute and resources that you can make available to it. This is the main reason the above privateGPT demo with Weaviate might run quite slowly on your own machines. Organizations need to invest in high-performance hardware, such as powerful servers or specialized hardware accelerators, to handle the computational demands. This can result in high upfront costs, ongoing maintenance expenses as well as difficulty scaling quickly if needed. Another disadvantage of bringing the tech stack local is the responsibility of infrastructure maintenance, system administration, security updates as well as machine learning-specific model updates which require extensive technical expertise. For this reason, this solution is great for larger companies like Samsung, Apple, and JPMorgan that have the budget to afford the required compute and expertise, and less so for resource-constrained smaller-scale companies.
+另一方面，本地或VPC上运行的RAG堆栈受到您可以提供的计算和资源的限制。这是上述私有GPT与Weaviate演示在您自己的计算机上运行缓慢的主要原因。组织需要投资于高性能硬件，如强大的服务器或专用硬件加速器，以处理计算需求。这可能导致高昂的前期成本、持续的维护费用，以及在需要时快速扩展的困难。将技术堆栈本地化的另一个缺点是基础设施维护、系统管理、安全更新以及需要广泛技术专长的机器学习模型更新的责任。因此，这个解决方案非常适合像三星、苹果和摩根大通这样预算充足、拥有所需计算和专业知识的大型公司，而对于资源受限的小型公司来说则不太适用。
 
-## Conclusion
+## 结论
 
-The advent of large language models and consumer-wide adoption has brought tremendous progress, but a by-product of this large-scale adoption is that privacy concerns have also become more pronounced. However, advances in privacy-preserving techniques have made it possible to harness the power of large language models while upholding the highest standards of data privacy and security.
+大规模语言模型的出现和广泛应用带来了巨大的进步，但与此同时，隐私问题也变得更加突出。然而，随着隐私保护技术的进步，我们可以在保护数据隐私和安全的最高标准下，利用大型语言模型的强大能力。
 
-In this blog post, we discussed some cutting-edge approaches to privacy-preserving ML, such as federated learning and homomorphic encryption (which are currently being developed and have great potential in the future), as well as a more practical approach that can take advantage of OSS LLMs and vector databases to power generative search and custom chatbots locally and privately.
+在这篇博文中，我们讨论了一些前沿的隐私保护机器学习方法，例如联邦学习和同态加密（这些方法正在不断发展，并在未来具有巨大潜力），以及一种更实用的方法，即利用开源语言模型和向量数据库来支持本地和私密的生成式搜索和定制聊天机器人。
 
-As we move forward, it is crucial for the AI community to continue prioritizing privacy and security, ensuring that LLMs can be deployed in a manner that respects individual privacy rights.
+随着我们的进展，AI社区继续优先考虑隐私和安全至关重要，确保LLM可以以尊重个人隐私权的方式部署。
 
 import WhatNext from '/_includes/what-next.mdx'
 
 <WhatNext />
-

@@ -1,96 +1,97 @@
 ---
-title: Docker and Containers with Weaviate
-slug: docker-and-containers-with-weaviate
-authors: [etienne]
+authors:
+- etienne
 date: 2021-05-19
-tags: ['concepts']
+description: What Weaviate users should know about Docker & Containers.
 image: ./img/hero.png
-# canonical-url: https://medium.com/semi-technologies/what-weaviate-users-should-know-about-docker-containers-1601c6afa079
-# canonical-name: Medium
-description: "What Weaviate users should know about Docker & Containers."
+slug: docker-and-containers-with-weaviate
+tags:
+- concepts
+title: Docker and Containers with Weaviate
 ---
-![Docker and Containers with Weaviate](./img/hero.png)
 
-<!-- truncate -->
+![Docker和Weaviate容器](./img/hero.png)
 
-Weaviate attracts different users with various backgrounds. Some have been working with containers for years, but we understand that not everyone has. Inspired by a few recent questions and comments about Docker on the Weaviate Slack, I've set out to write an article to provide a better background on Docker and containers in general. After reading this article, your most common questions about these technologies should be answered and there should be nothing in the way of building amazing use cases with Weaviate.
+<!-- 截断 -->
 
-In this short overview, we will:
+Weaviate吸引了来自不同背景的用户。有些人已经多年从事容器工作，但我们知道并非每个人都有这样的经验。受到Weaviate Slack上关于Docker的一些最近问题和评论的启发，我写了一篇文章，以提供关于Docker和容器的更好背景知识。阅读完这篇文章后，您对这些技术的最常见问题应该有了答案，这将为您构建与Weaviate一起实现惊人用例的道路上没有任何障碍。
 
-* look at what "Docker" and "Docker Compose" is,
-* why Weaviate relies on Docker,
-* what you need to do to get started,
-* … and answer a few more container-related questions that we encounter regularly.
+在这个简短的概述中，我们将：
 
-## What is Docker?
-> Docker is a […] [set of products] that use OS-level virtualization to deliver software in packages called containers.<br/>
-> [Wikipedia](https://en.wikipedia.org/wiki/Docker_(software))
+* 研究一下什么是"Docker"和"Docker Compose",
+* 为什么Weaviate依赖于Docker,
+* 你需要怎么做才能开始使用,
+* ...并回答一些我们经常遇到的与容器相关的问题。
 
-You can think of docker containers as lightweight virtual machines. Each container has its own file system, own OS libraries and software. This provides a lot of isolation. At the same time, containers share the host system's kernel, so the overhead is much smaller than with regular virtual machines.
+## Docker是什么？
+> Docker是一组使用操作系统级虚拟化技术来提供软件的产品，这些产品被称为容器。<br/>
+> [维基百科](https://en.wikipedia.org/wiki/Docker_(software))
 
-The best practice around docker containers dictates that one container only contains a single application. Typically the lifecycle of the container depends on this one process. If the process exits, the container is stopped.
+您可以将Docker容器视为轻量级虚拟机。每个容器都有自己的文件系统、操作系统库和软件，这提供了很高的隔离性。与常规虚拟机相比，容器共享主机系统的内核，因此开销要小得多。
 
-## What is Docker-Compose?
-Because one container contains only a single app, we need a way to "tie many containers together". [Docker Compose](https://docs.docker.com/compose/) is a tool that can run custom manifests, so called "Docker Compose files", together. Instead of starting or stopping a single container, you can start all the containers in one go. This is very helpful to conveniently tie individual services together, for example when an application's architecture consists of individual micro services. This is the case with Weaviate — especially when multiple modules are involved.
+在Docker容器的最佳实践中，一个容器只包含一个应用程序。通常容器的生命周期取决于这个进程。如果进程退出，容器将停止。
 
-## Why does Weaviate use Docker & Docker-Compose?
-There are many arguments for or against containerization, we have decided to go with Docker & Docker-Compose in the Weaviate stack for the following reasons:
+## 什么是Docker-Compose？
+因为一个容器只能包含一个应用程序，我们需要一种方法来"将多个容器连接在一起"。[Docker Compose](https://docs.docker.com/compose/)是一个可以同时运行自定义清单文件（称为"Docker Compose文件"）的工具。您可以一次启动所有容器，而不是启动或停止单个容器。这对于方便地将各个服务连接在一起非常有帮助，例如当一个应用程序的架构由多个微服务组成时。这在Weaviate中是适用的情况，特别是涉及多个模块时。
 
-* **Portability**: Whether you're running on Windows, Linux, macOS or yet another OS, Weaviate is only compiled for a single Linux distribution. The Docker container makes sure that from Weaviate's perspective it's always running on a well-known Linux — even if your Host machine is running a completely different OS.
-* **Isolation & Predictability**: Weaviate is a compiled binary that has zero runtime dependencies, but if you use Weaviate modules which rely on third-party tools, such as Hugging Face Transformers, PyTorch or Tensorflow, they have a set of runtime dependencies. Thanks to containers, all runtime dependencies (Python version, python packages, OS libraries, etc.) are guaranteed to be present and at the right version in each container.
-* **Distribution via Docker Hub**: Docker Hub makes it very easy to distribute public images. With a single `docker pull semitechnologies/weaviate:latest` command you can always obtain the latest version — without any prior configuration. Additionally, each container can have an exact version number, making it easy to switch between versions or upgrade your setup. Instead of a lengthy and risky update process, you can simply exchange the entire container for that of a newer version.
+## 为什么Weaviate使用Docker和Docker-Compose？
+关于容器化有很多争论，我们决定在Weaviate堆栈中采用Docker和Docker-Compose的原因如下：
 
-## What do I need to install before running Weaviate?
-You need to make sure that you have both the `docker` and the `docker-compose` CLI tools installed. Depending on your operating system, these might be two separate installation process. Here are the guides for the most common operating systems:
+* **可移植性**：无论您是在Windows、Linux、macOS还是其他操作系统上运行，Weaviate只编译适用于单个Linux发行版。Docker容器确保从Weaviate的角度来看，它始终在一个众所周知的Linux上运行，即使您的主机机器运行的是完全不同的操作系统。
+* **隔离性和可预测性**: Weaviate是一个编译后的二进制文件，没有任何运行时依赖性，但如果您使用依赖于第三方工具的Weaviate模块，例如Hugging Face Transformers，PyTorch或Tensorflow，它们会有一组运行时依赖性。由于容器的存在，每个容器中都保证存在并具有正确版本的所有运行时依赖项（如Python版本、Python包、操作系统库等）。
+* **通过Docker Hub分发**: Docker Hub非常方便地分发公共镜像。只需使用`docker pull semitechnologies/weaviate:latest`命令，您就可以随时获取最新版本，无需进行任何先前的配置。此外，每个容器可以有一个精确的版本号，便于在不同版本之间切换或升级您的设置。与冗长且风险较高的更新过程不同，您只需将整个容器替换为更新版本的容器即可。
 
-* [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/) (both `docker` and `docker-compose` )
-* [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/) (both `docker` and `docker-compose` )
-* [Docker for Ubuntu Linux](https://docs.docker.com/engine/install/ubuntu/) (only `docker` and its dependencies)
-* [Docker Compose for (Ubuntu) Linux](https://docs.docker.com/compose/install/)
+## 在运行 Weaviate 之前需要安装什么？
+您需要确保已安装了 `docker` 和 `docker-compose` CLI 工具。根据您的操作系统，这可能是两个独立的安装过程。以下是最常见操作系统的安装指南：
 
-## How do I obtain Weaviate Docker images?
-Usually, there is no need to obtain individual images, as we distribute entire `docker-compose.yml` files. See next step.
+* [Mac 上的 Docker Desktop](https://docs.docker.com/desktop/install/mac-install/)（包括 `docker` 和 `docker-compose`）
+* [Windows下的Docker Desktop](https://docs.docker.com/desktop/install/windows-install/)（包括`docker`和`docker-compose`）
+* [Ubuntu Linux下的Docker](https://docs.docker.com/engine/install/ubuntu/)（仅包括`docker`及其依赖项）
+* [（Ubuntu）Linux下的Docker Compose](https://docs.docker.com/compose/install/)
 
-## How do I obtain a Weaviate Docker-Compose file?
-![Weaviate Configuration Tool](./img/weaviate-configuration-tool.png)
-*An example of the Weaviate Customizer which produces a complete docker-compose file — tailored to your needs.*
+## 如何获取Weaviate的Docker镜像？
+通常情况下，无需获取单独的镜像，因为我们会发布完整的`docker-compose.yml`文件。请参考下一步。
 
-The easiest way to obtain a `docker-compose.yml` is to use the [Weaviate configuration tool](/developers/weaviate/installation/docker-compose#configurator) on our website. It will ask you a few questions about what you plan to do with Weaviate and customize a Compose file (including all module containers, if you select any) in the last step.
+## 如何获取Weaviate Docker-Compose文件？
+![Weaviate配置工具](./img/weaviate-configuration-tool.png)
+*Weaviate定制工具的示例，可以生成一个完整的docker-compose文件 - 以满足您的需求。*
 
-If you don't want to use the customizer you can also copy/paste one of [the example files from the documentation](/developers/weaviate/installation/docker-compose).
+获取 `docker-compose.yml` 文件的最简单方法是使用我们网站上的[Weaviate配置工具](/developers/weaviate/installation/docker-compose#configurator)。它会向您询问一些关于您计划如何使用Weaviate的问题，并在最后一步自定义一个Compose文件（包括所有模块容器，如果您选择了任何模块）。
 
-## How do I start up the docker-compose file I just obtained?
-Make sure that:
+如果您不想使用定制器，您也可以复制/粘贴[文档中的示例文件之一](/developers/weaviate/installation/docker-compose)。
 
-* You are in the same folder you downloaded the file to
-* The file you downloaded is named exactly docker-compose.yml
+## 如何启动刚刚获取的docker-compose文件？
+请确保：
 
-You can now start up with the whole setup by running:
+* 您在下载文件的同一个文件夹中
+* 您下载的文件名为docker-compose.yml
+
+现在，您可以通过运行以下命令来启动整个设置：
 
 ```bash
 docker-compose up -d
 ```
 
-The `-d` means "detach" and means that your terminal will not attach to the log outputs of all the containers. To attach to the logs of a specific containers you can run:
+`-d`选项表示“分离”，意味着您的终端不会连接到所有容器的日志输出。要连接到特定容器的日志，可以运行以下命令：
 
 ```bash
 docker-compose logs -f <container-name>
 ```
 
-for example:
+例如：
 
 ```bash
 docker-compose logs -f weaviate
 ```
 
-You can also omit the -d option and keep your terminal attached to all logs.
+您还可以省略-d选项，并保持终端与所有日志的连接。
 
-To see the names and status of each container you can run docker-compose ps.
+要查看每个容器的名称和状态，可以运行docker-compose ps命令。
 
-## How do I know when Weaviate is up and ready?
-Weaviate implements a readiness check at `GET /v1/.well-known/ready`. It will return a `2xx` HTTP status code once everything is ready.
+## 如何知道Weaviate已经启动并准备就绪？
+Weaviate在`GET /v1/.well-known/ready`实现了一个就绪性检查。一旦一切准备就绪，它将返回`2xx`的HTTP状态码。
 
-To check for the readiness programmatically you can use `curl` in this simple `bash` loop:
+要以编程方式检查是否就绪，可以使用`curl`在这个简单的`bash`循环中：
 
 ```bash
 until curl --fail -s localhost:8080/v1/.well-known/ready; do
@@ -98,23 +99,23 @@ until curl --fail -s localhost:8080/v1/.well-known/ready; do
 done
 ```
 
-Make sure to adjust localhost:8080 if you are running on a different bind address.
+请确保在不同的绑定地址上运行时，调整localhost:8080。
 
-## Can I run Weaviate without Docker / Containerization?
-We do not officially support running Weaviate in a non-containerized fashion, but it is certainly possible. To do so, you have to compile Weaviate for your desired target OS and architecture. Weaviate is written in Golang, so you need to have a working Go runtime. See the [official documentation for more details](https://golang.org/doc/install/source#environment).
+## 我可以在没有Docker /容器化的情况下运行Weaviate吗？
+我们并不官方支持以非容器化方式运行Weaviate，但这是完全可能的。要这样做，您需要为所需的目标操作系统和架构编译Weaviate。Weaviate是用Golang编写的，所以您需要有一个可用的Go运行时环境。有关更多详细信息，请参阅[官方文档](https://golang.org/doc/install/source#environment)。
 
-## Can Weaviate run on Kubernetes? Is Helm supported?
-Yes, see next step.
+## Weaviate可以在Kubernetes上运行吗？Helm是否支持？
+是的，请参考下一步。
 
-## When should or shouldn't I use Docker-Compose?
-Docker Compose is quick, easy and convenient, but there are situations which it isn't suited for. We recommend to use a docker-compose based setup for trying out or evaluating Weaviate and when developing with Weaviate locally.
+## 何时使用或不使用Docker-Compose？
+Docker Compose快速、简单、方便，但在某些情况下并不适用。我们建议在尝试或评估Weaviate以及在本地开发Weaviate时，使用基于docker-compose的设置。
 
-However, for a stable production environment, we [recommend to run Weaviate on Kubernetes](/developers/weaviate/installation/kubernetes). You can use Helm, there is an [officially supported Weaviate Helm Chart](https://github.com/weaviate/weaviate-helm).
+然而，对于稳定的生产环境，我们建议在Kubernetes上运行Weaviate。您可以使用Helm，有一个官方支持的Weaviate Helm Chart。
 
-## Where to go from here?
-Congratulations, you now have a lot of background on Docker and containerization in general! Now there's nothing in the way of [Getting Started with Weaviate](/developers/weaviate/quickstart) and begin building amazing apps with Weaviate.
+## 下一步怎么做？
+恭喜你，现在你对Docker和容器化有了很多背景知识！现在你可以开始[使用Weaviate快速入门](/developers/weaviate/quickstart)，并开始使用Weaviate构建令人惊叹的应用程序。
 
-You can reach out to us on [Slack](https://weaviate.io/slack) or [Twitter](https://twitter.com/weaviate_io), or [join the community forum](https://forum.weaviate.io).
+您可以在[Slack](https://weaviate.io/slack)或[Twitter](https://twitter.com/weaviate_io)上与我们联系，或者[加入社区论坛](https://forum.weaviate.io)。
 
 import Ending from '/_includes/blog-end-oss-comment.md'
 

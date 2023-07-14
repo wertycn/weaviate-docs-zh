@@ -1,32 +1,35 @@
 ---
-title: The ChatGPT Retrieval Plugin - Weaviate as a Long-term Memory Store for Generative AI
-slug: weaviate-retrieval-plugin
 authors: zain
 date: 2023-04-04
+description: Learn how you can connect Weaviate to ChatGPT to generate customized
+  responses.
 image: ./img/hero.png
-tags: ['integrations']
-description: "Learn how you can connect Weaviate to ChatGPT to generate customized responses."
-
+slug: weaviate-retrieval-plugin
+tags:
+- integrations
+title: The ChatGPT Retrieval Plugin - Weaviate as a Long-term Memory Store for Generative
+  AI
 ---
-![Weaviate Retrieval Plugin](./img/hero.png)
 
-<!-- truncate -->
+![Weaviate检索插件](./img/hero.png)
 
-## Overview of ChatGPT plugins
+<!-- 省略 -->
 
-Last week OpenAI announced plugins for ChatGPT and all of a sudden everyone’s favorite chatbot can now interact with the world of other apps we use in our everyday lives! The plugins announcement is a game-changer, arguably even more important than the 4.0 upgrade to the underlying GPT model itself.
+## ChatGPT插件概述
 
-So what are ChatGPT plugins? Some are explaining plugins as the “eyes and ears” of LLMs to help products like ChatGPT interact more naturally with users by knowing of and integrating with other apps such as Zapier, Uber Eats, Duolingo, and many more. I would argue that plugins are much more than just the “eyes and ears” of ChatGPT.  Hear me out.
+上周，OpenAI宣布了ChatGPT的插件功能，突然间，大家最喜爱的聊天机器人现在可以与我们日常生活中使用的其他应用程序进行互动了！这个插件功能的发布是一个改变游戏规则的举措，可以说甚至比底层GPT模型的4.0升级更重要。
 
-Until now ChatGPT was a tool that we could converse with and it would “imagine” creative stories, help us learn, summarize for us, write for us, and explain to us. The interface ChatGPT could use to interact with us was limited to a tab on our browser. But now, imbued with the power of plugins, ChatGPT can actually do much more than just “talk”, it can actually “do” things in the real world!
+那么ChatGPT插件是什么呢？有些人将插件解释为LLM（语言模型）的“眼睛和耳朵”，通过了解和与其他应用程序（如Zapier、Uber Eats、Duolingo等）集成，帮助ChatGPT与用户更自然地互动。我认为，插件远不止是ChatGPT的“眼睛和耳朵”。请听我说完。
 
-For example, if you have the Instacart plugin enabled, not only can you ask ChatGPT to generate recipes, but also order groceries to be delivered to your door to help put together your next meal! Or if you don't feel like cooking, it’ll book you a seat at a restaurant that serves similar food using OpenTable! People were astounded by ChatGPT’s ability to put together great vacations, but now through plugin integrations with Expedia, it can actually buy your tickets for you, book your hotels and even book you a ride to and from the airport! Though we can still only interact with ChatGPT through a tab on our browser, it can now interact with us through any one of the thousands of integrations, from Google Sheets to Salesforce, that the [Zapier plugin](https://zapier.com/blog/announcing-zapier-chatgpt-plugin/) connects to.
+直到现在，ChatGPT只是一个我们可以与之交谈的工具，它可以“想象”出有创意的故事，帮助我们学习，为我们概括，为我们写作，向我们解释。ChatGPT与我们互动的界面仅限于我们浏览器上的一个标签页。但现在，借助插件的力量，ChatGPT实际上可以做比“交谈”更多的事情，它可以在现实世界中实际“执行”任务！
 
-In short, plugins give ChatGPT the ability to leverage third-party resources to act upon the conversations that you have with it! Not only can ChatGPT call upon the wealth of Apps currently available to actually perform and impact things in the real world but also use the strengths of this App network to make up for some of its own shortcomings.
+例如，如果您启用了Instacart插件，ChatGPT不仅可以生成食谱，还可以订购杂货送货到您家，以帮助您准备下一餐！或者如果您不想做饭，它还可以通过OpenTable为您预订一家提供类似食物的餐厅！人们对ChatGPT组合出伟大的假期的能力感到惊讶，但现在通过与Expedia的插件集成，它实际上可以为您购买机票，预订酒店，甚至预订您往返机场的交通工具！尽管我们仍然只能通过浏览器的标签与ChatGPT进行交互，但它现在可以通过[Zapier插件](https://zapier.com/blog/announcing-zapier-chatgpt-plugin/)连接的数千个集成之一与我们进行交互，从Google Sheets到Salesforce。
 
-What we’re most excited about is **the Retrieval Plugin**, which allows you to use ChatGPT with a Vector Database like Weaviate to overcome one of the biggest challenges that ChatGPT has struggled with: its lack of long-term memory, as well as its inability to provide responses based on internal documents and data. 🧠🔌
+简而言之，插件使ChatGPT能够利用第三方资源来处理与您的对话！ChatGPT不仅可以调用当前可用的应用程序来执行和影响真实世界中的事物，还可以利用这个应用程序网络的优势弥补自身的一些不足之处。
 
-This has the potential to be the most widely used plugin as it will allow users to create customized versions of ChatGPT catered to their own data. Don’t just take it from me, take it [from Greg](https://twitter.com/gdb/status/1640006228930867200), the Co-founder of OpenAI and the fact that the plugin was trending on Github!
+我们最激动的是**检索插件**，它可以让您将ChatGPT与像Weaviate这样的向量数据库一起使用，以克服ChatGPT面临的最大挑战之一：长期记忆的不足，以及无法基于内部文件和数据提供响应的能力。 🧠🔌
+
+这有潜力成为最广泛使用的插件，因为它允许用户根据自己的数据创建定制版本的ChatGPT。不仅仅是我这么说，还可以从OpenAI的联合创始人[Greg](https://twitter.com/gdb/status/1640006228930867200)那里了解到，并且该插件在Github上很受关注！
 
 ![gdbtweet](./img/gdbtweet.png)
 
@@ -34,91 +37,90 @@ This has the potential to be the most widely used plugin as it will allow users 
 Plugins for ChatGPT, including the Weaviate Retrieval Plugin, are currently in Alpha and thus not available to the public.
 ::::
 
-## The ChatGPT Retrieval Plugin
+## ChatGPT检索插件
 
-![plugin](./img/plugin-light.png#gh-light-mode-only)
-![plugin](./img/plugin-dark.png#gh-dark-mode-only)
+![插件](./img/plugin-light.png#gh-light-mode-only)
+![插件](./img/plugin-dark.png#gh-dark-mode-only)
 
-The [ChatGPT retrieval plugin](https://github.com/openai/chatgpt-retrieval-plugin) allows you to connect ChatGPT to an instance of a [vector database](/developers/weaviate). Anything stored in a connected vector database can then be used to answer questions to prompts, thus allowing ChatGPT to “know” your custom data and answer questions based on the details stored in the vector database! Not only that but the vector database can also be used as a *long-term storage* of memory for ChatGPT to persist and store portions of your conversations from the short-lived memory of a tab to the long-term storage capabilities of a vector database. A vector database once connected via the retrieval plugin acts as the cortex of ChatGPT! 🧠
+[ChatGPT检索插件](https://github.com/openai/chatgpt-retrieval-plugin)允许您将ChatGPT连接到一个[向量数据库](/developers/weaviate)的实例。连接到向量数据库中存储的任何内容都可以用于回答问题，并且ChatGPT可以根据向量数据库中存储的详细信息来回答问题！不仅如此，向量数据库还可以作为ChatGPT的*长期存储*，用于将对话的部分从临时存储的内存中保存到向量数据库的长期存储能力中。一旦通过检索插件连接到向量数据库，向量数据库就像ChatGPT的大脑一样！🧠
 
-The retrieval plugin can be used to get ChatGPT to accomplish tasks grounded in the context of knowledge stored in a connected vector database such as Weaviate. This process consists of two steps: first, we prompt ChatGPT with a question that it uses to craft a query that can be sent to the vector database as demonstrated below.
+检索插件可以用于让ChatGPT完成基于连接向量数据库（如Weaviate）中存储的知识上下文的任务。该过程包括两个步骤：首先，我们使用问题提示ChatGPT，它将使用该问题来构建一个查询，可以将该查询发送到向量数据库，如下所示。
 
 ![diagram](./img/diagram-light.png#gh-light-mode-only)
 ![diagram](./img/diagram-dark.png#gh-dark-mode-only)
 
-This is what would happen if you used ChatGPT without the Weaviate Retrieval Plugin.
+如果在没有使用Weaviate检索插件的情况下使用ChatGPT，就会出现以下情况。
 
 ![pic1](./img/pic1.png)
 
-As expected, the model does not have any specific information with which to answer the question! Now let's say we enable the Weaviate Retrieval Plugin as shown below:
+正如预期的那样，模型没有任何特定的信息来回答问题！现在让我们启用Weaviate检索插件，如下所示：
 
 ![pic2](./img/pic2.png)
 
-The example below demonstrates the plugin in action. Notice how the prompt `What is my cat’s name?` is used to create the query `cat’s name`, which is then sent to the vector database to conduct a search over the stored documents.
+下面的示例演示了插件的使用。请注意，提示语`What is my cat's name?`被用来创建查询`cat's name`，然后将其发送到矢量数据库以在存储的文档中进行搜索。
 
 ![pic3](./img/pic3.png)
 
-The connected vector database then responds with relevant information and context by searching and filtering a subset of your data. This is shown below:
+连接的矢量数据库会通过搜索和筛选数据子集来提供相关信息和上下文。如下所示:
 
 ![pic4](./img/pic4.png)
 
-The second step involves this information being passed to ChatGPT so that it can formulate its answer to accomplish the task specified in the prompt. This step is shown below:
+第二步涉及将这些信息传递给ChatGPT，以便它可以根据提示中指定的任务来制定答案。以下是该步骤的示例：
 
 ![pic5](./img/pic5.png)
 
-In short, you can update the knowledge that ChatGPT knows about without having to go through the costly and time-consuming process of retraining the weights. The main functionality this plugin enables is:
+简而言之，您可以更新ChatGPT所了解的知识，而无需经过昂贵且耗时的权重重新训练过程。此插件的主要功能包括：
 
-- It allows you to attach a vector database, to ChatGPT, that has proprietary data that can be used by ChatGPT when answering very specific questions
-- It allows you to persist personal documents and details to give ChatGPT a personal touch so that answers are not just general but can be catered to you (based on details specified in the vector database)
-- You can persist conversations with ChatGPT in the attached vector database to carry on conversations between turning on and shutting off ChatGPT tabs
+- 它允许您将一个向量数据库附加到ChatGPT上，该数据库具有专有数据，当回答非常特定的问题时，ChatGPT可以使用这些数据。
+- 它允许您持久化个人文档和详细信息，以使ChatGPT具有个人化的特点，使得回答不仅仅是通用的，还可以根据您的需求进行定制（基于向量数据库中指定的详细信息）。
+- 您可以将ChatGPT中的对话持久化到附加的向量数据库中，在打开和关闭ChatGPT标签之间继续对话
 
-The advantage is that we can now schedule small and regular updates to content stored in connected vector databases to give the model awareness of new information and reducing the need to retrain the LLM model and update frequently - this ensures the LLM provides robust and up-to-date custom answers even in-between time-consuming retrained weight updates.
+优势在于我们现在可以安排对连接的向量数据库中存储的内容进行小规模和定期的更新，以使模型了解新信息，并减少重新训练LLM模型和频繁更新的需求 - 这确保了LLM即使在耗时的重新训练权重更新之间，也能提供稳健和最新的定制答案。
 
-We’ll now provide some more examples of how you can leverage the ChatGPT retrieval plugin with Weaviate - an open-source vector database. So without further ado, let's get into it!
+现在我们将提供一些关于如何在Weaviate - 一个开源向量数据库中利用ChatGPT检索插件的更多示例。所以，话不多说，让我们开始吧！
 
-## The Weaviate Retrieval Plugin in Action
+## Weaviate检索插件的示例
 
-### Using ChatGPT on Proprietary Company Documents
+### 在公司专有文件上使用ChatGPT
 
-In order to benefit from the capabilities of LLMs like ChatGPT's GPT4.0 in real-life use cases, it would be ideal if we could apply its generative power to new or custom data. For example, this would enable a private customized version of ChatGPT that's been trained on your company's internal documents and could act as a human resources chatbot. Wondering what the onboarding process for new employees looks like or how you can sign up for health benefits? You can simply ask your customized ChatGPT! The applications of a customized ChatGPT are limitless and quite exciting!
+为了在实际应用中充分利用ChatGPT的GPT4.0等LLM的能力，如果我们能够将其生成能力应用于新的或自定义的数据，那将是理想的。例如，这将使得可以创建一个私有定制的ChatGPT版本，该版本经过训练，可以用于公司的内部文件，并可以作为人力资源聊天机器人。想知道新员工的入职流程如何，或者如何申请健康福利？您只需向定制的ChatGPT提问即可！定制的ChatGPT的应用是无限的，而且非常令人兴奋！
 
-Below I show you what this HR chatbot could look like!
+以下是一个 HR 聊天机器人的示例！
 
 ![pic6](./img/pic6.png)
 ![pic7](./img/pic7.png)
 
 TaDaaaa!🎉
 
-This is just one example where I packaged a company policy and benefits documents and stored them in Weaviate and then used ChatGPT to conduct generative search over these documents. The possibilities are endless!
+这只是一个示例，我将公司政策和福利文件打包存储在 Weaviate 中，然后使用 ChatGPT 在这些文件上进行生成式搜索。可能性是无限的！
 
-### Personalizing ChatGPT
+### 个性化 ChatGPT
 
-Another great application that the Weaviate Retrieval Plugin enables is customization of ChatGPT around your personal details.
+Weaviate 检索插件的另一个强大应用是根据您的个人细节定制 ChatGPT。
 
-Below I add details about my friends into Weaviate and get it to plan the menu for my upcoming party!
+下面我将详细介绍如何将我的朋友信息添加到Weaviate，并让它为我即将举办的派对计划菜单！
 
 ![pic8](./img/pic8.png)
 ![pic9](./img/pic9.png)
 
-Another way you could personalize ChatGPT to yourself is by giving it an understanding of who you are. For example, below I tell ChatGPT the languages I understand and customize its responses around its knowledge of me.
+另一种个性化ChatGPT的方法是让它了解你是谁。例如，下面我告诉ChatGPT我懂的语言，并根据它对我的了解来自定义它的回答。
 
 ![pic10](./img/pic10.png)
 ![pic11](./img/pic11.png)
 
-### Helping ChatGPT Remember
+### 帮助ChatGPT记住
 
-For the last example I'll share what I think is one of the most exciting and scary applications of the Weaviate Retrieval Plugin: **to use it to persist the memory of previous conversations you have with ChatGPT into Weaviate**, so that it can refer to them in a later conversation. Currently it is not possible to tell ChatGPT to persist something in the attached vector database through the chat UI, so I have replicated this by manually adding the chat content to Weaviate in between conversations.
+对于最后一个示例，我将分享我认为是Weaviate检索插件最令人兴奋和吓人的应用之一：**使用它将ChatGPT中的先前对话持久化到Weaviate中的内存中**，以便在以后的对话中可以参考它们。目前无法通过聊天界面告诉ChatGPT将某些内容持久化到附加的向量数据库中，因此我通过在对话之间手动将聊天内容添加到Weaviate中来复制此功能。
 
-First I launched a chat session and gave ChatGPT these details about my pets:
+首先，我启动了一个聊天会话，并向ChatGPT提供了关于我的宠物的详细信息：
 
 ![pic12](./img/pic12.png)
 
-Then I completely close ChatGPT, insert the contents of the chat into Weaviate and then intialize a completely new chat and ask:
+然后，我完全关闭了ChatGPT，将聊天内容插入到Weaviate中，然后初始化一个全新的聊天并提问：
 
 ![pic13](./img/pic13.png)
 
-Voilà! ChatGPT now remembers its previous conversations with you - persisting them in the attached instance of Weaviate!
-
+Voilà！ChatGPT现在记住了与您的先前对话 - 将它们持久化在附加的Weaviate实例中！
 
 import StayConnected from '/_includes/stay-connected.mdx'
 

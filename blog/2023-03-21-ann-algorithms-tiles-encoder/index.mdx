@@ -1,118 +1,121 @@
 ---
-title: The Tile Encoder - Exploring ANN algorithms Part 2.2
-slug: ann-algorithms-tiles-enocoder
-authors: [abdel]
+authors:
+- abdel
 date: 2023-03-21
-tags: ['research']
+description: Using the Weaviate Tile Encoder to compress vectors with Product Quantization.
 image: ./img/hero.png
-description: "Using the Weaviate Tile Encoder to compress vectors with Product Quantization."
+slug: ann-algorithms-tiles-enocoder
+tags:
+- research
+title: The Tile Encoder - Exploring ANN algorithms Part 2.2
 ---
-![The Tiles Encoder - Exploring ANN algorithms Part 2.2](./img/hero.png)
+
+![The Tiles Encoder - 探索ANN算法 第2.2部分](./img/hero.png)
 
 <!-- truncate -->
 
-In our [previous](/blog/ann-algorithms-hnsw-pq) post, we explained how to compress vectors in memory. This was an important first step since we could still have a coarse representation of the vectors to guide our search through queries with a very low memory footprint. We introduced HNSW+PQ and explained the most popular encoding technique: KMeans, which can be used to find a compressed representation of vectors. While KMeans gives very good results, there are a couple of drawbacks. Firstly, it is expensive to fit to data. Secondly, when compressing vectors, it needs to calculate distances to all centroids for each segment. This results in long encoding and indexing times.
+在我们之前的帖子中，我们解释了如何在内存中压缩向量。这是一个重要的第一步，因为我们仍然可以通过一个非常低的内存占用来引导我们对查询进行搜索的粗略表示。我们介绍了HNSW+PQ，并解释了最流行的编码技术：KMeans，它可以用于找到向量的压缩表示。虽然KMeans可以得到非常好的结果，但也有一些缺点。首先，拟合数据的成本很高。其次，在压缩向量时，它需要计算每个片段到所有质心的距离。这导致了较长的编码和索引时间。
 
-In this blog post, we present an alternative to KMeans, the Tile encoder, which is a distribution-based encoder. The Tile encoder works very similarly to KMeans but it doesn’t need to be fit to the data since it leverages the fact that we know the underlying distribution of the data beforehand.
+在这篇博客文章中，我们介绍了一种替代KMeans的方法，即Tile编码器，它是一种基于分布的编码器。Tile编码器的工作原理与KMeans非常相似，但它不需要根据数据进行拟合，因为它利用了我们事先知道数据的底层分布的事实。
 
-## Tile Encoder
+## Tile编码器
 ![tiles](./img/Ann.png)
 
-KMeans produces a tiling over the full range of values using the centroids. Each centroid has a tile associated with it. When a new vector has to be encoded, the algorithm checks which tile it belongs to, and the vector code is set using the index of the closest found tile. When fitting KMeans to our data the generation of the tiles is not homogeneous. As a result, we expect more tiles where there is a higher density of data. This way the data will be balanced over the centroids.
+KMeans使用质心在整个值范围上生成平铺。每个质心都与一个平铺相关联。当需要对新向量进行编码时，算法会检查它属于哪个平铺，并使用最接近的平铺的索引来设置向量编码。当将KMeans拟合到我们的数据时，平铺的生成是不均匀的。因此，我们预计在数据密度较高的地方会有更多的平铺。这样，数据将在质心上平衡分布。
 
-Let’s take a moment to explore how the centroids that KMeans fits to our data are distributed. If we use one segment per dimension on Sift1M the centroids are distributed as shown in Figure 1.
+让我们花点时间来探索KMeans拟合到我们数据中的质心是如何分布的。如果我们在Sift1M上每个维度使用一个段，质心的分布如图1所示。
 
 ![image1](./img/image1.png)
 
-**Fig. 1**: *Centroids distributions for the first dimension on Sift1M. Notice how the centroids are distributed with a LogNormal distribution centered at zero.*
+**图1**: *在Sift1M上第一维度的质心分布。请注意质心的分布呈以零为中心的对数正态分布。*
 
-The centroids clearly follow a LogNormal distribution. This is a consequence of the dimension values following the same distribution. All dimensions in Sift1M and Gist1M are distributed with a LogNormal distribution. All dimensions in DeepImage96 follow a Normal distribution instead. The distribution of the data will be conditioned by the vectorizing method used to produce the vectors.
+聚类中心明显遵循对数正态分布。这是维度值遵循相同分布的结果。Sift1M和Gist1M中的所有维度都分布为对数正态分布。而DeepImage96中的所有维度则遵循正态分布。数据的分布将受到用于生成向量的矢量化方法的影响。
 
-If we know the distribution of the data in advance, we might be able to produce the centroids without fitting the data with KMeans. All we need to do is to produce a tiling over the full range of values following the distribution of the data.
+如果我们提前知道数据的分布，我们可能可以在不使用KMeans拟合数据的情况下生成聚类中心。我们只需要根据数据的分布在整个值范围上生成一个网格即可。
 
-Let’s say we want to produce a byte code for each dimension. This would be similar to using KMeans with a dimension per segment. Instead of using KMeans, we could generate the codes using the [Cumulative Density Function](https://en.wikipedia.org/wiki/Cumulative_distribution_function) (CDF) of the distribution of the data. The CDF produces values from zero to one. We want 256 codes but in general we might want to use any amount of codes (so we could use more, or less bits to encode). The code then could be calculated as $code(x)=CDF(x)*c$ where $c$ is the amount of codes to use.
+假设我们想为每个维度生成一个字节码。这类似于使用KMeans，每个维度对应一个段落。但我们不使用KMeans，而是使用数据分布的[累积密度函数](https://en.wikipedia.org/wiki/Cumulative_distribution_function)（CDF）来生成代码。CDF会生成从零到一的值。我们希望有256个代码，但通常我们可能希望使用任意数量的代码（因此可以使用更多或更少的位来进行编码）。代码可以计算为$code(x)=CDF(x)*c$，其中$c$是要使用的代码数量。
 
-On the other hand, when we need to decompress the data, we need to generate the centroids from the codes. For this we need to use the inverse of the CDF function, meaning that we need the [Quantile](https://en.wikipedia.org/wiki/Quantile) function.
-The real advantage of this approach is that we no longer need to spend a long time to fit our data. We could calculate the mean and standard deviation (only parameters of the distribution) incrementally as the data is added and that is it.
+另一方面，当我们需要对数据进行解压缩时，我们需要从编码中生成质心。为此，我们需要使用CDF函数的反函数，也就是需要使用[分位数函数](https://en.wikipedia.org/wiki/Quantile)。
+这种方法的真正优势在于，我们不再需要花费很长时间来拟合数据。我们可以在数据添加时逐步计算均值和标准差（作为分布的参数），然后就完成了。
 
-This also opens a good opportunity for easily updating the Product Quantization data over time since the whole process is very cheap in terms of time. This case would be interesting if for example we would have drifting data. If we compress the data and the data starts drifting due to some new trends, then the distribution of the data changes and the compression data (KMeans centroids and codes generated from them) will become outdated. With the Tile encoder we could monitor this situation and update data very quickly.
+这也为随着时间推移轻松更新产品量化数据提供了良好的机会，因为整个过程在时间上非常廉价。如果我们的数据开始漂移，那么这种情况将非常有趣。如果我们压缩数据，然后由于一些新的趋势，数据开始漂移，那么数据的分布将会发生变化，压缩数据（从KMeans质心生成的编码）将会过时。使用Tile编码器，我们可以监控这种情况并快速更新数据。
 
 
-## Centroid Distributions
+## 质心分布
 
-To get a better understanding of the distribution of the centroids, let us create some illustrations with the generated centroids.
+为了更好地理解质心的分布情况，让我们创建一些使用生成的质心的插图。
 
 ![image2](./img/image2.png)
 ![image3](./img/image3.png)
 
-**Fig. 2**: *Centroids generated by the KMeans and Tile encoders. Both charts show the cartesian product of the first two segments. Both encoders were fitted using 32 centroids. Above we show the centroids from KMeans. Below we show the centroids from Tile.*
+**图2**：*由KMeans和Tile编码器生成的质心。两个图表都显示了前两个片段的笛卡尔积。两个编码器都使用了32个质心进行拟合。上面显示的是来自KMeans的质心，下面显示的是来自Tile的质心。*
 
-As we can observe. Both approaches generate similar results. The centroids are very dense at the origin of both axes and much more sparse as the values grow. It is worth mentioning that a multivariate approach would fit the data better than the cartesian product of individually built segments. To depict this, we show Figure 3.
+正如我们可以观察到的那样，这两种方法生成的结果相似。质心在两个轴的原点处非常密集，随着数值的增长，质心变得更加稀疏。值得一提的是，多变量方法比单独构建段落的笛卡尔积更适合拟合数据。为了说明这一点，我们展示了图3。
 
 ![image4](./img/image4.png)
 ![image5](./img/image5.png)
 
-**Fig. 3**: *Centroids generated by KMeans on the first segment including the first two dimensions. The encoder was fitted using 32 (above) and 256 (below) centroids. Centroids fit better the distribution of the data as opposed to using independent segments for each dimension when using enough centroids.*
+**图3**：*KMeans在包括前两个维度的第一个片段上生成的质心。编码器使用32个（上方）和256个（下方）质心进行拟合。使用足够数量的质心时，质心更好地适应数据的分布，而不是为每个维度使用独立的片段。*
 
-We are yet to extend the tile encoder to the multivariate case. Although this is not extremely difficult it still needs some work and will be included in the near future. We have decided to publish this initial implementation so it can be tested with more data.
+我们尚未将平铺编码器扩展到多变量情况。虽然这并不是非常困难，但仍需要一些工作，并将在不久的将来包含在内。我们决定发布这个初始实现，以便可以用更多的数据进行测试。
 
-Notice that this encoder depends on the fact that the distribution of the data is known a priori. This means that you need to provide this information beforehand. Currently we support normal and lognormal distributions which are very common. If your data follows a different distribution, extending the code is very simple so do not hesitate to contact us.
+请注意，这个编码器依赖于数据分布事先已知的事实。这意味着您需要提前提供这些信息。目前我们支持正态分布和对数正态分布，它们非常常见。如果您的数据遵循不同的分布，扩展代码非常简单，所以请随时与我们联系。
 
-## Results of the KMeans Vs Tile encoding
+## KMeans与Tile编码的结果
 
-In this section we present some results on the comparison of Product Quantization using KMeans vs the Tile encoder.
+在本节中，我们将介绍使用KMeans与Tile编码器进行产品量化的比较结果。
 
-Table 1 shows a comparison of Product Quantization using KMeans and the Tile encoders. We compare the time to calculate distance, the time to fit and encode the data and the recall. We only compare it to KMeans with one dimension per segment since the tile encoder would only support this setting for now. Also, fitting and encoding times were run on 10 cores concurrently, while distance calculations are based on single core metrics.
+表格1显示了使用KMeans和Tile编码器进行产品量化的比较。我们比较了计算距离的时间、拟合和编码数据的时间以及召回率。由于目前Tile编码器只支持每个段落一维的设置，因此我们只与KMeans的这个设置进行比较。此外，拟合和编码时间是在10个核心同时运行的，而距离计算是基于单核度量的。
 
-|        | Database    | Data size | Fit    | Encode | Time to calculate distance ($ms$) | Recall |
-|--------|-------------|-----------|--------|--------|----------------------------------------|--------|
-| KMeans | Sift        | 1 M       | 3m15s  | 1m30s  | 701                                    | 0.9973 |
-|        | Gist        | 1 M       | 22m52s | 10m10s | 5426                                   | 0.95   |
+|        | 数据库      | 数据大小 | 适应性   | 编码     | 计算距离时间（$ms$）                     | 召回率   |
+|--------|-------------|-----------|---------|---------|----------------------------------------|---------|
+| KMeans | Sift        | 1 M       | 3m15s   | 1m30s   | 701                                    | 0.9973  |
+|        | Gist        | 1 M       | 22m52s  | 10m10s  | 5426                                   | 0.95    |
 |        | DeepImage96 | 1 M       | 2m14s  | 10m17s | 5276                                   | 0.9725 |
 | Tile   | Sift        | 1 M       | 294ms  | 2s     | 737                                    | 0.9702 |
 |        | Gist        | 1 M       | 4s     | 16s    | 5574                                   | 0.962  |
 |        | DeepImage96 | 9.99 M    | 122ms  | 8s     | 5143                                   | 0.9676 |
 
-**Table 1**: *Results of Product Quantization using KMeans and Tile encoders.*
+**表格 1**：*使用KMeans和Tile编码器进行产品量化的结果。*
 
-The recall results above are positive. We have lower recall in Sift and DeepImage datasets with the Tile compared to the KMeans encoder. On Gist we actually have better recall results with the Tile compared to the KMeans encoder. The cause for this difference has not yet been identified at the moment of writing this post. One significant difference is the vector size. It could be that independent errors for off distribution points on single dimensions are less significant on larger vectors since they will be absorbed by the rest of the dimensions. This is just an assumption though.
+上述的召回结果是积极的。与KMeans编码器相比，在Sift和DeepImage数据集中，我们使用Tile的召回率较低。在Gist数据集中，与KMeans编码器相比，我们实际上有更好的召回结果。目前撰写本文时，尚未确定造成这种差异的原因。一个显著的差异是向量大小。可能是因为在较大的向量上，单个维度上的离散点的独立误差不那么显著，因为它们会被其他维度吸收。这只是一种假设。
 
-The results in terms of performance are very positive. First notice that fitting and encoding run in ten cores concurrently. This means that if you would run it single threaded, fitting 200,000 vectors and encoding the whole data on Gist with KMeans would have taken nearly 5 hours. In contrast, with the Tile encoder it would be nearly three minutes.
+在性能方面，结果非常积极。首先要注意的是，拟合和编码同时在十个核心上运行。这意味着如果你单线程运行，对于在Gist上拟合200,000个向量并对整个数据进行编码，需要花费将近5个小时。相比之下，使用Tile编码器只需要将近三分钟。
 
-Additionally, notice that when Product Quantization is used with HNSW, we will need to compress at some point. This will mean fitting the existing data and encoding existing vectors. It will also need to compress the rest of the incoming vectors as they come. When using KMeans, we will need to wait for a period of time when our data is being compressed. During this time, the server will not be able to serve queries, since data is not ready for use. With the Tile encoder, the compress action will return a ready state almost immediately.
+此外，请注意当使用产品量化与HNSW时，我们需要在某个时刻进行压缩。这意味着需要适应现有数据并对现有向量进行编码。同时，还需要在新向量到来时对其余的向量进行压缩。当使用KMeans时，我们需要等待一段时间进行数据压缩。在此期间，服务器将无法提供查询服务，因为数据还没有准备好使用。而使用Tile编码器，则压缩操作几乎立即返回可用状态。
 
-Furthermore, we need some data to trigger the compress action since we need the encoder to learn the distribution of data. Compressing too soon could affect the precision of the encoding. Also, notice that the indexing process rests upon the search procedure. Querying time could be reduced or increased depending on the segmentation of your data. If you are aiming to preserve recall, then you will most likely not use a coarse segmentation, meaning the querying time will be increased rather than shortened. Longer querying times lead to longer indexing times. The sooner we compress, the longer the indexing time will be in this situation, since more data will be indexed under compressed settings. The later we compress, the longer it will take for the KMeans to fit since it will have more data to fit on. On the other hand, fitting with Tile will be almost immediate so the later we compress the faster the indexing. In fact, if you have enough memory to index your data uncompressed, but you only need to compress the data after it is indexed (because of some operational restrictions) then we suggest you index as normal, and then you compress your data using Tile encoder since then the indexing time will remain unchanged compared to regular HNSW. If you use KMeans though, there is no way to keep indexing time as short as regular HNSW.
+此外，我们需要一些数据来触发压缩操作，因为我们需要编码器学习数据的分布情况。过早地进行压缩可能会影响编码的精度。此外，请注意索引过程依赖于搜索过程。查询时间的长短取决于数据的分割情况，可能会缩短或延长。如果您希望保持召回率，则很可能不会使用粗略的分割，这意味着查询时间会增加而不是缩短。较长的查询时间会导致较长的索引时间。在这种情况下，我们越早进行压缩，索引时间就会越长，因为更多的数据将在压缩设置下进行索引。越晚进行压缩，KMeans拟合的时间也会更长，因为它需要拟合更多的数据。另一方面，使用Tile进行拟合几乎是立即完成的，因此越晚进行压缩，索引速度就会更快。实际上，如果您有足够的内存来对未压缩的数据进行索引，但只需要在索引完成后压缩数据（由于某些操作限制），那么我们建议您按照正常流程进行索引，然后使用Tile编码器压缩数据，这样索引时间与常规HNSW相比将保持不变。但是，如果使用KMeans，则无法将索引时间保持与常规HNSW一样短。
 
-## Performance Results
+## 性能结果
 
-In the following figures we show the performance of HNSW+PQ on the three databases scoped on this post. All experiments were performed adding 200,000 vectors using uncompressed behavior, then compressing and adding the rest of the data. As mentioned before, if you add all your data and then compress with the Tile encoder, you would obtain the same indexing time as you would have when using regular HNSW. If you do so, then at the end you will need less memory for querying your server but at the moment of indexing you would actually need more memory since at some point you would have all vectors uncompressed and compressed but you will free the uncompressed vectors right after indexing.
+在下图中，我们展示了HNSW+PQ在本文所涉及的三个数据库上的性能。所有实验都是先使用未压缩的方式添加了20万个向量，然后进行压缩并添加其余的数据。正如之前提到的，如果您先添加所有数据，然后再使用Tile编码器进行压缩，您将得到与使用常规HNSW相同的索引时间。这样做的话，最终您在查询服务器时将需要更少的内存，但在索引时实际上需要更多的内存，因为在某个时刻您会同时拥有所有未压缩和压缩的向量，但在索引完成后会立即释放未压缩的向量。
 
 ![image6](./img/image6.png)
-**Fig. 4**: *The chart shows Recall (vertical axis) Vs Latency (in microseconds, on the horizontal axis). For this experiment we have added 200,000 vectors using the normal HNSW algorithm, then we switched to compressed and added the remaining 800,000 vectors. *
+**图4**：*图表显示了召回率（纵轴）与延迟（微秒为单位，横轴）之间的关系。对于这个实验，我们使用了普通的HNSW算法添加了20万个向量，然后切换到压缩算法，并添加了剩下的80万个向量。*
 
 ![image7](./img/image7.png)
-**Fig. 5**: *The chart shows Recall (vertical axis) Vs Indexing time (in minutes, on the horizontal axis). For this experiment we have added 200,000 vectors using the normal HNSW algorithm, then we switched to compressed and added the remaining 800,000 vectors.*
+**图 5**：*图表显示了召回率（垂直轴）与索引时间（以分钟为单位，水平轴）的关系。在这个实验中，我们使用普通的HNSW算法添加了20万个向量，然后切换到压缩模式并添加了剩余的80万个向量。*
 
 ![image8](./img/image8.png)
-**Fig. 6**: *The chart shows Recall (vertical axis) Vs Latency (in microseconds, on the horizontal axis). For this experiment we have added 1,000,000 vectors using the normal HNSW algorithm, then we switched to compressed and added the remaining 8,990,000 vectors.*
+**图6**：*该图显示了召回率（纵轴）与延迟（微秒为单位，横轴）之间的关系。在这个实验中，我们使用了普通的HNSW算法添加了1,000,000个向量，然后切换到压缩算法，并添加了剩余的8,990,000个向量。*
 
 ![image9](./img/image9.png)
-**Fig. 7**: *The chart shows Recall (vertical axis) Vs Indexing time (in minutes, on the horizontal axis). For this experiment we have added 1,000,000 vectors using the normal HNSW algorithm, then we switched to compressed and added the remaining 8,990,000 vectors.*
+**图7**：*该图显示了召回率（纵轴）与索引时间（以分钟为单位，横轴）之间的关系。对于这个实验，我们使用了普通的HNSW算法添加了100万个向量，然后切换到压缩模式，并添加了剩下的8,990,000个向量。*
 
 ![image10](./img/image10.png)
-**Fig. 8**: *The chart shows Recall (vertical axis) Vs Latency (in microseconds, on the horizontal axis). For this experiment we have added 200,000 vectors using the normal HNSW algorithm, then we switched to compressed and added the remaining 800,000 vectors.*
+**图8**：*图表显示了召回率（纵轴）与延迟（以微秒为单位，横轴）之间的关系。对于这个实验，我们首先使用普通的HNSW算法添加了20万个向量，然后切换到压缩算法并添加了其余的80万个向量。*
 
 ![image11](./img/image11.png)
-**Fig. 9**: *The chart shows Recall (vertical axis) Vs Indexing time (in minutes, on the horizontal axis). For this experiment we have added 200,000 vectors using the normal HNSW algorithm, then we switched to compressed and added the remaining 800,000 vectors.*
+**图9**：*图表显示了召回率（垂直轴）与索引时间（水平轴，以分钟为单位）的关系。在这个实验中，我们使用了普通的HNSW算法添加了20万个向量，然后切换到压缩算法并添加了剩余的80万个向量。*
 
-## Conclusions
+## 结论
 
-In this post we introduced the Tile encoder, an alternative to the KMeans encoder that we mentioned in our last post. Some of the key take away points are that:
-- The recall results are very similar when using KMeans vs Tile encoder.
-- You need to provide the distribution of your data when using the Tile encoder.
-- Fitting with Tile is immediate while it takes much longer with KMeans.
-- No downtime when compressing with the Tile encoder, while your server will not be available for querying while compressing with the KMeans encoder.
-- You could have the same indexing time when using the Tile encoder if you have enough memory when indexing your data.
+在本文中，我们介绍了Tile编码器，这是我们在上一篇文章中提到的KMeans编码器的一个替代方案。以下是一些关键要点：
+- 使用KMeans和Tile编码器时，召回结果非常相似。
+- 使用Tile编码器时，需要提供数据的分布情况。
+- 使用Tile进行拟合是立即完成的，而使用KMeans则需要更长时间。
+- 使用Tile编码器进行压缩时，不会出现停机时间，而使用KMeans编码器进行压缩时，服务器将无法进行查询。
+- 如果在索引数据时有足够的内存，使用Tile编码器时可以获得相同的索引时间。
 
 import WhatNext from '/_includes/what-next.mdx'
 

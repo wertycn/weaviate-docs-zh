@@ -1,59 +1,66 @@
 ---
-title: Weaviate 1.14 release
-slug: weaviate-1-14-release
-authors: [connor, etienne, laura, sebastian]
+authors:
+- connor
+- etienne
+- laura
+- sebastian
 date: 2022-07-06
-tags: ['release']
+description: Learn what is new in Weaviate 1.14, the most reliable and observable
+  Weaviate release yet!
 image: ./img/hero.png
-description: "Learn what is new in Weaviate 1.14, the most reliable and observable Weaviate release yet!"
+slug: weaviate-1-14-release
+tags:
+- release
+title: Weaviate 1.14 release
 ---
-![Weaviate 1.14 release](./img/hero.png)
 
-<!-- truncate -->
+![Weaviate 1.14发布](./img/hero.png)
 
-## What is new
-We are excited to announce the release of Weaviate 1.14, the most reliable and observable Weaviate release yet.
+<!-- 省略 -->
 
-> Later this week, we will release Weaviate v1.14, possibly the most boring release so far.😱 Yet I'm incredibly excited about it and so should you. Why? <br/>
+## 新特性
+我们很高兴地宣布Weaviate 1.14的发布，这是目前最可靠和可观察的Weaviate版本。
+
+> 本周晚些时候，我们将发布Weaviate v1.14，可能是目前为止最无聊的版本。😱 但我对此感到非常兴奋，你也应该一样。为什么呢？ <br/>
 > (1/9)<i className="fas fa-reel"></i><br/>
-> [See <i className="fab fa-twitter"></i> by @etiennedi](https://twitter.com/etiennedi/status/1544689150217027584?ref_src=twsrc%5Etfw)
+> [查看 <i className="fab fa-twitter"></i> by @etiennedi](https://twitter.com/etiennedi/status/1544689150217027584?ref_src=twsrc%5Etfw)
 
-Besides many bug fixes and reliability improvements, we have a few neat features that you might find interesting. In short, this release covers:
+除了许多错误修复和可靠性改进之外，我们还有一些有趣的功能，您可能会感兴趣。简而言之，此版本包括以下内容：
 
-* Reliability fixes and improvements
-* Monitoring and Observability
-* Support for non-cosine distances
-* API changes
+* 可靠性修复和改进
+* 监控和可观测性
+* 支持非余弦距离
+* API更改
 
-## Reliability fixes and improvements
-![Reliability and fixes](./img/reliability.png)
+## 可靠性修复和改进
+![可靠性和修复](./img/reliability.png)
 
-At Weaviate, Reliability is one of our core values, which means that we will always strive to make our software dependable, bug-free, and behave as expected.
+在Weaviate中，可靠性是我们的核心价值之一，这意味着我们将始终努力使我们的软件可靠、无错误，并按预期运行。
 
-And yes, bug fixing is not always the most exciting topic, as we often get more excited about shiny new features. But for you to truly enjoy working with Weaviate, we need to make sure that no bugs are getting in the way.
+是的，修复错误并不总是最令人兴奋的话题，因为我们通常更加兴奋于全新的闪亮功能。但为了让您真正享受使用Weaviate，我们需要确保没有任何错误阻碍您的工作。
 
-Check out [the changelog](https://github.com/weaviate/weaviate/releases/tag/v1.14.0) to see the complete list of features and over 25 bug fixes.
+请查看[更新日志](https://github.com/weaviate/weaviate/releases/tag/v1.14.0)以查看完整的功能列表和超过25个错误修复。
 
-### Critical bug fix in compaction logic
-In this release we fixed a critical bug, which in rare situations could result in data loss.<br/>
-The bug affected environments with frequent updates and deletes.
+### 压缩逻辑中的关键错误修复
+在此版本中，我们修复了一个关键错误，该错误在特定情况下可能导致数据丢失。<br/>
+该错误影响频繁更新和删除的环境。
 
-> This bug fix alone, makes it worth upgrading to Weaviate 1.14.
+> 单凭这个错误修复，就值得升级到Weaviate 1.14。
 
-#### Background
-We found a critical error in the compactioniong logic that could lead to the compaction operation either corrupting or completely losing data elements.
+#### 背景信息
+我们在压缩逻辑中发现了一个严重的错误，可能导致压缩操作损坏或完全丢失数据元素。
 
-This could be obsereved through a variety of symptoms:
-  * Retrieving an object by it's ID would lead to a different result than retrieving the object using a filter on the id property
-  * Filters that should match a specific number of objects matched fewer objects than expected
-  * Objects missing completely
-  * Filters with `limit=1` would not return any results when there should be exactly one element, but increasing the limit would then include the object
-  * Filters would return results with `null` ids
+这可能会通过多种症状观察到：
+   * 通过ID检索对象与使用id属性过滤器检索对象会得到不同的结果
+   * 应该匹配特定数量对象的过滤器匹配到的对象比预期少
+   * 对象完全丢失
+  * 当使用 `limit=1` 的筛选条件时，如果应该只返回一个元素，但实际上没有返回任何结果，可以尝试增加限制条件来包含该对象
+  * 当使用筛选条件时，可能会返回 `null` 的 id
 
-#### Example
-In the first case, if you had an object with id: **my-id-123456**.
+#### 示例
+在第一种情况下，如果您有一个具有id：**my-id-123456** 的对象。
 
-Calling the following GraphQL API with a filter on id would return the expected object.
+使用筛选条件对id进行过滤的GraphQL API调用将返回预期的对象。
 
 ```graphql
 {
@@ -69,189 +76,187 @@ Calling the following GraphQL API with a filter on id would return the expected 
 }
 ```
 
-However, calling the following REST API with the same id wouldn't get the object back.
+然而，使用相同的id调用以下REST API将无法获取到对象。
 ```
 GET /v1/objects/{my-id-123456}
 ```
 
-#### The problem
-So, if your data manipulation logic depended on the above operations to perform as expected, you update and delete operations might have been issued incorrectly.
+#### 问题
+如果您的数据操作逻辑依赖于上述操作的正常执行，那么您的更新和删除操作可能会被错误地执行。
 
-### Improved performance for large scale data imports
-Weaviate `1.14` significantly improves the performance of data imports for large datasets.
+### 大规模数据导入的性能改进
+Weaviate `1.14` 显著提升了大规模数据集的导入性能。
 
-Note that the performance improvements should be noticeable for imports of over 10 million objects. Furthermore, this update enables you to import over 200 million objects into the database.
+请注意，性能改进在导入超过1000万个对象时应该是明显的。此外，此更新使您能够将超过2亿个对象导入到数据库中。
 
-#### Problem
-Before, the HNSW index would grow in constant intervals of 25,000 objects. This was fine for datasets under 25 million objects. But once the database got to around 25 million objects, adding new objects would be significantly slower. Then from 50–100m, the import process would slow down to a walking pace.
+#### 问题
+在此之前，HNSW索引以每次增加25,000个对象的恒定间隔进行增长。这对于包含不超过2500万个对象的数据集来说是可以接受的。但是一旦数据库中的对象数量达到2500万左右，添加新对象的速度将显著变慢。当数据库中的对象数量达到5000万到1亿时，导入过程的速度将放慢到步行的速度。
 
-#### Solution
-To address this problem, we changed how the HNSW index grows. We implemented a relative growth pattern, where the HNSW index size increases by either 25% or 25'000 objects (whichever is bigger).
+#### 解决方案
+为了解决这个问题，我们改变了HNSW索引的增长方式。我们实现了一个相对增长模式，其中HNSW索引的大小增加了25%或者25,000个对象（以较大者为准）。
 
-![HNSW index growth chart](./img/hnsw-index-growth.jpg)
+![HNSW索引增长图表](./img/hnsw-index-growth.jpg)
 
-#### Test
-After introducing the relative growth patterns, we've run a few tests.
-We were able to import 200 million objects and more, while the import performance remained constant throughout the process.
+#### 测试
+在引入相对增长模式后，我们进行了一些测试。
+我们能够导入2亿个及更多的对象，而导入性能在整个过程中保持恒定。
 
-[See more on github](https://github.com/weaviate/weaviate/pull/1976).
+[在 GitHub 上查看更多](https://github.com/weaviate/weaviate/pull/1976)。
 
-### Drastically improved Mean-Time-To-Recovery (MTTR)
-Weaviate `1.14` fixes an issue where a crash-recovery could take multiple minutes, or even hours in some extreme cases. It is now a matter of just seconds. So even in the rare event that your instance crashes, it will come back up very quickly.
+### 大幅提高的恢复时间（MTTR）
+Weaviate `1.14` 修复了一个问题，即崩溃恢复可能需要多分钟，甚至在某些极端情况下需要数小时。现在只需要几秒钟即可完成。因此，即使在您的实例发生罕见的崩溃事件，它也将迅速恢复。
 
-#### Problem
-If Weaviate encounters an unexpected crash, no data will be lost. To provide this guarantee, a Write-Ahead Log (WAL) is in place. If a crash had occurred, the WAL is parsed at startup, and all previously unfinished operations are recovered, even if they were part of in-memory structures that had not yet been flushed. While this system is very safe, the recovery could be slow for several reasons:
+#### 问题
+如果Weaviate遇到意外崩溃，不会丢失任何数据。为了提供这种保证，我们使用了Write-Ahead Log (WAL)。如果发生了崩溃，WAL将在启动时被解析，以恢复所有之前未完成的操作，即使它们是在尚未刷新的内存结构中的一部分。虽然这个系统非常安全，但是恢复可能会因为多种原因而变慢:
 
-- Unflushed memtables could become very large. This would lead to a lot of data that needs to be recovered after a crash
-- The recovery process was single-threaded. If multiple recoveries were required, they would happen in sequence. On a large machine, this could mean that startup would be slow, yet only one of many CPU cores was utilized.
-- The data structure used to hold the recovered items was never intended to hold many items. Each additional insertion would degrade its performance. As a result, the larger the WAL to recover, the slower the recovery would become.
+- 未刷新的内存表可能会变得非常大。这将导致在崩溃后需要恢复的大量数据。
+- 恢复过程是单线程的。如果需要进行多次恢复，它们将按顺序进行。在一台大型机器上，这可能意味着启动速度很慢，但只有其中一个CPU核心被利用。
+- 用于存储恢复项的数据结构从未打算用于存储大量项。每次插入都会降低其性能。因此，WAL越大，恢复速度就越慢。
 
-#### Solution
-We addressed each of the points above individually and improved the overall MTTR substantially:
+#### 解决方案
+我们分别解决了上述每个问题，并显著改善了整体的MTTR：
 
-- A deduplication process was added, so that large WALs with a lot of updates (i.e. redundant data) could be reduced to only the necessary information.
-- The recovery process now runs in parallel. If there are multiple places that require recovery, they can each recover independently, without one recovery having to wait for the other.
-- A mechanism was added that flushes any memtable that has been idle (no writes) for 60s or more. In addition to speeding up the recovery, this change also ensures that no recovery is needed at all in many cases.
+- 添加了去重处理过程，以便将包含大量更新（即冗余数据）的大型WAL缩减为仅包含必要信息。
+- 现在恢复过程可以并行运行。如果有多个需要恢复的地方，它们可以独立地进行恢复，而不需要一个恢复等待另一个恢复。
+- 添加了一个机制，当一个memtable在60秒或更长时间没有写入时，会将其刷新。除了加快恢复速度，这个改变还确保在许多情况下根本不需要恢复。
 
+#### 测试
+我们设计了一个极限压力测试，以代表恢复的“最坏情况”。它包含多个非常大且独立的Write-Ahead Log，需要用于恢复。在此之前，恢复可能需要几个小时，而现在只需几秒钟。
 
-#### Test
-We designed an extreme stress test that would represent the "worst-case" scenario for recovery. It has multiple very large, independent Write-Ahead Logs that required for recovery. Before, this could take many hours to recover, while now it takes only a few seconds.
+### 完整的更新日志
+这些只是此版本中包含的众多改进和错误修复中的一部分。
 
-### Full changelog
-These are few of the many improvements and bug fixes that were included in this release.
+请查看[更新日志](https://github.com/weaviate/weaviate/releases/tag/v1.14.0)以查看完整列表。
 
-Check out [the changelog](https://github.com/weaviate/weaviate/releases/tag/v1.14.0) to see the complete list.
+## 监控和可观察性
+![监控和可观察性](./img/monitoring-and-observability.png)
 
-## Monitoring and Observability
-![Monitoring and Observability](./img/monitoring-and-observability.png)
+在生产环境中运行软件的最大挑战之一是了解底层发生的情况。
+当出现问题或需要提前预测需要更多资源时，这尤为重要。
 
-One of the biggest challenges of running software in production is to understand what is happening under the hood.
-That is especially important when something goes wrong, or we need to anticipate in advance when more resources are required.
+![为什么它不工作？](./img/what-is-happening.jpg)
+如果没有这样的洞察力，我们最终只能盲目猜测发生了什么。
 
-![It doesn't work.... why?](./img/what-is-happening.jpg)
-Without such insight, we end up looking at the black box, wondering what is going on.
+### 公告
+通过Weaviate `1.14`，您可以更深入地了解您的Weaviate实例在生产环境中的资源和不同方面的性能。
 
-### Announcement
-With Weaviate `1.14` you can get a lot more insight into the resources and the performance of different aspects of your Weaviate instance in Production.
+现在，您可以暴露出与Prometheus兼容的指标进行监控。结合标准的Prometheus/Grafana设置，可以创建用于测量延迟、导入速度、向量与对象存储的时间、内存使用等指标的可视化仪表板。
 
-Now, you can expose Prometheus-compatible metrics for monitoring. Combine this with a standard Prometheus/Grafana setup to create visual dashboards for metrics around latencies, import speed, time spent on vector vs object storage, memory usage, and more.
+![导入数据到Weaviate](./img/weaviate-sample-dashboard-importing.png "导入数据到Weaviate")
 
-![Importing Data into Weaviate](./img/weaviate-sample-dashboard-importing.png "Importing Data Into Weaviate")
+### 示例
+在一个假设的场景中，您可能正在导入一个大型数据集。在某个时刻，导入过程可能会变慢。然后，您可以检查您的仪表板，您可能会发现向量索引过程仍在快速运行，而对象索引变慢了。<br/>
+然后，您可以将其与另一个仪表板进行交叉引用，看到当导入达到1.2亿个对象时，速度变慢。<br/>
+通过两个步骤，您可以将问题缩小到特定的区域，这将使您更接近找到解决方案。或者您可以使用这些数据与Weaviate团队共享，以获得帮助。
 
-### Example
-In a hypothetical scenario, you might be importing a large dataset. At one point the import process might slow down. You could then check your dashboards, where you might see that the vector indexing process is still running fast, while the object indexing slowed down. <br/>
-Then you could cross-reference it with another dashboard, to see that the slow down began when the import reached 120 million objects.<br/>
-In two steps, you could narrow down the issue to a specific area, which would get you a lot closer to finding the solution. Or you could use that data to share it with the Weaviate team to get help.
+### 自己尝试一下
+这是一个[示例项目](https://github.com/weaviate/weaviate-examples/tree/main/monitoring-prometheus-grafana)，它包含：
 
-### Try it yourserlf
-Here is an [example project](https://github.com/weaviate/weaviate-examples/tree/main/monitoring-prometheus-grafana), it contains:
+* `docker-compose.yml` 文件用于启动 Weaviate（不包含任何模块），
+* 一个 **Prometheus** 实例，
+* 和一个 **Grafana** 实例。
 
-* `docker-compose.yml` that spins up Weaviate (without any modules),
-* a **Prometheus** instance,
-* and a **Grafana** instance.
+只需启动所有内容，运行几个查询，并在浏览器中导航到 Grafana 实例以查看仪表板。
 
-Just spin everything up, run a few queries and navigate to the Grafana instance in the browser to see the dashboard.
+### 了解更多
+要了解更多信息，请参阅[文档](/developers/weaviate/configuration/monitoring)。
 
-### Learn more
-To learn more, see the [documentation](/developers/weaviate/configuration/monitoring).
+## 非余弦距离的支持
+![对非余弦距离的支持](./img/non-cosine-distances.png)
 
-## Support for non-cosine distances
-![Support for non-cosine distances](./img/non-cosine-distances.png)
+Weaviate v1.14 添加了对 **L2** 和 **点积** 距离的支持。<br/>
+通过这个功能，您现在可以使用支持余弦、L2 或点积距离的数据集。这为以前不可能的许多用例打开了全新的世界。<br/>
+此外，这一切都是可插拔的，并且非常容易在将来添加新的距离度量方法。
 
-Weaviate v1.14 adds support for **L2** and **Dot Product** distances.<br/>
-With this, you can now use datasets that support Cosine, L2 or Dot distances. This opens up a whole new world of use cases that were not possible before.<br/>
-Additionally, this is all pluggable and very easy to add new distance metrics in the future.
+### 背景信息
+在过去，Weaviate使用一个单一的数值来控制向量之间的距离，这个数值被称为**确信度（certainty）**。确信度是一个介于0和1之间的数值，它非常适用于余弦距离，因为余弦距离的范围是0到360°，可以轻松地转换为0-1的范围。
 
-### Background
-In the past Weaviate used a single number that would control the distances between vectors and that was **certainty**. A certainty is a number between 0 and 1, which works perfectly for cosine distances, as cosine distances are limited to 360° and can be easily converted to a range of 0-1.
+![L2和点积距离计算](./img/distances.png)
 
-![L2 and Dot Product distance calculations](./img/distances.png)
+然而，一些机器学习模型是使用其他距离度量方法进行训练的，例如L2或点积。如果我们考虑基于欧几里得距离的情况，两个点之间可能相隔无限远，因此将其转化为0-1的边界不可能实现。
 
-However, some machine learning models are trained with other distance metrics, like L2 or Dot Product. If we look at euclidean-based distances, two points can be infinitely far away from each other, so translating that to a bound certainty of 0-1 is not possible.
+### 新功能
+因此，我们引入了一个名为**distance**的新字段，您可以选择基于L2或点积距离进行计算。
 
-### What is new
-For this reason, we introduced a new field called **distance**, which you can choose to be based on L2 or Dot Product distances.
+### 原始距离
+提供的距离值是原始数字，允许您根据特定的用例场景来解释结果。<br/>
+例如，您可以将**距离值**归一化并转换为适合您使用的机器学习模型和期望结果类型的**确定性值**。
 
-### Raw distance
-The distance values provided are raw numbers, which allow you to interpret the results based on your specific use-case scenario.<br/>
-For example, you can normalize and convert **distance values** to **certainty values** that fit the machine learning model you use and the kind of results you expect.
+### 了解更多
+有关更多信息，请查阅[文档](/developers/weaviate/config-refs/distances)。
 
-### Learn more
-For more info, check out [the documentation](/developers/weaviate/config-refs/distances).
+### 贡献
+添加其他距离度量方式非常容易，这可能是为Weaviate项目做贡献的好方法。
 
-### Contribute
-Adding other distances is surprisingly easy, which could be a great way to contribute to the Weaviate project.
+如果您对此感兴趣，请查看[GitHub上的distancer代码](https://github.com/weaviate/weaviate/tree/master/adapters/repos/db/vector/hnsw/distancer)，以了解其他度量方式的实现。
 
-If that is something up your street, check out [the distancer code on github](https://github.com/weaviate/weaviate/tree/master/adapters/repos/db/vector/hnsw/distancer), to see the implementation of other metrics.
+只需确保包含足够多的测试。记住：“可靠性，可靠性，可靠性”。
 
-Just make sure to include plenty of tests. Remember: "reliability, reliability, reliability".
-
-## Updated API endpoints to manipulate data objects of specific class
+## 更新API端点以操作特定类别的数据对象
 ![Updated API endpoints](./img/updated-API-endpoints.png)
 
-The REST API CRUD operations now require you to use both an **object ID** and the target **class name**.<br/>
-This ensures that the operations are performed on the correct objects.
+现在，REST API的CRUD操作需要同时使用**对象ID**和目标**类名**。<br/>
+这确保了操作在正确的对象上进行。
 
-### Background
-One of Weaviate's features is full CRUD support. CRUD operations enable the mutability of data objects and their vectors, which is a key difference between a vector database and an ANN library. In Weaviate, every data object has an ID (UUID). This ID is stored with the data object in a key-value store. IDs don't have to be globally unique, because in Weaviate [classes](/developers/weaviate/configuration/schema-configuration#class-object) act as namespaces. While each class has a different [HNSW index](/developers/weaviate/concepts/vector-index#hnsw), including the store around it, which is isolated on disk.
+### 背景信息
+Weaviate的一个特性是完整的CRUD支持。CRUD操作可以实现数据对象及其向量的可变性，这是向量数据库和ANN库之间的一个关键区别。在Weaviate中，每个数据对象都有一个ID（UUID）。这个ID与数据对象一起存储在键值存储中。ID不必是全局唯一的，因为在Weaviate中，[类](/developers/weaviate/configuration/schema-configuration#class-object)充当命名空间。每个类都有一个不同的[HNSW索引](/developers/weaviate/concepts/vector-index#hnsw)，包括其周围的存储，这些存储在磁盘上是隔离的。
 
-There was however one point in the API where reusing IDs between classes was causing serious issues. Most noticeable this was for the [v1/objects/{id}](/developers/weaviate/api/rest/objects) REST endpoints.
-If you wanted to retrieve, modify or delete a data object by its ID, you would just need to specify the ID, without specifying the class name. So if the same ID exists for objects in multiple classes (which is fine because of the namespaces per class), Weaviate would not know which object to address and would address all objects with that ID instead. I.e. if you tried to delete an object by ID, this would result in the deletion of all objects with that ID.
+然而，在API中有一个地方，在类之间重用ID会导致严重的问题。最明显的是在[v1/objects/{id}](/developers/weaviate/api/rest/objects)的REST端点中。
+如果您想通过ID检索、修改或删除数据对象，您只需要指定ID，而不需要指定类名。因此，如果多个类中存在相同的ID（由于每个类有自己的命名空间，这是可以的），Weaviate 将不知道要定位哪个对象，并会定位具有该ID的所有对象。例如，如果您尝试通过ID删除对象，这将导致删除所有具有该ID的对象。
 
-### Endpoint changes
-This issue is now fixed with a **change to the API endpoints**. To get, modify and delete a data object, you now need to provide both the ID and the class name.
+### 端点更改
+现在通过对API端点进行更改，已经修复了此问题。要获取、修改和删除数据对象，现在需要同时提供ID和类名。
 
-The following object functions are changed: **GET**, **HEAD**, **PUT**, **PATCH** and **DELETE**.
+以下对象函数已更改：**GET**，**HEAD**，**PUT**，**PATCH**和**DELETE**。
 
-#### Object change
-New
+#### 对象更改
+新的
 ```
 /v1/objects/{ClassName}/{id}
 ```
-Deprecated
+已弃用
 ```
 /v1/objects/{id}
 ```
 
-#### References change
-New
+#### 引用更改
+新的
 ```
 v1/objects/{ClassName}/{id}/references/{propertyName}
 ```
-Deprecated
+已弃用
 ```
 v1/objects/{id}/references/{propertyName}
 ```
 
-### Client changes
-There are also updates in the language clients, where you now should provide a class name for data object manipulation. Old functions will continue to work, but are considered deprecated, and you will see a deprecation warning message.
+### 客户端变更
+在语言客户端中也有更新，现在您需要为数据对象操作提供一个类名。旧的函数将继续工作，但被认为是废弃的，并且您会看到一个废弃警告消息。
 
-## Stronger together
-Of course, making Weaviate more reliable would be a lot harder without the great community around Weaviate.
-<br/>As it is often the case: *"You can't fix issues you didn't know you have"*.
+## 齐心协力
+当然，在没有伟威特周围伟大社区的支持下，要使伟威特更可靠将会更加困难。
+<br/>正如常常所说的: *"你无法解决你不知道的问题"*.
 
-<!-- ![You can't fix issues you didn't know you have](./img/you-cant-fix.jpg) -->
+<!-- ![你无法修复你不知道的问题](./img/you-cant-fix.jpg) -->
 
-### Thank you
-Thanks to many active members on Weaviate's Community Slack and through GitHub issues, we were able to identify, prioritize and fix many more issues than if we had to do it alone.
+### 谢谢
+感谢Weaviate社区的许多活跃成员，通过Weaviate的Slack和GitHub的问题反馈，我们能够识别、优先处理和修复比我们独自处理更多的问题。
 
-> Together, we made Weaviate v1.14 <br/>the most stable release yet.
+> 我们一起使Weaviate v1.14 <br/>成为迄今为止最稳定的版本。
 
-### Help us
-If at any point during your journey with Weaviate, you discover any bugs or you have feedback to share, please don't hesitate to reach out to us via:
-* [Weaviate's Slack](https://weaviate.io/slack) – you can join anytime
-* [GitHub issues for Weaviate Core](https://github.com/weaviate/weaviate/issues/new)
-* [GitHub issues for Weaviate's documentation](https://github.com/weaviate/weaviate-io/issues/new/choose)
+### 帮助我们
+如果在您使用Weaviate的过程中发现任何错误或者有反馈要分享，请随时通过以下方式与我们联系：
+* [Weaviate的Slack](https://weaviate.io/slack) - 您可以随时加入
+* [Weaviate核心的GitHub问题](https://github.com/weaviate/weaviate/issues/new)
+* [Weaviate文档的GitHub问题](https://github.com/weaviate/weaviate-io/issues/new/choose)
 
-We have a little favour to ask. Often reproducing the issue takes a lot more time than it takes to fix it. When you report a new issue, please include steps on how to reproduce the issue, together with some info about your environment. That will help us tremendously to identify the root cause and fix it.
+我们有一个小小的请求。通常，重现问题所需的时间比修复问题所需的时间更长。当您报告一个新问题时，请提供如何重现该问题的步骤，以及一些关于您的环境的信息。这将帮助我们极大地确定问题的根本原因并解决它。
 
-### Guide
-Here is a little guide on [how to write great bug reports](/developers/weaviate/more-resources/write-great-bug-reports).
+### 指南
+这里有一个关于[如何编写出色的错误报告](/developers/weaviate/more-resources/write-great-bug-reports)的小指南。
 
-## Enjoy
-We hope you enjoy the most reliable and observable Weaviate release yet!
+## 祝您愉快
+我们希望您享受到最可靠和可观察的Weaviate版本！
 
 import ShareFeedback from '/_includes/share-feedback.md';
 
 <ShareFeedback />
-

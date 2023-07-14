@@ -1,60 +1,61 @@
 ---
-title: The AI-First Database Ecosystem
-slug: the-ai-first-database-ecosystem
-authors: [bob]
+authors:
+- bob
 date: 2022-06-23
-tags: ['concepts']
+description: Learn about the vision of the AI-First Database Ecosystem, which drives
+  the R&D of the databases of the future.
 image: ./img/hero.jpeg
-# canonical-url: https://www.forbes.com/sites/forbestechcouncil/2022/06/23/the-ai-first-database-ecosystem/
-# canonical-name: Forbes
-description: "Learn about the vision of the AI-First Database Ecosystem, which drives the R&D of the databases of the future."
+slug: the-ai-first-database-ecosystem
+tags:
+- concepts
+title: The AI-First Database Ecosystem
 ---
-![The AI-First Database Ecosystem](./img/hero.jpeg)
 
-<!-- truncate -->
+![AI优先的数据库生态系统](./img/hero.jpeg)
 
-A new ecosystem of smaller companies is ushering in a "third wave" of AI-first database technology. New search engines and databases brilliantly answer queries posed in natural language, but their machine-learning models are not limited to text searches. The same approach can also be used to search anything from images to DNA.
+<!-- 截断 -->
 
-Much of the software involved is open source, so it functions transparently and users can customize it to meet their specific needs. Clients can retain control of their data, keeping it safely behind their own firewalls.
+一批新兴的小公司正在引领“第三波”AI优先的数据库技术。新的搜索引擎和数据库能够出色地回答自然语言查询，但它们的机器学习模型并不局限于文本搜索。同样的方法也可以用来搜索从图像到DNA的任何东西。
 
-## How We Got Here
-First-wave database technology is often called by the acronym SQL—the initials of a ubiquitous query language used to manage relational databases, which are conceptually similar to spreadsheets or tables. Throughout the 1980s, this technology was dominated by companies like Oracle and Microsoft.
+其中大部分涉及的软件都是开源的，因此它可以透明地运行，并且用户可以根据自己的特定需求进行自定义。客户可以保留对其数据的控制，将其安全地保存在自己的防火墙后面。
 
-The second wave of databases is called "NoSQL". These are the domain of companies like MongoDB. They store data in different ways, for example, key-value stores, document stores, wide-column stores and graph databases, but what they all have in common is that they're not relational tables. Among a long list of capabilities, first- and second-wave databases have their strengths. For example, some are very good at finding every instance of a certain value in a database, and others are very good at storing time sequences.
+## 我们的发展历程
+首波数据库技术通常被称为SQL，这是一种广泛使用的查询语言，用于管理与电子表格或表类似的关系数据库。在整个1980年代，这项技术由Oracle和Microsoft等公司主导。
 
-The third wave of database technologies focuses on data that is processed by a machine learning model first, where the AI models help in processing, storing and searching through the data as opposed to traditional ways.
+第二波数据库被称为 "NoSQL"。这些数据库是像MongoDB这样的公司的专长领域。它们以不同的方式存储数据，比如键值存储、文档存储、宽列存储和图数据库，但它们的共同之处在于它们不是关系型表。在众多功能列表中，第一波和第二波的数据库都有各自的优势。例如，有些数据库非常擅长在数据库中找到某个特定值的每个实例，而其他数据库非常擅长存储时间序列数据。
 
-To better understand the concept, think of a supermarket with 50,000 items. Items on display are not organized alphabetically or by price, the way you'd expect a structured, digital system to do it; they're placed in context. You find things in the supermarket by understanding how they relate to each other. So if the store gets a new product—say, guavas—you know to look near the apples and bananas, not near garbage bags or other things that happen to also cost $1.98/lb.
+第三波数据库技术的重点是首先由机器学习模型处理的数据，AI模型帮助处理、存储和搜索数据，与传统方式不同。
 
-A key early milestone in the third wave happened in 2015 when Google changed its search algorithm from one based on page rankings to one based on a machine learning model that it dubbed RankBrain. Before then, Google's search engine was essentially a high-powered keyword search that ranked websites by the number of other sites that linked back to them. Essentially, Google trusted rankings to the collective users of the Internet.
+为了更好地理解这个概念，可以想象一个拥有50,000种商品的超市。展示的商品没有按字母顺序或价格顺序进行组织，就像你期望一个结构化的数字系统会做的那样；它们是按照上下文来摆放的。你通过理解它们之间的关系来找到超市里的东西。所以，如果超市有了一种新产品，比如番石榴，你就知道要在苹果和香蕉附近寻找，而不是在垃圾袋或其他也售价1.98美元/磅的物品附近寻找。
 
-That "wisdom of the crowd" approach worked, but to improve the quality of the results it returned, Google needed RankBrain to "understand" the text it searched through. So, it used machine learning to vectorize (the process happening inside machine learning models such as transformers) text on sites and in links.
+在第三波中的一个重要里程碑发生在2015年，当时谷歌将其搜索算法从基于页面排名改为基于一个被称为RankBrain的机器学习模型。在此之前，谷歌的搜索引擎本质上是一个高效的关键词搜索，通过其他网站链接回到它们的数量来对网站进行排名。基本上，谷歌相信排名是由互联网用户共同决定的。
 
-Returning to the grocery store for a moment, the challenge comes because a grocery store is a three-dimensional space, but every significant word in unstructured text data needs to be related to hundreds of other words that it is frequently associated with. So, machine learning systems automatically classify text in hypervolumes—imaginary spaces with hundreds or even thousands of dimensions. For any given item in a database, those vectors form what's known as a "representation" of the item.
+谷歌采用了“智慧的集体”方法，这种方法确实有效，但为了提高搜索结果的质量，谷歌需要借助RankBrain来“理解”它搜索的文本。因此，谷歌使用机器学习对站点和链接中的文本进行向量化处理（这个过程发生在机器学习模型中，比如transformers）。
 
-Since it conveys both content and context, such a representation obviously presents a more complete and nuanced data picture. The challenge comes from searching through myriad dimensions. Initially, this was done with a brute force approach, looking at every vector associated with every entry. Needless to say, that approach didn't scale.
+回到杂货店的例子，挑战在于杂货店是一个三维空间，但是非结构化文本数据中的每个重要单词都需要与其经常相关联的数百个其他单词进行关联。因此，机器学习系统会自动将文本分类到超体积（hypervolumes）中，这些超体积是由数百甚至数千个维度构成的虚拟空间。对于数据库中的任何给定项，这些向量形成了该项的"表示"。
 
-One breakthrough that helped third-wave vector databases to scale was an approach called "approximate nearest neighbor" (ANN) search. If we make one final trip to the supermarket to understand what a guava is, we could look at the things around it—other fruit. Somewhat further away we might find guava juice or tinned guavas, but there's really no reason to look four aisles over for guava-flavored cat food.
+由于它传达了内容和上下文，这种表示显然呈现了一个更完整和细致的数据图像。挑战在于搜索各种维度。最初，这是通过蛮力方法来完成的，即查看与每个条目相关联的每个向量。不用说，这种方法是不可扩展的。
 
-Using ANN allowed high-dimensional searches with near-perfect accuracy to be returned in milliseconds instead of hours. To be practical, vector databases also needed something prosaically called CRUD support. That stands for "create, read, update and delete," and solving that technical challenge meant that the complex process of indexing the database could be done once, rather than being repeated from scratch whenever the database was updated.
+帮助第三代向量数据库实现可伸缩性的一个突破是一种称为"近似最近邻"（ANN）搜索的方法。如果我们最后一次去超市了解一下什么是番石榴，我们可以看看它周围的东西-其他水果。稍远一点我们可能会找到番石榴汁或罐装番石榴，但是没有理由去四个过道的地方找番石榴味猫粮。
 
-This leads to the simplest definition of a third database wave: A vector database that stores data indexed by machine learning models. Different types of databases (e.g., vector search engines) allow users to search through these vectorized datasets, and others (e.g., feature stores) allow users to store vectors at a large scale for later use.
+使用ANN（近似最近邻）允许在毫秒级别返回高维搜索结果，而不是小时级别。为了实用，向量数据库还需要一种被称为CRUD（创建、读取、更新和删除）的基本支持。解决这个技术挑战意味着可以一次性完成对数据库进行索引的复杂过程，而不需要每次数据库更新时都从头开始重复。
 
-## We're awash in unstructured data.
-We're living in a time of massive data accumulation and much, if not most of it, is unstructured: text, photos, video, audio files, as well as other things such as genetic information. Vector search is particularly good at extracting value from such data.
+这导致了第三个数据库浪潮的最简单定义：一种通过机器学习模型索引的向量数据库。不同类型的数据库（例如，向量搜索引擎）允许用户通过这些向量化的数据集进行搜索，其他类型的数据库（例如，特征存储）允许用户在大规模上存储向量以供以后使用。
 
-Tech giants like Google, AWS, or Microsoft Azure offer their vector-search capabilities to customers willing to upload their data. But there's now an ecosystem of newer companies with AI-first specific (often open-source) solutions and vector-search capabilities that customers can run on a SaaS basis or on their own systems.
+## 我们被非结构化数据淹没了。
+我们生活在一个数据积累巨大的时代，其中大部分是非结构化的数据：文本、照片、视频、音频文件，以及其他一些东西，如基因信息。向量搜索在从这些数据中提取价值方面表现特别出色。
 
-## The AI-first Database Ecosystem
-The companies that make up this ecosystem provide specialized services that overlap to various degrees. Combined, four sub-groups make up the ecosystem.
+像谷歌、亚马逊AWS或微软Azure这样的科技巨头为愿意上传数据的客户提供了矢量搜索功能。但现在有一个生态系统中的新兴公司，提供了专门的AI优先解决方案（通常是开源的）和矢量搜索功能，客户可以作为SaaS基础上运行，或者在自己的系统上运行。
 
-1. Embedding providers (e.g., Hugging Face or OpenAI)
-1. Neural framework (e.g., deepset or Jina)
-1. Feature stores (e.g., FeatureBase, FeatureForm or Tecton)
-1. Vector databases (e.g., Weaviate or Vertex)
+## AI优先数据库生态系统
+组成这个生态系统的公司提供各种程度上重叠的专业服务。总体来说，生态系统由四个子团体组成。
 
-While the number of data that companies are collecting in their data warehouses keeps growing, the need for better, more efficient searches keeps growing too. The more data we collect, the more complex searching through it becomes. Thanks to the advances in machine learning in the past decade and the commoditization of AI-first database technologies, you can start using it in your business tomorrow.
+1. 嵌入提供商（例如，Hugging Face或OpenAI）
+2. 神经框架（例如，deepset或Jina）
+3. 特征存储（例如，FeatureBase，FeatureForm或Tecton）
+4. 向量数据库（例如，Weaviate或Vertex）
 
+随着企业在数据仓库中收集的数据量不断增长，对更好、更高效的搜索需求也在不断增长。我们收集的数据越多，搜索变得越复杂。由于过去十年来机器学习的进步和AI优先数据库技术的商业化，您可以从明天开始在您的业务中使用它。
 
 import WhatNext from '/_includes/what-next.mdx'
 

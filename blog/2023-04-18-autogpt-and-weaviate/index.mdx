@@ -1,12 +1,14 @@
 ---
-title: Giving Auto-GPT Long-Term Memory with Weaviate
-slug: autogpt-and-weaviate
-authors: [erika, jp]
+authors:
+- erika
+- jp
 date: 2023-04-18
+description: Learn about Auto-GPT and how to give it long-term memory with Weaviate!
 image: ./img/hero.png
-tags: ['integrations']
-description: "Learn about Auto-GPT and how to give it long-term memory with Weaviate!"
-
+slug: autogpt-and-weaviate
+tags:
+- integrations
+title: Giving Auto-GPT Long-Term Memory with Weaviate
 ---
 
 ![autogpt and weaviate](./img/hero.png)
@@ -19,59 +21,61 @@ Edit (5/Jun/2023): Auto-GPT has [temporarily removed support for external vector
 We are working on re-introducing the integration. For now, please use this version (https://github.com/Significant-Gravitas/Auto-GPT/tree/v0.3.1) to use Auto-GPT with Weaviate.
 :::
 
-As generative language models such as GPT-4 continue to push the boundaries of what AI can do, the excitement surrounding its potential is spreading quickly. Many applications and projects are built on top of GPT-4 to extend its capabilities and features. Additionally, many tools were created in order to interact with large language models, like [LangChain](https://python.langchain.com/en/latest/) as an example. [Auto-GPT](https://github.com/Torantulino/Auto-GPT) is one of the fastest rising open-source python projects harnessing the power of GPT-4!
+随着生成式语言模型（如GPT-4）不断推动AI的边界，对其潜力的兴趣迅速蔓延。许多应用和项目都是基于GPT-4构建的，以扩展其能力和功能。此外，许多工具被创建出来，用于与大型语言模型进行交互，例如[LangChain](https://python.langchain.com/en/latest/)。[Auto-GPT](https://github.com/Torantulino/Auto-GPT)是其中最快速崛起的开源Python项目之一，利用了GPT-4的强大力量！
 
-## What is Auto-GPT?
-Auto-GPT has gotten a lot of attention lately, with the amount of stars jumping from 20k to 80k in a matter of days. Auto-GPT chains together “thoughts” and completes various tasks or assignments **autonomously**. It takes GPT-4 one step further by enabling the model to run iteratively and complete various tasks in a siloed fashion. It can [write code and execute python scripts](https://twitter.com/SigGravitas/status/1642181498278408193?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1642181498278408193%7Ctwgr%5Eaa2e51a2fc46f95cf982d6baa333a4ea14d1b264%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fcdn.embedly.com%2Fwidgets%2Fmedia.html%3Ftype%3Dtext2Fhtmlkey%3Da19fcc184b9711e1b4764040d3dc5c07schema%3Dtwitterurl%3Dhttps3A%2F%2Ftwitter.com%2FSigGravitas%2Fstatus%2F1642181498278408193image%3Dhttps3A%2F%2Fi.embed.ly%2F1%2Fimage3Furl3Dhttps253A252F252Fabs.twimg.com252Ferrors252Flogo46x38.png26key3Da19fcc184b9711e1b4764040d3dc5c07), [conduct market research](https://twitter.com/BoucherNicolas/status/1646250166834307072), and even [order pizza](https://twitter.com/Saboo_Shubham_/status/1646739277328314368).
+## 什么是Auto-GPT?
+Auto-GPT最近受到了很多关注，星星的数量从20k在几天内跳到了80k。Auto-GPT将“思考”链接在一起，自主完成各种任务或作业。它通过使模型能够迭代运行并以隔离的方式完成各种任务，进一步推动了GPT-4的发展。它可以编写代码并执行Python脚本，进行市场调研，甚至订购披萨。
 
-ChatGPT requires humans to prompt the large language model (LLM) by developing and refining the text prompt. Meaning you need to build out your request step-by-step in order for the LLM to “understand”. Auto-GPT on the other hand, is able to independently define objectives needed to complete the assigned task **without (or with reduced) human feedback and intervention**. This is because of its ability to chain together thoughts.
+- [编写代码并执行Python脚本](https://twitter.com/SigGravitas/status/1642181498278408193?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1642181498278408193%7Ctwgr%5Eaa2e51a2fc46f95cf982d6baa333a4ea14d1b264%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fcdn.embedly.com%2Fwidgets%2Fmedia.html%3Ftype%3Dtext2Fhtmlkey%3Da19fcc184b9711e1b4764040d3dc5c07schema%3Dtwitterurl%3Dhttps3A%2F%2Ftwitter.com%2FSigGravitas%2Fstatus%2F1642181498278408193image%3Dhttps3A%2F%2Fi.embed.ly%2F1%2Fimage3Furl3Dhttps253A252F252Fabs.twimg.com252Ferrors252Flogo46x38.png26key3Da19fcc184b9711e1b4764040d3dc5c07)
+- [进行市场调研](https://twitter.com/BoucherNicolas/status/1646250166834307072)
+- [订购披萨](https://twitter.com/Saboo_Shubham_/status/1646739277328314368)
 
-Chain of thought is a method that is used to help language models improve their reasoning. It breaks down tasks into the intermediate steps that are needed in order to complete it. The program will then run continuously until it completes these tasks. For example, if it is working on a coding project, it will debug the code as it goes.
+ChatGPT需要人类通过开发和完善文本提示来引导大型语言模型（LLM）。这意味着您需要逐步构建您的请求，以便LLM能够“理解”。另一方面，Auto-GPT能够独立地定义完成分配任务所需的目标，**减少或不需要人类反馈和干预**。这是因为它能够将思维链接在一起的能力。
 
-Let’s dig a little deeper into how Auto-GPT works under the hood. At the time of writing, Auto-GPT uses GPT-4 (or optionally, GPT-3.5) for text generation and GPT-3.5 for file storage and summarization. At configuration, Auto-GPT is given a list of tools such as a code executor, google search API, or a calculator. Additionally, it is possible to give Auto-GPT access to long-term memory via a vector database, such as [Weaviate](https://weaviate.io/). Auto-GPT also has access to `skills` which are manifested as pre-configured prompts such as summarization.
+链式思维是一种帮助语言模型改进推理能力的方法。它将任务分解为完成所需的中间步骤。程序将持续运行，直到完成这些任务。例如，如果它正在处理一个编码项目，它会在进行过程中进行代码调试。
 
-Armed with these tools, Auto-GPT begins with a user query. For example, “Please write out a grocery list and create a recipe using each ingredient.” Auto-GPT takes this task and proposes an action plan to achieve the task such as:
+让我们深入了解Auto-GPT在内部是如何工作的。在撰写本文时，Auto-GPT使用GPT-4（或可选的GPT-3.5）进行文本生成，并使用GPT-3.5进行文件存储和摘要。在配置时，Auto-GPT会提供一系列工具，如代码执行器、谷歌搜索API或计算器。此外，还可以通过向量数据库（例如[Weaviate](https://weaviate.io/)）为Auto-GPT提供长期记忆的访问权限。Auto-GPT还可以通过预配置的提示（如摘要）来访问“技能”。
 
-Task: Write out a grocery list based on past items
+凭借这些工具，Auto-GPT从用户的查询开始。例如，“请列出一张购物清单，并使用每个食材创建一个菜谱。” Auto-GPT接受这个任务，并提出一个行动计划来完成任务，例如：
 
-Plan:
-1. Use the long-term memory from the Weaviate database to curate the list from last week
-2. Order the groceries
-3. Use the internet to look up different recipes
+任务：根据过去的物品列出一张购物清单
 
-Action:
-1. View previous grocery lists
-2. Order the groceries online
-3. Use the internet to gather recipes
+计划：
+1. 使用来自Weaviate数据库的长期记忆来筛选上周的清单
+2. 订购所需的食材
+3. 使用互联网查找不同的食谱
 
-Since Auto-GPT is able to form these action plans autonomously, it is important that it confirms each action was completed. It shouldn’t jump to step 2, if step 1 isn’t finished. It will do this by reasoning with its actions. From there it will review the results and make a refined plan. The ability to reason and refine its actions is what makes Auto-GPT so clever.
+行动：
+1. 查看以前的购物清单
+2. 在线订购杂货
+3. 使用互联网收集食谱
 
-## Examples of Auto-GPT
-People all over Twitter have shared multiple demos of what they’ve built with Auto-GPT. The possibilities are endless! In this section, we will cover a few popular examples.
+由于Auto-GPT能够自主形成这些行动计划，所以确认每个行动是否完成非常重要。如果第一步没有完成，它不应该跳到第二步。它会通过对其行动进行推理来实现这一点。然后它会审查结果并制定一个更精细的计划。能够推理和完善其行动的能力使Auto-GPT变得如此聪明。
 
-[Sully](https://twitter.com/SullyOmarr/status/1645205292756418562) shared a thread on using Auto-GPT to conduct market research. The task is to understand the space of waterproof shoes and find 5 competitors. It will then need to report the pros and cons of each.
+## Auto-GPT示例
+Twitter上的人们分享了许多使用Auto-GPT构建的演示。可能性是无限的！在本节中，我们将介绍一些热门的例子。
 
-[Varun Mayya](https://twitter.com/VarunMayya/status/1643902198164717569) pointed out the opportunity of having Auto-GPT running autonomously. It was tasked to create an app, however, it noticed Node wasn’t installed so it took it upon itself to download it by finding a Stack Overflow link.
+[Sully](https://twitter.com/SullyOmarr/status/1645205292756418562)分享了一个关于使用Auto-GPT进行市场调研的帖子。任务是了解防水鞋的市场，并找到5个竞争对手。然后需要报告每个竞争对手的优缺点。
 
-[Shubham Saboo](https://twitter.com/Saboo_Shubham_/status/1646739277328314368) shared this video of Auto-GPT ordering pizza on Domino's website.
+[Varun Mayya](https://twitter.com/VarunMayya/status/1643902198164717569) 指出了让 Auto-GPT 自主运行的机会。虽然它被指定创建一个应用程序，但它注意到 Node 没有安装，于是它自己找到了一个 Stack Overflow 的链接来下载。
 
-![autogpt and weaviate](./img/Weaviate-auto-gpt-dark.png#gh-dark-mode-only)
-![autogpt and weaviate](./img/Weaviate-auto-gpt-light.png#gh-light-mode-only)
+[Shubham Saboo](https://twitter.com/Saboo_Shubham_/status/1646739277328314368) 分享了这个视频，展示了 Auto-GPT 在 Domino's 网站上订购披萨的过程。
 
-## How to use it in Weaviate
+![autogpt和weaviate](./img/Weaviate-auto-gpt-dark.png#gh-dark-mode-only)
+![autogpt和weaviate](./img/Weaviate-auto-gpt-light.png#gh-light-mode-only)
 
-Auto-GPT has both a short-term and long-term memory. By connecting to a vector database, like Weaviate, you enable the application to retrieve specific data. This extension is great if you’re asking Auto-GPT to complete a task that it wasn’t trained on. For example, if you have data about your customer base in Boston and would like to form an ad, Auto-GPT wouldn’t be able to do that because this wasn’t included in the training data. The solution to this problem is to connect to your Weaviate instance so that Auto-GPT can fetch the necessary information. Additionally, Auto-GPT can save and recall its actions for future use.
+## 如何在Weaviate中使用它
 
-Here is the [codebase](https://github.com/Significant-Gravitas/Auto-GPT/blob/v0.3.1/autogpt/memory/weaviate.py) to see how Weaviate is integrated in Auto-GPT.
+Auto-GPT具有短期和长期记忆。通过连接到矢量数据库，例如Weaviate，您可以使应用程序能够检索特定的数据。如果您要求Auto-GPT完成其未经训练的任务，这个扩展功能非常有用。例如，如果您拥有关于波士顿客户群的数据，并且希望制作一则广告，Auto-GPT无法完成此任务，因为这些信息不包含在训练数据中。解决这个问题的方法是连接到您的Weaviate实例，以便Auto-GPT可以获取所需的信息。此外，Auto-GPT可以保存和回忆其行动以供将来使用。
 
-The easiest way to use Weaviate with Auto-GPT is with a [WCS](https://console.weaviate.cloud) instance. Create a Sandbox instance by following [these steps](https://weaviate.io/developers/wcs/quickstart#create-a-weaviate-cluster), and install Auto-GPT using the latest instructions from the repo, with the following notes in mind.
+这里是[代码库](https://github.com/Significant-Gravitas/Auto-GPT/blob/v0.3.1/autogpt/memory/weaviate.py)，可以查看Weaviate如何在Auto-GPT中集成。
 
-Notes:
-- At the time of writing, it suggested using the [latest stable release](https://github.com/Significant-Gravitas/Auto-GPT/releases/latest) only, rather than the `master` branch.
-- We recommend running Auto-GPT in a Docker container so that it runs in a safer, sandboxed environment.
-- If you intend to run Auto-GPT directly from your device, rather than in a Docker container, we suggest installing the required libraries into a virtual environment, rather than to your system Python.
+使用Weaviate和Auto-GPT最简单的方式是使用[WCS](https://console.weaviate.cloud)实例。按照[这些步骤](https://weaviate.io/developers/wcs/quickstart#create-a-weaviate-cluster)创建一个沙盒实例，并按照最新的说明从repo安装Auto-GPT，并注意以下内容。
+- 在撰写本文时，建议仅使用[最新稳定版本](https://github.com/Significant-Gravitas/Auto-GPT/releases/latest)，而不使用`master`分支。
+- 我们建议在Docker容器中运行Auto-GPT，以便在更安全的沙箱环境中运行。
+- 如果您打算直接从设备上运行Auto-GPT，而不是在Docker容器中运行，我们建议将所需的库安装到虚拟环境中，而不是安装到系统的Python环境中。
 
-During installation, edit the below variables in the Auto-GPT `.env` file based on the below:
+在安装过程中，请根据下面的内容编辑Auto-GPT的`.env`文件中的以下变量：
 
 ```
 MEMORY_BACKEND=weaviate  # Change from `local`
@@ -82,23 +86,23 @@ WEAVIATE_PROTOCOL=https  # http if deploying Weaviate locally with Docker
 WEAVIATE_API_KEY=  # Add the API key here if you have authentication enabled
 ```
 
-And then, you can start Auto-GPT. You can run it directly on your device, or within a Docker container. To run it directly, run:
+然后，您可以启动Auto-GPT。您可以直接在您的设备上运行它，或者在Docker容器内运行。要直接运行它，请运行：
 `python -m autogpt`
 
-Or run the following to start it within a Docker container:
+或者运行以下命令在Docker容器内启动它：
 
 ```
 docker build -t autogpt .
 docker run -it --env-file=./.env -v $PWD/auto_gpt_workspace:/app/auto_gpt_workspace autogpt
 ```
 
-The above steps will allow Auto-GPT to use the WCS instance as the memory backend, allowing it to store and retrieve information as required.
+上述步骤将允许Auto-GPT使用WCS实例作为内存后端，以便根据需要存储和检索信息。
 
-We note using a local instance of Weaviate with Docker is a little more complicated. You will need to modify the `docker-compose` file such that the Weaviate container and the Auto-GPT container are able to communicate with each other.
+我们注意到使用Docker的本地Weaviate实例会更加复杂。您需要修改`docker-compose`文件，以便Weaviate容器和Auto-GPT容器能够彼此通信。
 
-## Proceed with Caution
+## 谨慎操作
 
-Although Auto-GPT is a great project to try, it is best to test it out with caution. It is currently in the experimental phase, so it is best to not use it in production. Additionally, allowing Auto-GPT to run for a long period of time could get very expensive, and keep in mind that it may affect your device. Such as by writing or modifying files, and installing dependencies for example. If your task requires multiple steps, it is best to keep an eye on your OpenAI API usage, such as by setting a limit on your spend. Check out the disclaimer [here](https://github.com/Significant-Gravitas/Auto-GPT#-disclaimer).
+虽然Auto-GPT是一个很棒的项目，但最好谨慎使用并进行测试。目前它还处于实验阶段，所以最好不要在生产环境中使用。此外，长时间运行Auto-GPT可能会非常昂贵，并且请注意它可能会影响您的设备，例如写入或修改文件以及安装依赖项。如果您的任务需要多个步骤，请注意监控您的OpenAI API使用情况，例如通过设定花费限制。在此处查看免责声明[here](https://github.com/Significant-Gravitas/Auto-GPT#-disclaimer)。
 
 
 import WhatNext from '/_includes/what-next.mdx'

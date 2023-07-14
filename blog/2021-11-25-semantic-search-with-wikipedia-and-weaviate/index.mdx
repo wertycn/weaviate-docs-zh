@@ -1,42 +1,43 @@
 ---
-title: Wikipedia and Weaviate
-slug: semantic-search-with-wikipedia-and-weaviate
-authors: [bob]
+authors:
+- bob
 date: 2021-11-25
-tags: ['how-to']
+description: Semantic search on Wikipedia dataset with Weaviate – vector database.
 image: ./img/hero.jpg
-# canonical-url: https://towardsdatascience.com/semantic-search-through-wikipedia-with-weaviate-graphql-sentence-bert-and-bert-q-a-3c8a5edeacf6
-# canonical-name: Towards Data Science
-description: "Semantic search on Wikipedia dataset with Weaviate – vector database."
+slug: semantic-search-with-wikipedia-and-weaviate
+tags:
+- how-to
+title: Wikipedia and Weaviate
 ---
+
 ![Wikipedia and Weaviate](./img/hero.jpg)
 
 <!-- truncate -->
 
-To conduct semantic search queries on a large scale, one needs a vector database to search through the large number of vector representations that represent the data. To show you how this can be done, [we have open-sourced the complete English language Wikipedia corpus](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate) backup in Weaviate. In this article, I will outline how we've created the dataset, show you how you can run the dataset yourself, and present search strategies on how to implement similar vector and semantic search solutions in your own projects and how to bring them to production.
+要在大规模上进行语义搜索查询，需要一个向量数据库来搜索表示数据的大量向量表示。为了向您展示如何实现这一点，[我们已经在Weaviate中开源了完整的英语维基百科语料库](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate)备份。在本文中，我将概述我们如何创建数据集，向您展示如何运行数据集，并介绍如何在您自己的项目中实现类似的向量和语义搜索解决方案的搜索策略，并将其投入到生产中。
 
-The Wikipedia dataset used is the "truthy" version of October 9th, 2021. After processing it contains 11.348.257 articles, 27.377.159 paragraphs, and 125.447.595 graph cross-references. Although a bigger machine (see below) is needed for importing the data, the serving is done on a 12 CPU, 100 GB RAM, 250Gb SSD Google Cloud VM with 1 x NVIDIA Tesla P4. The ML-models used are [multi-qa-MiniLM-L6-cos-v1](https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1) and [bert-large-uncased-whole-word-masking-finetuned-squad](https://huggingface.co/bert-large-uncased-whole-word-masking-finetuned-squad) both are available as [pre-built modules](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers#pre-built-images) in Weaviate.
+使用的维基百科数据集是截至2021年10月9日的“真实”版本。在处理后，它包含11,348,257篇文章，27,377,159个段落和125,447,595个图形交叉引用。虽然导入数据需要更大的机器（请参见下文），但服务是在具有12个CPU、100 GB RAM、250GB SSD的Google Cloud虚拟机上进行的，其中还配备了1个NVIDIA Tesla P4。所使用的ML模型是[multi-qa-MiniLM-L6-cos-v1](https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1)和[bert-large-uncased-whole-word-masking-finetuned-squad](https://huggingface.co/bert-large-uncased-whole-word-masking-finetuned-squad)，两者都可以作为[预构建模块](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers#pre-built-images)在Weaviate中使用。
 
-📄 The complete dataset and code is open-source and available [on GitHub](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate).
+📄 完整的数据集和代码是开源的，并且可以在[Github](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate)上获取。
 
-![Demo GIF of Weaviate using the Wikipedia dataset](./img/weaviate-using-the-Wikipedia-dataset.gif)
-*Example semantic search queries in Weaviate's GraphQL interface — GIF by Author*
+![Weaviate使用维基百科数据集的演示GIF](./img/weaviate-using-the-Wikipedia-dataset.gif)
+*示例：在Weaviate的GraphQL接口中进行语义搜索查询 — GIF由作者提供*
 
-## Importing the Data In Two Steps
-> You can also directly import a backup into Weaviate without doing the import your self as outlined [here](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate/tree/main#step-3-load-from-backup).
+## 分两步导入数据
+> 您还可以直接将备份导入到Weaviate中，而无需按照此处所述自行导入。[这里](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate/tree/main#step-3-load-from-backup)有详细说明。
 
-To import the data we use two different methods. The first is to clean the data set and the second one is to import the data.
+我们使用两种不同的方法来导入数据。第一种是清理数据集，第二种是导入数据。
 
-### Step 1 – Cleaning the Data
-The first step is pretty straightforward, we will clean the data and create a [JSON Lines](https://jsonlines.org/) file to iterate over during import. You can run this process yourself or download the proceed file following [this](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate#step-1-process-the-wikipedia-dump) link.
+### 步骤1 - 清理数据
+第一步非常简单，我们将清洗数据并创建一个[JSON Lines](https://jsonlines.org/)文件，在导入过程中进行迭代。您可以自行运行此过程，也可以通过[此链接](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate#step-1-process-the-wikipedia-dump)下载已处理的文件。
 
-### Step 2 — Importing the Data
-This is where the heavy lifting happens because all paragraphs need to be vectorized we are going to use Weaviate's modular setup to use multiple GPUs that we will stuff with models, but before we do this we need to create a Weaviate schema that represents our use case.
+### 第二步 - 导入数据
+这是关键的一步，因为所有的段落都需要进行向量化处理，我们将使用Weaviate的模块化设置来使用多个GPU，并将其用于加载模型。但在此之前，我们需要创建一个Weaviate模式来表示我们的用例。
 
-### Step 2.1 — Create a Weaviate Schema
-Within Weaviate we will be using a schema that determines how we want to query the data in GraphQL and which parts we want to vectorize. Within a schema, you can set different vectorizers and vectorize instructions on a class level.
+### 步骤2.1 - 创建Weaviate模式
+在Weaviate中，我们将使用一个模式来确定我们希望在GraphQL中查询数据的方式，以及我们希望对哪些部分进行向量化。在一个模式中，您可以在类级别上设置不同的向量化器和向量化指令。
 
-First, because our use case is semantic search over Wikipedia, we will be dividing the dataset into paragraphs and use Weaviate's graph schema to link them back to the articles. Therefore we need two classes; *Article* and *Paragraph*.
+首先，因为我们的用例是对维基百科进行语义搜索，我们将把数据集分成段落，并使用Weaviate的图模式将它们链接回文章。因此，我们需要两个类：*Article*和*Paragraph*。
 
 ```javascript
 {
@@ -59,9 +60,9 @@ First, because our use case is semantic search over Wikipedia, we will be dividi
 }
 ```
 
-*Weaviate class structure*
+*Weaviate类结构*
 
-Next, we want to make sure that the content of the paragraphs gets vectorized properly, the vector representations that the SentenceBERT transformers will generate are used for all our semantic search queries.
+接下来，我们要确保段落的内容能够正确地进行向量化处理，而句子BERT转换器生成的向量表示将用于我们所有的语义搜索查询。
 
 ```javascript
 {
@@ -80,9 +81,9 @@ Next, we want to make sure that the content of the paragraphs gets vectorized pr
 }
 ```
 
-*A single data type that gets vectorized*
+*一个被向量化的单一数据类型*
 
-Last, we want to make graph relations, in the dataset from step one we will distill all the graph relations between articles that we can reference like this:
+最后，我们希望创建图形关系，在第一步的数据集中，我们将提取所有文章之间的图形关系，可以像这样引用：
 
 ```javascript
 {
@@ -94,21 +95,21 @@ Last, we want to make graph relations, in the dataset from step one we will dist
   invertedIndex: true
 }
 ```
-*Paragraph cross-references*
+*段落交叉引用*
 
-The complete schema we import using the [Python client](/developers/weaviate/client-libraries/python) can be found [here](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate/blob/main/step-2/import.py#L19-L120).
+我们使用[Python客户端](/developers/weaviate/client-libraries/python)导入的完整模式可以在[这里](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate/blob/main/step-2/import.py#L19-L120)找到。
 
-## Step 2.2 — Import the Data
-Because we are going to vectorize a lot of data. We will be using the same machine as mentioned in the opening but with 4 instead of 1 GPU.
+## 步骤2.2 - 导入数据
+因为我们将对大量数据进行向量化处理，所以我们将使用与开头提到的相同的机器，但是使用4个GPU而不是一个。
 
-![Google Cloud GPU setup with a Weaviate load balancer](./img/load-balancer.png)
-*Google Cloud GPU setup with a Weaviate load balancer*
+![使用 Weaviate 负载均衡器进行 Google Cloud GPU 设置](./img/load-balancer.png)
+*使用 Weaviate 负载均衡器进行 Google Cloud GPU 设置*
 
-The load balancer will redirect the traffic to available Weaviate transformer modules so that the import speed significantly increases. In the section: *Implementation Strategies — Bringing Semantic Search to Production* below you'll find more info about how you can run this in production.
+负载均衡器将会将流量重定向到可用的 Weaviate 转换模块，从而显著提高导入速度。在下面的“实施策略 - 将语义搜索引入生产环境”部分，您将找到更多关于如何在生产环境中运行此设置的信息。
 
-Most critically, we are going to set an external volume in the Docker Compose file to make sure that we store the data outside the container. This will allow us to package the backup and run Weaviate in the last step directly from the backup.
+最重要的是，我们将在Docker Compose文件中设置一个外部卷，以确保我们将数据存储在容器之外。这将允许我们在最后一步直接从备份中打包和运行Weaviate。
 
-In the environment variables, we set a CLUSTER_HOSTNAME, an arbitrary name you can set to identify a cluster.
+在环境变量中，我们设置了一个CLUSTER_HOSTNAME，这是一个任意的名称，您可以设置来标识一个集群。
 
 ```yaml
 environment:
@@ -121,24 +122,24 @@ environment:
   CLUSTER_HOSTNAME: '63e2f234026d'
 ```
 
-*Docker environment setup*
+*Docker环境设置*
 
-We will also set the location of the volume outside Weaviate, in this case the data will be stored in the /var/weaviate folder
+我们还将设置卷的位置在Weaviate之外，这样数据将存储在/var/weaviate文件夹中
 
 ```yaml
 volumes:
   - /var/weaviate:/var/lib/weaviate
 ```
 
-*Volumes for backup*
+*备份卷*
 
-You can find the complete docker-compose file we've used here.
+您可以在这里找到我们使用的完整docker-compose文件。
 
-## Query the Data
-The current Weaviate setup has two modules enabled: semantic search and Q&A. The modules can be used for different types of queries. The query language used is GraphQL and can be used with a wide variety of [client libraries](/developers/weaviate/client-libraries) in different programming languages.
+## 查询数据
+当前的Weaviate设置启用了两个模块：语义搜索和问答。这些模块可以用于不同类型的查询。所使用的查询语言是GraphQL，可以与多种编程语言的[客户端库](/developers/weaviate/client-libraries)一起使用。
 
-### Example 1 — natural language questions
-In this example, we pose a natural language question, and we will assume that the first result contains the answer (hence the limit is set to 1). The result based on the latest dataset contains a certainty (i.e., the distance from the query to the answer in the vector space) of ≈ 0.68. In your end application, you can set limits to the certainty to determine if you want to present the results to the end-user, in the latest paragraph of this article (Implementation Strategies — Bringing Semantic Search to Production) you'll find more info about this.
+### 示例1 - 自然语言问题
+在这个示例中，我们提出一个自然语言问题，并假设第一个结果包含答案（因此限制设置为1）。基于最新数据集的结果具有一个确定性（即查询与答案在向量空间中的距离）约为0.68。在您的最终应用程序中，您可以设置确定性的限制，以确定是否要向最终用户呈现结果，在本文的最后一段（实施策略-将语义搜索引入生产）中，您将找到更多相关信息。
 
 ```graphql
 {
@@ -163,10 +164,10 @@ In this example, we pose a natural language question, and we will assume that th
 }
 ```
 
-💡 LIVE — [try out this query](https://console.weaviate.io/console/query#weaviate_uri=http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080&graphql_query=%23%23%0A%23%20Using%20the%20Q%26A%20module%20I%0A%23%23%0A%7B%0A%20%20Get%20%7B%0A%20%20%20%20Paragraph(%0A%20%20%20%20%20%20ask%3A%20%7B%0A%20%20%20%20%20%20%20%20question%3A%20%22Where%20is%20the%20States%20General%20of%20The%20Netherlands%20located%3F%22%0A%20%20%20%20%20%20%20%20properties%3A%20%5B%22content%22%5D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20limit%3A%201%0A%20%20%20%20)%20%7B%0A%20%20%20%20%20%20_additional%20%7B%0A%20%20%20%20%20%20%20%20answer%20%7B%0A%20%20%20%20%20%20%20%20%20%20result%0A%20%20%20%20%20%20%20%20%20%20certainty%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20content%0A%20%20%20%20%20%20title%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D)
+💡 LIVE — [点击此处尝试查询](https://console.weaviate.io/console/query#weaviate_uri=http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080&graphql_query=%23%23%0A%23%20Using%20the%20Q%26A%20module%20I%0A%23%23%0A%7B%0A%20%20Get%20%7B%0A%20%20%20%20Paragraph(%0A%20%20%20%20%20%20ask%3A%20%7B%0A%20%20%20%20%20%20%20%20question%3A%20%22Where%20is%20the%20States%20General%20of%20The%20Netherlands%20located%3F%22%0A%20%20%20%20%20%20%20%20properties%3A%20%5B%22content%22%5D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20limit%3A%201%0A%20%20%20%20)%20%7B%0A%20%20%20%20%20%20_additional%20%7B%0A%20%20%20%20%20%20%20%20answer%20%7B%0A%20%20%20%20%20%20%20%20%20%20result%0A%20%20%20%20%20%20%20%20%20%20certainty%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20content%0A%20%20%20%20%20%20title%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D)
 
-### Example 2 — generic concept search
-One can not only search for natural language questions, but also generic concepts like "Italian food" in the overview below. The `nearText` filter also allows for [more specific filters](https://towardsdatascience.com/semantic-search-through-wikipedia-with-weaviate-graphql-sentence-bert-and-bert-q-a-3c8a5edeacf6#:~:text=more%20specific%20filters) like `moveAwayFrom` and `MoveTo` concepts to manipulate the search through vector space.
+### 示例2 — 通用概念搜索
+不仅可以搜索自然语言问题，还可以搜索概念，比如下面的"意大利食物"。`nearText`筛选器还允许使用[更具体的筛选器](https://towardsdatascience.com/semantic-search-through-wikipedia-with-weaviate-graphql-sentence-bert-and-bert-q-a-3c8a5edeacf6#:~:text=more%20specific%20filters)比如`moveAwayFrom`和`moveTo`概念来操作向量空间中的搜索。
 
 ```graphql
 {
@@ -190,10 +191,11 @@ One can not only search for natural language questions, but also generic concept
 }
 ```
 
-💡 LIVE — [try out this query](https://console.weaviate.io/console/query#weaviate_uri=http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080&graphql_query=%23%23%0A%23%20Generic%20question%20about%20Italian%20food%0A%23%23%0A%7B%0A%20%20Get%20%7B%0A%20%20%20%20Paragraph(%0A%20%20%20%20%20%20nearText%3A%20%7B%0A%20%20%20%20%20%20%20%20concepts%3A%20%5B%22Italian%20food%22%5D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20limit%3A%2050%0A%20%20%20%20)%20%7B%0A%20%20%20%20%20%20content%0A%20%20%20%20%20%20order%0A%20%20%20%20%20%20title%0A%20%20%20%20%20%20inArticle%20%7B%0A%20%20%20%20%20%20%20%20...%20on%20Article%20%7B%0A%20%20%20%20%20%20%20%20%20%20title%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D)
+💡 在线演示 — [尝试此查询](https://console.weaviate.io/console/query#weaviate_uri=http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080&graphql_query=%23%23%0A%23%20关于意大利食物的常见问题%0A%23%23%0A%7B%0A%20%20Get%20%7B%0A%20%20%20%20Paragraph(%0A%20%20%20%20%20%20nearText%3A%20%7B%0A%20%20%20%20%20%20%20%20concepts%3A%20%5B%22意大利食物%22%5D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20limit%3A%2050%0A%20%20%20%20)%20%7B%0A%20%20%20%20%20%20content%0A%20%20%20%20%20%20order%0A%20%20%20%20%20%20title%0A%20%20%20%20%20%20inArticle%20%7B%0A%20%20%20%20%20%20%20%20...%20on%20Article%20%7B%0A%20%20%20%20%20%20%20%20%20%20title%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%7D%0A%7D)
 
-### Example 3 — mix natural language questions with scalar search
-Within Weaviate you can also mix scalar search filters with vector search filters. In the specific case, we want to conduct a semantic search query through all the paragraphs of articles about the saxophone player Michael Brecker.
+### 示例3 — 混合自然语言问题与标量搜索
+
+在Weaviate中，您还可以将标量搜索过滤器与向量搜索过滤器混合使用。在这种特定情况下，我们想要通过关于萨克斯风手迈克尔·布雷克的文章的所有段落进行语义搜索查询。
 
 ```graphql
 {
@@ -228,10 +230,10 @@ Within Weaviate you can also mix scalar search filters with vector search filter
 }
 ```
 
-💡 LIVE — [try out this query](https://console.weaviate.io/console/query#weaviate_uri=http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080&graphql_query=%23%23%0A%23%20Mixing%20scalar%20queries%20and%20semantic%20search%20queries%0A%23%23%0A%7B%0A%20%20Get%20%7B%0A%20%20%20%20Paragraph(%0A%20%20%20%20%20%20ask%3A%20%7B%0A%20%20%20%20%20%20%20%20question%3A%20%22What%20was%20Michael%20Brecker's%20first%20saxophone%3F%22%0A%20%20%20%20%20%20%20%20properties%3A%20%5B%22content%22%5D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20where%3A%20%7B%0A%20%20%20%20%20%20%20%20operator%3A%20Equal%0A%20%20%20%20%20%20%20%20path%3A%20%5B%22inArticle%22%2C%20%22Article%22%2C%20%22title%22%5D%0A%20%20%20%20%20%20%20%20valueText%3A%20%22Michael%20Brecker%22%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20limit%3A%201%0A%20%20%20%20)%20%7B%0A%20%20%20%20%20%20_additional%20%7B%0A%20%20%20%20%20%20%20%20answer%20%7B%0A%20%20%20%20%20%20%20%20%20%20result%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20content%0A%20%20%20%20%20%20order%0A%20%20%20%20%20%20title%0A%20%20%20%20%20%20inArticle%20%7B%0A%20%20%20%20%20%20%20%20...%20on%20Article%20%7B%0A%20%20%20%20%20%20%20%20%20%20title%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D)
+💡 LIVE — [试用此查询](https://console.weaviate.io/console/query#weaviate_uri=http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080&graphql_query=%23%23%0A%23%20Mixing%20scalar%20queries%20and%20semantic%20search%20queries%0A%23%23%0A%7B%0A%20%20Get%20%7B%0A%20%20%20%20Paragraph(%0A%20%20%20%20%20%20ask%3A%20%7B%0A%20%20%20%20%20%20%20%20question%3A%20%22What%20was%20Michael%20Brecker's%20first%20saxophone%3F%22%0A%20%20%20%20%20%20%20%20properties%3A%20%5B%22content%22%5D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20where%3A%20%7B%0A%20%20%20%20%20%20%20%20operator%3A%20Equal%0A%20%20%20%20%20%20%20%20path%3A%20%5B%22inArticle%22%2C%20%22Article%22%2C%20%22title%22%5D%0A%20%20%20%20%20%20%20%20valueText%3A%20%22Michael%20Brecker%22%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20limit%3A%201%0A%20%20%20%20)%20%7B%0A%20%20%20%20%20%20_additional%20%7B%0A%20%20%20%20%20%20%20%20answer%20%7B%0A%20%20%20%20%20%20%20%20%20%20result%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20content%0A%20%20%20%20%20%20order%0A%20%20%20%20%20%20title%0A%20%20%20%20%20%20inArticle%20%7B%0A%20%20%20%20%20%20%20%20...%20on%20Article%20%7B%0A%20%20%20%20%20%20%20%20%20%20title%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D)
 
-### Example 4 — mix generic concept search with graph relations
-With Weaviate you can also use the GraphQL interface to make graph relations like -in the case of Wikipedia- links between different articles. In this overview we connect the paragraphs to the articles and show the linking articles.
+### 示例4 - 将通用概念搜索与图形关系混合使用
+通过Weaviate，您还可以使用GraphQL接口创建图形关系，例如在维基百科中不同文章之间的链接。在这个示例中，我们将段落连接到文章，并显示链接的文章。
 
 ```graphql
 {
@@ -260,23 +262,22 @@ With Weaviate you can also use the GraphQL interface to make graph relations lik
 }
 ```
 
-💡 LIVE — [try out this query](https://console.weaviate.io/console/query#weaviate_uri=http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080&graphql_query=%23%23%0A%23%20Using%20the%20Q%26A%20module%20I%0A%23%23%0A%7B%0A%20%20Get%20%7B%0A%20%20%20%20Paragraph(%0A%20%20%20%20%20%20ask%3A%20%7B%0A%20%20%20%20%20%20%20%20question%3A%20%22Where%20is%20the%20States%20General%20of%20The%20Netherlands%20located%3F%22%0A%20%20%20%20%20%20%20%20properties%3A%20%5B%22content%22%5D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20limit%3A%201%0A%20%20%20%20)%20%7B%0A%20%20%20%20%20%20_additional%20%7B%0A%20%20%20%20%20%20%20%20answer%20%7B%0A%20%20%20%20%20%20%20%20%20%20result%0A%20%20%20%20%20%20%20%20%20%20certainty%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20content%0A%20%20%20%20%20%20title%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D)
+💡 在线体验 — [尝试此查询](https://console.weaviate.io/console/query#weaviate_uri=http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080&graphql_query=%23%23%0A%23%20Using%20the%20Q%26A%20module%20I%0A%23%23%0A%7B%0A%20%20Get%20%7B%0A%20%20%20%20Paragraph(%0A%20%20%20%20%20%20ask%3A%20%7B%0A%20%20%20%20%20%20%20%20question%3A%20%22Where%20is%20the%20States%20General%20of%20The%20Netherlands%20located%3F%22%0A%20%20%20%20%20%20%20%20properties%3A%20%5B%22content%22%5D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20limit%3A%201%0A%20%20%20%20)%20%7B%0A%20%20%20%20%20%20_additional%20%7B%0A%20%20%20%20%20%20%20%20answer%20%7B%0A%20%20%20%20%20%20%20%20%20%20result%0A%20%20%20%20%20%20%20%20%20%20certainty%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20content%0A%20%20%20%20%20%20title%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D)
 
-## Implementation Strategies — Bringing Semantic Search to Production
-The goal of Weaviate is to allow you to bring large ML-first applications to production. But like with any technology, it is not a silver bullet and success depends on your implementation.
+## 实施策略 - 将语义搜索引入生产环境
+Weaviate的目标是让您能够将大型的面向机器学习的应用程序投入生产。但是，就像任何技术一样，它不是万能的，成功取决于您的实施方式。
 
-### Scalability
-The demo dataset runs on a Docker setup on a single machine, you can easily spin up a Kubernetes cluster if you want to use the Weaviate dataset in production. How to do this, is outlined [here](/developers/weaviate/concepts/cluster).
+### 可扩展性
+演示数据集在单台机器上的Docker环境中运行，如果您想在生产环境中使用Weaviate数据集，您可以很容易地启动一个Kubernetes集群。如何做到这一点，在[这里](/developers/weaviate/concepts/cluster)中有详细说明。
 
-## Conclusion
-To bring semantic search solutions to production, you need three things:
+## 结论
+要将语义搜索解决方案投入生产，您需要三样东西：
 
-1. Data
-1. ML-Models
-1. Vector database
+1. 数据
+2. 机器学习模型
+3. 向量数据库
 
-In this article, we have shown how you can bring the complete Wikipedia corpus (data) using open-source ML-models (Sentence-BERT) and a vector database (Weaviate) to production.
-
+在本文中，我们展示了如何使用开源的ML模型（Sentence-BERT）和向量数据库（Weaviate）将完整的维基百科语料库（数据）引入到生产环境中。
 
 import WhatNext from '/_includes/what-next.mdx'
 

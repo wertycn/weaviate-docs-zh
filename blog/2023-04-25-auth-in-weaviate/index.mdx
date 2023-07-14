@@ -1,34 +1,36 @@
 ---
-title: Authentication in Weaviate (videos)
-slug: authentication-in-weaviate
-authors: [jp]
+authors:
+- jp
 date: 2023-04-25
+description: 'Videos on authentication: an overview, how to log in, how to set it
+  up, and core concepts - including recommendations.'
 image: ./img/hero.png
-tags: ['concepts']
-description: "Videos on authentication: an overview, how to log in, how to set it up, and core concepts - including recommendations."
-
+slug: authentication-in-weaviate
+tags:
+- concepts
+title: Authentication in Weaviate (videos)
 ---
 
-![Authentication in Weaviate](./img/hero.png)
+![在Weaviate中的身份验证](./img/hero.png)
 
-<!-- truncate -->
+<!-- 截断 -->
 
 import ReactPlayer from 'react-player/lazy'
 
-## Overview
+## 概述
 
-Authentication is one of those topics that we get quite a few questions about. And we can see why. It's a big, complex topic, and even within Weaviate, there are many options available which can make it seem quite confusing.
+身份验证是一个我们经常收到很多问题的话题。我们可以理解为什么会这样。这是一个庞大而复杂的主题，在Weaviate中，甚至有很多可用的选项，这可能会让它看起来很混乱。
 
-The core concept of authentication is relatively simple. When a client (e.g. a Weaviate client) sends a request to a server (e.g. a Weaviate database), it includes a "secret" that provides some assurances to Weaviate as to who that request is coming from, so that it can operate on that information.
+认证的核心概念相对简单。当客户端（例如 Weaviate 客户端）向服务器（例如 Weaviate 数据库）发送请求时，它会包含一个“秘钥”，该秘钥为 Weaviate 提供了一些确保请求来源的保证，以便它可以对该信息进行操作。
 
-![Conceptual diagram of sending a request with authentication credentials](./img/auth_light.png#gh-light-mode-only)
-![Conceptual diagram of sending a request with authentication credentials](./img/auth_dark.png#gh-dark-mode-only)
+![发送带有认证凭据的请求的概念图](./img/auth_light.png#gh-light-mode-only)
+![发送带有身份验证凭据的请求的概念图](./img/auth_dark.png#gh-dark-mode-only)
 
-In other words, the server can provide as much access as the particular user is allowed.
+换句话说，服务器可以根据特定用户被允许的权限提供相应的访问权限。
 
-But balancing security with usability can be a tricky line to draw, as everybody has different needs and often use different systems.
+但在安全性和可用性之间取得平衡可能是一条棘手的线，因为每个人的需求都不同，而且通常使用不同的系统。
 
-So, we thought that this might be a good time to provide an overview of all things authentication in Weaviate. Also, we've recently introduced an API key-based authentication method, which we think might be a good balance of security and usability for many of you. Please check them out below.
+因此，我们认为现在是时候为您提供有关Weaviate中身份验证的所有内容的概述了。此外，我们最近推出了基于API密钥的身份验证方法，我们认为这可能是安全性和可用性之间的一个很好的平衡点。请在下面查看它们。
 
 :::infoEach video is only 3-6 minutes, and you do *not* need to watch them in order.
 :::
@@ -39,76 +41,76 @@ We would love to know what you think of video content. Would you like to see mor
 Please let us know below or on YouTube, and we'll do our best to listen. 😁
 :::
 
-## Videos
+## 视频
 
-### Introduction to authentication in Weaviate
+### Weaviate中身份验证的介绍
 
 <ReactPlayer url='https://youtu.be/5xB5cRUFe2M' width="100%" controls="true"/>
 <br/>
 
-#### <i class="fa-solid fa-video"></i> Timestamps
+#### <i class="fa-solid fa-video"></i> 时间点
 
-- 0:00 Overview
-- 0:13 What is authentication? & Key considerations
-- 0:58 Overview of available authentication options in Weaviate (anonymous / API key authentication / OIDC authentication)
-- 1:54 General Recommendations
+- 0:00 概述
+- 0:13 什么是身份验证？和关键考虑因素
+- 0:58 Weaviate中可用的身份验证选项概述（匿名身份验证/ API密钥身份验证/ OIDC身份验证）
+- 1:54 一般建议
 
-### Authentication: A client-side perspective
+### 身份验证：客户端的视角
 
 <ReactPlayer url='https://youtu.be/I3o93Co1Ezg' width="100%" controls="true"/>
 <br/>
 
-#### <i class="fa-solid fa-video"></i> Timestamps
+#### <i class="fa-solid fa-video"></i> 时间戳
 
-- 0:00 Overview
-- 0:28 Getting authentication information from WCS
-- 2:10 Authenticating against Weaviate
-- 2:28 Anonymous access
-- 3:01 API key authentication
-- 3:45 OIDC (username+password) authentication
-- 4:21 Read-only key
-- 4:38 Authentication in action
-- 5:36 Wrap-up
+- 0:00 概览
+- 0:28 从WCS获取身份验证信息
+- 2:10 对Weaviate进行身份验证
+- 2:28 匿名访问
+- 3:01 API密钥身份验证
+- 3:45 OIDC（用户名+密码）身份验证
+- 4:21 只读密钥
+- 4:38 身份验证实例
+- 5:36 总结
 
-### Authentication: Key concepts
+### 身份验证：关键概念
 
 <ReactPlayer url='https://youtu.be/Ok9AcWK0R38' width="100%" controls="true"/>
 <br/>
 
-#### <i class="fa-solid fa-video"></i> Timestamps
+#### <i class="fa-solid fa-video"></i> 时间戳
 
-- 0:00 Overview
-- 0:31 Anonymous access
-- 0:46 Authentication
-- 0:58 API key authentication
-- 1:04 OIDC authentication
-- 1:36 Authentication & Authorization
-- 1:52 A comparison of options
-- 2:09 Additional complexities in OIDC
-- 2:54 summary
+- 0:00 概述
+- 0:31 匿名访问
+- 0:46 认证
+- 0:58 API密钥认证
+- 1:04 OIDC认证
+- 1:36 认证与授权
+- 1:52 选项比较
+- 2:09 OIDC中的附加复杂性
+- 2:54 总结
 
-### Authentication: A server-side perspective
+### 认证：服务器端的视角
 
 <ReactPlayer url='https://youtu.be/0oxL1J0W-Hs' width="100%" controls="true"/>
 <br/>
 
-#### <i class="fa-solid fa-video"></i> Timestamps
+#### <i class="fa-solid fa-video"></i> 时间戳
 
-- 0:00 Overview
-- 0:35 Weaviate without authentication
-- 1:39 Setting up API key access
-- 2:32 Enabling authorization (tiered access)
-- 3:46 Setting up OIDC access
-- 5:30 Enabling authorization with OIDC
-- 5:54 Summary
-- 6:02 Relevant environment variables
+- 0:00 概述
+- 0:35 无身份验证的Weaviate
+- 1:39 设置API密钥访问
+- 2:32 启用授权（分层访问）
+- 3:46 设置OIDC访问
+- 5:30 使用OIDC启用授权
+- 5:54 总结
+- 6:02 相关环境变量
 
-## Read more:
+## 阅读更多：
 
-- [How to configure authentication](/developers/weaviate/configuration/authentication)
-- [How to configure authorization](/developers/weaviate/configuration/authorization)
-- [References: Environment variables](/developers/weaviate/config-refs/env-vars)
-- [Weaviate clients](/developers/weaviate/client-libraries/)
+- [如何配置身份验证](/developers/weaviate/configuration/authentication)
+- [如何配置授权](/developers/weaviate/configuration/authorization)
+- [参考：环境变量](/developers/weaviate/config-refs/env-vars)
+- [Weaviate客户端](/developers/weaviate/client-libraries/)
 
 import WhatNext from '/_includes/what-next.mdx'
 

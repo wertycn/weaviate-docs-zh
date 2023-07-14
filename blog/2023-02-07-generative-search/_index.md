@@ -1,47 +1,54 @@
 ---
-title: ChatGPT for Generative Search
-slug: generative-search
-authors: [zain, erika, connor]
+authors:
+- zain
+- erika
+- connor
 date: 2023-02-07
-tags: ['search', 'integrations']
+description: Learn how you can customize Large Language Models prompt responses to
+  your own data by leveraging vector databases.
 image: ./img/hero.png
-description: "Learn how you can customize Large Language Models prompt responses to your own data by leveraging vector databases."
+slug: generative-search
+tags:
+- search
+- integrations
+title: ChatGPT for Generative Search
 ---
-![ChatGPT for Generative Search](./img/hero.png)
 
-<!-- truncate -->
+![ChatGPT用于生成式搜索](./img/hero.png)
 
-When OpenAI launched ChatGPT at the end of 2022, more than one million people had tried the model in just a week and that trend has only continued with monthly active users for the chatbot service reaching over 100 Million, quicker than any service before, as reported by [Reuters](https://www.reuters.com/technology/chatgpt-sets-record-fastest-growing-user-base-analyst-note-2023-02-01/) and [Yahoo Finance](https://finance.yahoo.com/news/chatgpt-on-track-to-surpass-100-million-users-faster-than-tiktok-or-instagram-ubs-214423357.html?guccounter=1&guce_referrer=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS8&guce_referrer_sig=AQAAAFCTz2vosCcjWFstJGkvduTSNZJrxULx8EHwbTE8mF7EV-hAlWvmMe59ex94LHlkB40zlUMUPshv5Ggq1GxyY9oDQxtoLcc0GV2E-v-0DeGuZi7dtEJT9MZF5NvUe20V64ZCVNziFtJdWUL_AAxMFoCGFxT1duBiaPbfzwkjbyNQ). It wouldn’t be hyperbole to say that NLP and Generative Large Language Models (LLMs) have taken the world by storm.
+<!-- 截断 -->
 
-Though this was not the first AI chatbot that has been released to the public, what really surprised people about this particular service was the breadth and depth of knowledge it had and its ability to articulate that knowledge with human-like responses. Aside from this, the generative aspect of this model is also quite apparent as it can hallucinate situations and dream up vivid details to fill in descriptions when prompted to do so. This gives the chatbot service somewhat of a human-like “creativity” - which is what adds a wow factor to the user experience!
+当OpenAI在2022年底推出ChatGPT时，仅在一周内就有超过一百万人尝试了这个模型，而且这一趋势只在继续增长。根据[路透社](https://www.reuters.com/technology/chatgpt-sets-record-fastest-growing-user-base-analyst-note-2023-02-01/)和[雅虎财经](https://finance.yahoo.com/news/chatgpt-on-track-to-surpass-100-million-users-faster-than-tiktok-or-instagram-ubs-214423357.html?guccounter=1&guce_referrer=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS8&guce_referrer_sig=AQAAAFCTz2vosCcjWFstJGkvduTSNZJrxULx8EHwbTE8mF7EV-hAlWvmMe59ex94LHlkB40zlUMUPshv5Ggq1GxyY9oDQxtoLcc0GV2E-v-0DeGuZi7dtEJT9MZF5NvUe20V64ZCVNziFtJdWUL_AAxMFoCGFxT1duBiaPbfzwkjbyNQ)的报道，这款聊天机器人服务的月活跃用户已经超过1亿，比任何其他服务都要快。毫不夸张地说，自然语言处理和生成式大型语言模型（LLMs）已经席卷了整个世界。
 
-Generative LLMs like ChatGPT's GPT-3 (Chat Generative Pre-trained Transformer) are trained on a huge corpora of open data from the internet - since the majority of general human knowledge is archived and accessible via the Internet, these models have a lot of training material to learn from. This enables them to have a wide breadth of general knowledge about the world and natural language.
+尽管这不是第一个向公众发布的AI聊天机器人，但这个特定服务让人们感到惊讶的是它所拥有的广度和深度的知识以及用人类般的回答表达这些知识的能力。除此之外，这个模型的生成性方面也非常明显，它可以幻想情景，并在被要求时编造生动的细节来填充描述。这使得聊天机器人服务具有某种人类般的“创造力” - 这正是为用户体验增添了惊叹的因素！
 
-## Providing custom context to LLMs
+像ChatGPT的GPT-3（聊天生成预训练变压器）这样的生成型语言模型是在互联网上的大规模开放数据集上进行训练的-由于大部分人类的一般知识都被归档并且可以通过互联网访问，这些模型有很多训练材料可以学习。这使得它们能够拥有广泛的关于世界和自然语言的一般知识。
 
-However, for all the well-founded hype and fascination, LLMs do have one shortcoming: once trained, you can only use ChatGPT on the data that it was trained on. When you ask it what today's news is, ChatGPT can't answer that question factually since it hasn’t seen this data during its training process. It might be able to hallucinate an answer using its generative capabilities, however, the answer won’t be grounded in facts.
+## 为LLMs提供自定义上下文
 
-This point might seem obvious since it doesn’t know what it doesn’t know, however the shortcoming becomes more relevant when you consider this: if you ask ChatGPT for specific information, perhaps company policies that are private and not publicly available on the internet, it cannot produce a factually correct answer either. This is a limitation of the training process and more specifically the data that was unavailable while training. Currently, ChatGPT cannot accurately perform tasks outside the context of information which its training set has provided.
+然而，尽管语言模型在很多方面都备受瞩目和吸引力，但它们确实有一个缺点：一旦训练完成，你只能在它所训练的数据上使用ChatGPT。当你询问它今天的新闻是什么时，ChatGPT无法准确回答，因为在训练过程中它没有接触到这些数据。它可能会利用其生成能力进行回答，但答案不会以事实为基础。
 
-In order to benefit from the capabilities of LLMs like ChatGPT's GPT-3 in real-life use cases, it would be ideal if we could apply its generative power to new or custom data. For example, this would enable a private customized version of ChatGPT that's been trained on your company's internal documents and could act as a human resources chatbot. Wondering what the onboarding process for new employees looks like or how you can sign up for health benefits? You can simply ask your customized ChatGPT! The applications of a customized ChatGPT are limitless and quite exciting! The million-dollar question, then, is how do we achieve such a milestone?
+这一点可能显而易见，因为它不知道自己不知道什么，然而当你考虑到这一点时，这个缺点变得更加重要：如果你向ChatGPT询问特定的信息，比如公司的私密政策，而这些政策并不公开在互联网上，它也无法给出准确的答案。这是训练过程的一个限制，更具体地说，是在训练过程中缺乏相应数据的限制。目前，ChatGPT无法准确地执行其训练集之外的任务。
 
-## Generative Search - OpenAI Module for Weaviate
-Today we are announcing the release of the `generative-openai` module for Weaviate! This module enables you to leverage the power of ChatGPT's GPT-3 model on your own customized datasets and for specific use cases previously not possible!💥
+为了在实际应用中充分发挥像ChatGPT的GPT-3这样的语言模型的能力，如果我们能将其生成能力应用于新的或自定义的数据，那将是理想的。例如，这将使私人定制版本的ChatGPT可以根据您公司的内部文件进行训练，并充当人力资源聊天机器人。想知道新员工的入职流程是什么样的，或者如何申请健康福利？您只需向定制的ChatGPT提问！定制的ChatGPT的应用是无限且令人兴奋的！那么，百万美元的问题是，我们如何实现这样的里程碑呢？
 
-The `generative-openai` module makes a "custom version of ChatGPT" possible by combining it with Weaviate! By integrating a general purpose LLM with a vector database like Weaviate, you can utilize the model's power to carry out tasks in the context of your own data housed in Weaviate!
+## 生成式搜索 - Weaviate 的 OpenAI 模块
+今天我们宣布发布了 Weaviate 的 `generative-openai` 模块！该模块使您能够在自定义数据集上利用 ChatGPT 的 GPT-3 模型，并用于以前无法实现的特定用例！💥
 
-## How the module works
-The `generative-openai` module can be used to get GPT-3 to accomplish tasks grounded in the context of knowledge provided by Weaviate search results. The process consists of two steps: first, we use Weaviate to extract context by filtering a subset of your data that has knowledge relevant to a specific prompt. Secondly, we send the prompt as well as the filtered subset of documents from step one directly to the [OpenAI Completion endpoint](https://platform.openai.com/docs/guides/completion) to accomplish the task specified in the prompt.
+`generative-openai`模块通过与Weaviate结合，使得创建一个“定制版ChatGPT”成为可能！通过将通用的语言模型与Weaviate这样的向量数据库集成，您可以利用模型的强大功能，在Weaviate中处理自己的数据的上下文中执行任务！
 
-![flow](./img/flow.png)
+## 模块的工作原理
+`generative-openai` 模块可用于让 GPT-3 完成基于 Weaviate 搜索结果提供的知识上下文的任务。该过程包括两个步骤：首先，我们使用 Weaviate 通过筛选包含与特定提示相关的知识的数据子集来提取上下文。其次，我们将提示以及第一步中筛选的文档子集直接发送到 [OpenAI 完成端点](https://platform.openai.com/docs/guides/completion) 中，以完成提示中指定的任务。
 
-We’ll provide a guide on how you can set up the module, examples of how you can use the module, as well as show you the nuances of how to prompt GPT-3 to utilize the search results from Weaviate. So without further ado, let's get into it!
+![流程图](./img/flow.png)
 
-## How to use it
-The [Generative OpenAI](/developers/weaviate/modules/reader-generator-modules/generative-openai) module is a new feature that can generate responses based on your data. To access this module, you will need to use Weaviate `1.17.3` or a newer version.
+我们将为您提供如何设置模块的指南，以及如何使用模块的示例，并向您展示如何提示GPT-3利用Weaviate的搜索结果的细微差别。因此，话不多说，让我们开始吧！
 
-### Weaviate Cloud Services
-The `Generative OpenAI` module is enabled by default in the Weaviate Cloud Services (WCS). If your instance version is on `1.17.3` or newer, then you are good to go.
+## 如何使用它
+[Generative OpenAI](/developers/weaviate/modules/reader-generator-modules/generative-openai)模块是一个新的功能，可以根据您的数据生成响应。要访问此模块，您需要使用Weaviate `1.17.3`或更新版本。
+
+### Weaviate云服务
+在Weaviate云服务（WCS）中，默认启用了`Generative OpenAI`模块。如果您的实例版本为`1.17.3`或更新版本，则可以使用该功能。
 
 :::tip Free 14-day sandbox
 You can create a free 14-day sandbox on [WCS](https://console.weaviate.cloud) and create a Weaviate instance.
@@ -55,17 +62,18 @@ The following modules are enabled by default:
 * [generative-openai](/developers/weaviate/modules/reader-generator-modules/generative-openai)
 :::
 
-### Local deployment with Docker
-To enable the Generative OpenAI module with your local deployment of Weaviate, you need to configure your `docker-compose` file to enable the `generative-openai` module, alongside any other module you may need.
+### 使用Docker进行本地部署
 
-For example, you can enable `text2vec-openai` (to vectorize your data and run queries) and `generative-openai`, like this:
+要在本地部署Weaviate时启用Generative OpenAI模块，您需要配置您的`docker-compose`文件以启用`generative-openai`模块，以及您可能需要的任何其他模块。
+
+例如，您可以像这样启用`text2vec-openai`（用于将数据向量化和运行查询）和`generative-openai`模块：
 
 ```
 ENABLE_MODULES: 'text2vec-openai,generative-openai'
 ```
 
 #### Docker-Compose
-Here is a full example of a `docker-compose` file - with the `text2vec-openai` and `generative-openai` modules:
+这是一个完整的`docker-compose`文件示例，包括`text2vec-openai`和`generative-openai`模块：
 
 ```yaml
 ---
@@ -93,20 +101,20 @@ services:
       OPENAI_APIKEY: sk-foobar # this parameter is optional, as you can also provide it at insert/query time
       CLUSTER_HOSTNAME: 'node1'
 ```
-Before running the docker-compose file, you will need to request an [OpenAI API-key](https://openai.com/api/). You can either input your key in the docker-compose file in the `OPENAI_APIKEY` parameter, or provide it at insert/query time.
+在运行docker-compose文件之前，您需要申请一个[OpenAI API密钥](https://openai.com/api/)。您可以将密钥输入到docker-compose文件的`OPENAI_APIKEY`参数中，或在插入/查询时提供密钥。
 
 :::note
 Notice in `ENABLE_MODULES`, we are enabling two modules. In the above example we are using the `text2vec-openai` vectorization module; however, you can use another module of choice (Cohere or Hugging Face). Check out the [documentation](/developers/weaviate/modules/reader-generator-modules/generative-openai#introduction) to learn more about this.
 :::
 
-### Schema configuration
-Configuring the generative module per class in the schema is not required. It is already hard-coded into Weaviate.
+### 模式配置
+在模式中为每个类配置生成模块是不必要的。它已经在Weaviate中硬编码。
 
 :::note Available Model
 The generative module is using the `text-davinci-003` model.
 :::
 
-Here is a schema example using the text2vec-openai vectorizer:
+以下是使用text2vec-openai向量化器的模式示例：
 ```json
 {
   "classes": [
@@ -126,17 +134,17 @@ Here is a schema example using the text2vec-openai vectorizer:
 }
 ```
 
-### Query example
-The module adds a `generate { }` parameter to the `_additional { }` property under the `Get` function.
+### 查询示例
+该模块在`Get`函数的`_additional { }`属性下添加了一个`generate { }`参数。
 
-The `generate { }` parameter has the following arguments:
+`generate { }`参数具有以下参数：
 
-| Field | Data Type | Description |
+| 字段 | 数据类型 | 描述 |
 | --- | --- | --- |
-| `singleResult {prompt}` | string | The generative model makes a generation for each individual search result. |
-| `groupedResult {task}` | string | The generative model receives all search results as input. |
+| `singleResult {prompt}` | 字符串 | 生成模型为每个独立的搜索结果生成一次。 |
+| `groupedResult {task}` | 字符串 | 生成模型接收所有搜索结果作为输入。 |
 
-Here is an example of a GraphQL query using the `singleResult{ prompt }`. From the `PodClip` class, we want the generative model to answer the question "What is Ref2Vec?" based on the content.
+以下是一个使用`singleResult{ prompt }`的GraphQL查询的示例。从`PodClip`类中，我们希望生成模型根据内容回答问题“什么是Ref2Vec？”。
 
 ```graphql
 {
@@ -165,7 +173,7 @@ Here is an example of a GraphQL query using the `singleResult{ prompt }`. From t
 	}
 }
 ```
-The response looks like this:
+响应的样式如下:
 
 ```GraphQL
 {
@@ -186,32 +194,31 @@ The response looks like this:
 }
 ```
 
-## Generation prompts
-A `prompt` is a common term used to describe the instructions given to the LLM. Crafting the ideal prompt is typically more of an art than a science. It is also typically an iterative process where we begin with a draft of what we want the LLM to do and then tweak the prompt based on what we get back. Prompt tuning is hardly a straightforward task and the term “prompt engineering” has emerged to encapsulate the complexity of this process. To help you get started with prompt engineering Weaviate-augmented LLMs, here are 4 examples of prompt refinement:
+## 生成提示
+`prompt` 是一个常用的术语，用于描述给LLM的指令。打造理想的提示通常更多是一门艺术而非科学。这通常也是一个迭代的过程，我们从我们想让LLM做的事情开始起草，并根据我们得到的结果来调整提示。提示的调优并不是一项直截了当的任务，术语“提示工程”已经出现，以概括这个过程的复杂性。为了帮助您开始进行提示工程，我们提供了四个提示改进的例子，使用了Weaviate增强的LLM。
 
-* knowledge grounding,
-* uncertainty probing,
-* citing sources,
-* and step-by-step thinking.
+* 知识基础
+* 不确定性探索
+* 引用来源
+* 逐步思考
 
-### Knowledge grounding
-We can specifically prompt LLMs to ground it knowledge source on search results, this way we make sure the generated response is based on our data. For example, we can add `based on the following search results` to a task description. So in total a question answering prompt would become:
+### 知识基础
+我们可以通过对LLMs进行特定提示，使其基于搜索结果来获取知识来源，这样我们可以确保生成的回答是基于我们的数据的。例如，我们可以在任务描述中添加“基于以下搜索结果”，这样一个问答提示就会变成：
 
 ```
 Please answer this question: {question} based on the following search results: {search_results}.
 ```
 
-### Uncertainty probing
-Prompting LLMs to get the behavior we want is a very exciting emerging area of AI technology. Another prompt that is very important for our use case is for the LLM to explicitly tell us when it doesn’t have enough information. This is also done by adding something like `If you do not have enough information, please output “not enough information”` to the prompt.
+### 不确定性探测
+通过提示语来引导LLMs得到我们想要的行为是一种非常令人兴奋的新兴AI技术领域。在我们的用例中，另一个非常重要的提示是要求LLM明确告诉我们当它没有足够的信息时。可以通过在提示中添加类似于`如果您没有足够的信息，请输出“不足够的信息”`来实现。
 
-### Citing sources
-Another useful prompt example is to ask the LLM to cite its sources. For example, when using the `groupedResult` argument in `generate`, the LLM will receive a few search results to base its answer on. We may ask the LLM to either summarize the relevance of each result to the query, or just outright tell us which result was the most influential to the final answer.
+### 引用来源
+另一个有用的提示示例是要求LLM引用其来源。例如，在使用`generate`中的`groupedResult`参数时，LLM将接收到一些搜索结果来基于其回答。我们可以要求LLM总结每个结果与查询的相关性，或者直接告诉我们哪个结果对最终答案最有影响。
 
-### Step-by-step thinking
-A few other examples include simply adding `Let’s think step-by-step`, or decomposing the task such as `First generate an action plan and then execute the action plan`.
+### 逐步思考
+一些其他的例子包括简单地添加`让我们逐步思考`，或者对任务进行分解，例如`首先生成一个行动计划，然后执行行动计划`。
 
-Prompting is an extremely new area of LLMs and search. As a general prescription, it is recommended to be as descriptive as possible with what you want the LLM to do, as well as to have an iterative mindset of tuning the prompt.
-
+提示是LLMs和搜索领域的一个非常新的领域。作为一般建议，建议尽可能具体地描述您希望LLM执行的任务，并具有迭代调整提示的思维方式。
 
 import WhatNext from '/_includes/what-next.mdx'
 

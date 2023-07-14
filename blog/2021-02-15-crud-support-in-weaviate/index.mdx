@@ -1,76 +1,80 @@
 ---
-title: Weaviate, a vector database with ANN Index and CRUD support
-slug: crud-support-in-weaviate
-authors: [etienne]
+authors:
+- etienne
 date: 2021-02-15
-tags: ['concepts']
+description: How the vector database Weaviate overcomes the limitations of popular
+  Approximate Nearest Neighbor (ANN) libraries.
 image: ./img/hero.png
-# canonical-url: https://db-engines.com/en/blog_post/87
-# canonical-name: DB Engines
-description: "How the vector database Weaviate overcomes the limitations of popular Approximate Nearest Neighbor (ANN) libraries."
+slug: crud-support-in-weaviate
+tags:
+- concepts
+title: Weaviate, a vector database with ANN Index and CRUD support
 ---
-![Weaviate, an ANN Database with CRUD support](./img/hero.png)
 
-<!-- truncate -->
+![Weaviate，一个具有CRUD支持的ANN数据库](./img/hero.png)
 
-With the rising popularity of machine learning models, the demand for vector similarity search solutions has also increased dramatically. Machine learning models typically output vectors and common search queries involve finding the closest set of related vectors. For example, for a text-based vector search the search query "landmarks in Paris" would be encoded to a vector, it is then the job of the vector database to find the documents with the vector closest to this query. This might be a document with the title "Eiffel Tower" whose vector matched the search vector most closely.
+<!-- 截断 -->
 
-Such a vector similarity comparison is computationally trivial if there are very few, say less than 10,000 objects to be searched through. That is not a very realistic situation, however. The amount of unstructured data that companies and users need to search through is massive. The number of objects is often in the high millions or even billions of data points. A primitive brute-force comparison can no longer return results in an acceptable time frame.
+随着机器学习模型的日益流行，对向量相似性搜索解决方案的需求也急剧增加。机器学习模型通常输出向量，常见的搜索查询涉及查找最接近的一组相关向量。例如，对于基于文本的向量搜索，搜索查询"巴黎的地标"将被编码为一个向量，然后向量数据库的任务是找到与该查询向量最接近的文档。这可能是一个标题为"埃菲尔铁塔"的文档，其向量与搜索向量最接近。
 
-This led to the rise of Approximate Nearest Neighbor (ANN) models. You might have heard of Spotify's Annoy, Facebook's faiss, or Google's ScaNN. What they all have in common is that they make a conscious trade-off between accuracy (precision, recall) and retrieval speed. This has enabled users to retrieve the 5, 10, or 100 closest vectors within a few milliseconds — even out of a billion objects.
+如果要搜索的对象非常少，比如少于10,000个，那么进行向量相似度比较是计算上微不足道的。然而，这并不是一个非常现实的情况。公司和用户需要搜索的非结构化数据量是巨大的。对象的数量通常是数百万甚至数十亿个数据点。一个简单的蛮力比较已经无法在可接受的时间范围内返回结果。
 
-However, there is yet another trade-off engineers have to make when using ANN models. Many of the common ANN libraries fall short of some of the features we are used to when working with traditional databases and search engines. Imagine you were using a MySQL database, but after you imported your data it would be read-only for the rest of time. That's not how it works, right? So why should it work like this for vector searching? In this article, I'm going to introduce you to Weaviate, a vector database that removes many of the limitations imposed by ANN libraries.
+这导致了近似最近邻（ANN）模型的兴起。你可能听说过Spotify的Annoy、Facebook的faiss或Google的ScaNN。它们都有一个共同点，就是在准确性（精确度、召回率）和检索速度之间做出有意识的权衡。这使得用户可以在几毫秒内从数十亿个对象中检索出最接近的5个、10个或100个向量。
 
-## Overview
-In this article we will cover:
+然而，当使用ANN模型时，工程师们还需要做出另一个权衡。许多常见的ANN库在与传统数据库和搜索引擎一起使用时缺乏一些我们习惯的功能。想象一下，如果你使用的是MySQL数据库，但在导入数据后，它将永久变为只读状态。这不是我们期望的工作方式，对吗？那么为什么向量搜索应该像这样工作呢？在本文中，我将介绍Weaviate，这是一个去除了ANN库所施加的许多限制的向量数据库。
 
-* how ANN models enable fast & large-scale vector searches
-* where popular ANN libraries fall short
-* what Weaviate is and how it can bring your vector search needs to production
-* a glimpse of how Weaviate works under the hood
+## 概述
+在本文中，我们将涵盖以下内容：
 
-## What is Weaviate?
-Before we dive deeper into how Weaviate removes the limitations you might expect from existing ANN solutions, let's quickly take a look at what Weaviate is. Weaviate is a cloud-native, modular, real-time vector database built to scale your machine learning models. Oh, it's also open-source, by the way. Because of its modularity, Weaviate can cover a wide variety of bases. By default, Weaviate is agnostic of how you came up with your vectors. This means teams with experience in data science and machine learning can simply keep using their finely-tuned ML models and import their data objects alongside their existing vector positions. At the same time, Weaviate comes with optional modules for text, images, and other media types. Those modules can do the vectorization for you. Thus, if you are new to the world of machine learning you can import your objects just as you would with a traditional database and let Weaviate handle the vectorization. This brings the benefits of vector searching to the masses — even without an ML background. The ability to combine modules also allows for relations between e.g. a text object and a corresponding image object. As this article will show, Weaviate is also not restricted by some of the limitations of popular ANN libraries.
+* ANN模型如何实现快速和大规模的向量搜索
+* 流行的ANN库的局限性
+* Weaviate是什么，以及它如何将您的向量搜索需求带入生产环境
+* 了解Weaviate在幕后的工作原理
 
-## When do you call a database a database?
-If you were to ask one hundred engineers what defines a database you will most likely get as many different answers. We might take the following points for granted in the world of SQL and NoSQL databases, yet they are anything but ubiquitous in the context of vector searches.
+## Weaviate是什么？
+在我们深入探讨Weaviate如何消除现有ANN解决方案所带来的限制之前，让我们快速了解一下Weaviate是什么。Weaviate是一个云原生、模块化、实时向量数据库，旨在扩展您的机器学习模型。顺便说一句，它还是开源的。由于其模块化的特性，Weaviate可以涵盖各种不同的领域。默认情况下，Weaviate不关心您如何生成向量。这意味着具有数据科学和机器学习经验的团队可以继续使用他们经过精细调整的机器学习模型，并将其数据对象与现有的向量位置一起导入。与此同时，Weaviate还提供了用于文本、图像和其他媒体类型的可选模块。这些模块可以为您进行向量化处理。因此，如果您对机器学习的世界还不熟悉，您可以像使用传统数据库一样导入对象，让Weaviate处理向量化。这使得向量搜索的好处可以普及到大众，即使没有机器学习背景。组合模块的能力还允许建立文本对象和相应图像对象之间的关系，正如本文所示，Weaviate也不受流行的ANN库的一些限制。
+
+## 何时将数据库称为数据库？
+如果你问一百位工程师数据库的定义，很可能会得到一百种不同的答案。在SQL和NoSQL数据库的世界中，我们可能认为以下几点是理所当然的，但在向量搜索的背景下，它们并不是无处不在的。
 
 * **CRUD**
-    We are used to databases allowing us to create, read, update and delete objects.
-* **Real-time (or near real-time)**
-    Objects imported into a database are typically queryable within a very short period. Some databases have refresh intervals and some databases make use of eventual consistency. Both can lead to a slight delay, but in general, objects are present within seconds as opposed to minutes or hours.
-* **Mutability**
-    Databases are generally mutable. This does not only refer to individual objects (as is already covered with CRUD abilities), but also to the entire database or a collection therein, such as a table in a SQL database. We are used to adding another row as we please.
-* **Persistence**
-    We generally expect database writes to be persistent. This does not mean that an in-memory database is not a database. But it does mean that when a database uses a disk, we do not expect writes to get lost — for example, on an unexpected restart.
-* **Consistency. Resiliency and Scaling**
-    Some databases have atomic transactions, others don't support consistency at all. Some databases scale really well in the cloud, others work best as big, single machines. The exact characteristics do not make a database a database. But the fact that the engineers who built it have decided on a specific strategy is a key trait of a database.
+    我们习惯于数据库允许我们创建、读取、更新和删除对象。
+* **实时（或接近实时）**
+    导入数据库的对象通常在很短的时间内可以进行查询。一些数据库具有刷新间隔，而一些数据库则使用最终一致性。这两者都可能导致轻微的延迟，但一般情况下，对象在几秒钟内就能出现，而不是几分钟或几小时。
 
-## Popular ANN libraries fall short of many of the above principles
-The biggest downside of ANN libraries is with regards to their real-time capabilities and mutability. Libraries, such as Annoy or ScaNN require you to import all of your data objects upfront. This is then followed by a build period to build up the index. After that's done, it's a read-only model. This brings two major disadvantages with regards to the points we outlined before: First up, if you import your first object it is not yet queryable until all objects are imported. If you import a billion objects this can be a very considerable time. They are therefore not real-time. Furthermore, once you have built your index, you cannot alter the index anymore without rebuilding it from scratch. Thus, operations, such as updating or deleting are impossible and the search model cannot be considered mutable — not even for further inserts.
+* **可变性**
+    数据库通常是可变的。这不仅仅是指单个对象（已经通过CRUD功能进行了覆盖），还包括整个数据库或其中的一个集合，比如SQL数据库中的表。我们习惯随时添加另一行。
+* **持久化**
+    我们通常期望数据库写操作是持久的。这并不意味着内存数据库不是数据库，但是当数据库使用磁盘时，我们不希望写操作丢失，例如在意外重启时。
 
-The persistence strategy of the above models is typically snapshotting. So while you can save the index to disk and also reload it from disk, an individual write is typically not persisted. As Annoy, ScaNN and the like are not applications, but libraries, this also means that coming up with resiliency and scaling strategy is left to the developer. It is certainly not difficult to scale a read-only model. However, the feature set of simply duplicating your model does not compare to scaling popular distributed databases, such as [Cassandra](https://db-engines.com/en/system/Cassandra).
+* **一致性、弹性和可扩展性**
+    一些数据库具有原子事务，而其他数据库根本不支持一致性。一些数据库在云环境中具有很好的可扩展性，而其他数据库在作为大型单机时效果最好。确切的特性并不能决定一个数据库是否是数据库。但构建数据库的工程师们决定采用特定策略是数据库的一个关键特征。
 
-## Weaviate overcomes the limitations of ANN libraries
+## 流行的ANN库在许多上述原则上存在不足
+ANN库最大的缺点是其实时能力和可变性方面。诸如Annoy或ScaNN的库要求您提前导入所有的数据对象。然后需要进行一个构建期来建立索引。完成后，它将成为只读模型。这带来了两个主要的劣势，与我们之前提到的要点相关：首先，如果您导入第一个对象，在导入所有对象之前，该对象还无法进行查询。如果您导入了十亿个对象，这可能需要相当长的时间。因此，它们不是实时的。此外，一旦建立了索引，您就无法再修改索引，除非从头开始重新构建。因此，更新或删除等操作是不可能的，搜索模型不能被认为是可变的，甚至不能进行进一步的插入操作。
 
-One of the goals in designing Weaviate was to combine the speed and large-scale capabilities of ANN models with all the functionality we enjoy about databases. Thus, any object imported into Weaviate can immediately be queried — whether through a lookup by its id, a keyword search using the inverted index, or a vector search. This makes Weaviate a real-time vector database. And because Weaviate also uses an ANN model under the hood, the vector search will be as fast as with a vector library.
+上述模型的持久化策略通常是快照。因此，您可以将索引保存到磁盘并从磁盘重新加载它，但通常不会持久化单个写入操作。由于Annoy、ScaNN等不是应用程序，而是库，这也意味着开发人员需要自行设计弹性和扩展策略。扩展只读模型并不困难。然而，仅仅复制您的模型的功能集与扩展流行的分布式数据库（例如[Cassandra](https://db-engines.com/en/system/Cassandra)）的能力相比是不可比拟的。
 
-Additionally, objects can be updated or deleted at will and new objects can be added at any time — even while querying. This means Weaviate supports both full CRUD capabilities, as well as mutability of its indices. Last but not least, every single write is persisted, if your machine crashes or Weaviate is otherwise forced to interrupt its operations, it will simply continue where you left off after restarting. There is no scenario where you import for hours on end only to lose all progress due to a crash at the last minute.
+## Weaviate克服了ANN库的限制
 
-## How can Weaviate achieve all of this?
-Weaviate is built around the idea of modularity. This also boils down to the ANN vector index models that Weaviate supports. At the time of writing this article in early 2021, the first vector index type that's supported is HNSW. By choosing this particular type, one of the limitations is already overcome: HNSW supports querying while inserting. This is a good basis for mutability, but it's not all.
+Weaviate的设计目标之一是将ANN模型的速度和大规模能力与我们喜欢的数据库功能相结合。因此，导入到Weaviate的任何对象都可以立即通过ID查找、使用倒排索引进行关键字搜索或进行向量搜索进行查询。这使得Weaviate成为了一个实时向量数据库。而且由于Weaviate在底层也使用了ANN模型，向量搜索的速度将与向量库一样快。
 
-Existing HNSW libraries fall short of full CRUD-support. Updating is not possible at all and deleting is only mimicked by marking an object as deleted without cleaning it up. Furthermore, the most popular library hnswlib only supports snapshotting, but not individual writes to disk.
+此外，对象可以随意更新或删除，可以随时添加新对象，甚至在查询过程中也可以进行操作。这意味着Weaviate不仅支持完整的CRUD功能，还支持对其索引的可变性。最重要的是，每一次写入操作都是持久的，如果您的计算机崩溃或者Weaviate被迫中断运行，它将在重新启动后继续上次的操作。没有一种情况是您连续数小时导入数据，最后因为崩溃而丢失所有进度的。
 
-To get to where Weaviate is today, a custom HNSW implementation was needed. It follows the same principles [as outlined in this paper](https://arxiv.org/abs/1603.09320) but extends it with more features. Each write is added to a [write-ahead log](https://martinfowler.com/articles/patterns-of-distributed-systems/wal.html). Additionally, since inserts into HNSW are not mutable by default, Weaviate internally assigns an immutable document ID that allows for updates. If an object is altered, Weaviate deletes the old doc id under the hood, assigns a new one, and reimports the object into the vector index. Last, but not least, a tombstoning approach — inspired by Cassandra — is used to handle deletes. Any incoming delete — whether an explicit delete or an implicit delete through an update — leads to [marking a document ID as deleted](https://github.com/weaviate/weaviate/blob/b59527994a85d35664bec7eb5acc8fa628318a86/adapters/repos/db/vector/hnsw/delete.go#L23-L64) ("attaching a tombstone"). It is therefore immediately hidden on future query results. Then — and this is where Weaviate's custom HNSW implementation differs from hnswlib — an asynchronous [cleanup process rebuilds the affected parts of the index](https://github.com/weaviate/weaviate/blob/b59527994a85d35664bec7eb5acc8fa628318a86/adapters/repos/db/vector/hnsw/delete.go#L116-L167) and removes the tombstoned elements for good. This keeps the index fresh at all times while saving a lot of computing resources due to a well-tuned bulk cleanup process that is considerably faster than individual cleanups would be.
+## Weaviate如何实现所有这些功能？
 
-It is the combination of the above that makes Weaviate the perfect solution for handling your vector search needs in production.
+Weaviate是围绕模块化的理念构建的。这也体现在Weaviate支持的ANN向量索引模型上。在撰写本文时（2021年初），Weaviate支持的第一个向量索引类型是HNSW。选择了这种特定类型后，已经克服了其中的一些限制：HNSW支持在插入时进行查询。这为可变性提供了良好的基础，但这还不是全部。
 
-## Choose what's right for your use case — and try it out yourself!
-Now that you've learned about some of the limitations imposed by popular ANN libraries and how Weaviate helps you overcome them, there is just one question left to answer: When should you choose which? If you know for certain that you will never need to update your data, will never add a new data point, and don't need real-time abilities, a library like the ones mentioned above will be a good solution. But if you want to update your data, import additional objects even while queries are occurring, and not sacrifice real-time or persistence, then you should take a look at Weaviate.
+现有的HNSW库在完整的CRUD支持方面存在不足。更新根本不可能，只能通过标记对象为已删除来模拟删除，而不进行清理。此外，最流行的库hnswlib只支持快照功能，而不支持单独的磁盘写入。
 
-Check out the [quickstart guide](/developers/weaviate/quickstart) in the documentation or [learn more about Weaviate here](/developers/weaviate). If you like what you've read and would consider using Weaviate in the future, feel free to leave a star on [GitHub](https://github.com/weaviate/weaviate).
+为了达到Weaviate目前的状态，需要一个定制的HNSW实现。它遵循与[这篇论文](https://arxiv.org/abs/1603.09320)中概述的相同原则，但增加了更多功能。每次写操作都被添加到[预写日志](https://martinfowler.com/articles/patterns-of-distributed-systems/wal.html)中。此外，由于默认情况下无法对HNSW进行可变插入，Weaviate在内部分配了一个不可变的文档ID，以便进行更新。如果对象被修改，Weaviate会在后台删除旧的文档ID，分配一个新的文档ID，并重新导入对象到向量索引中。最后，还使用了一种墓碑（tombstoning）的方法来处理删除操作，这受到了Cassandra的启发。任何传入的删除操作（无论是显式删除还是通过更新隐式删除）都会将文档ID标记为删除（"附加墓碑"）。因此，在未来的查询结果中，它会立即被隐藏。然后，这就是Weaviate的定制HNSW实现与hnswlib的不同之处——一个异步的[清理过程重建受影响的索引部分](https://github.com/weaviate/weaviate/blob/b59527994a85d35664bec7eb5acc8fa628318a86/adapters/repos/db/vector/hnsw/delete.go#L116-L167)，并永久删除墓碑元素。这样可以始终保持索引的新鲜状态，同时通过一个经过良好调优的批量清理过程节省大量计算资源，该过程比单独清理要快得多。
 
+正是以上的组合使得Weaviate成为处理生产环境下的向量搜索需求的完美解决方案。
+
+## 选择适合您用例的方案，并亲自试用吧！
+现在您已经了解了一些流行的ANN库所施加的限制，以及Weaviate如何帮助您克服这些限制，只剩下一个问题需要回答：您应该在什么时候选择哪个？如果您确定您永远不需要更新数据，永远不会添加新的数据点，并且不需要实时能力，那么像上面提到的库就是一个很好的解决方案。但是，如果您想要更新数据，在进行查询时甚至导入额外的对象，而且不想牺牲实时性或持久性，那么您应该看看Weaviate。
+
+请查看文档中的[快速入门指南](/developers/weaviate/quickstart)，或者在这里[了解更多关于Weaviate的信息](/developers/weaviate)。如果您对所阅读的内容感到满意，并考虑将来使用Weaviate，请随时在[GitHub](https://github.com/weaviate/weaviate)上给我们一个星星。
 
 import WhatNext from '/_includes/what-next.mdx'
 

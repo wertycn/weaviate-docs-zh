@@ -1,126 +1,130 @@
 ---
-title: What are Distance Metrics in Vector Search?
-slug: distance-metrics-in-vector-search
-authors: [erika]
+authors:
+- erika
 date: 2022-09-21
-tags: ['concepts']
+description: Learn about why you need distance metrics in vector search and the metrics
+  implemented in Weaviate (Cosine, Dot Product, L2-Squared, Manhattan, and Hamming).
 image: ./img/hero.png
-description: "Learn about why you need distance metrics in vector search and the metrics implemented in Weaviate (Cosine, Dot Product, L2-Squared, Manhattan, and Hamming)."
+slug: distance-metrics-in-vector-search
+tags:
+- concepts
+title: What are Distance Metrics in Vector Search?
 ---
-![What are Distance Metrics in Vector Search?](./img/hero.png)
 
-<!-- truncate -->
+![向量搜索中的距离度量是什么？](./img/hero.png)
 
-Vector databases - like [Weaviate](/developers/weaviate/) - use **Machine Learning models** to analyze data and **calculate vector embeddings**. The vector embeddings are **stored together with the data** in a database, and later are used to query the data.
+<!-- 截断 -->
 
-In a nutshell, a vector embedding is an array of numbers, that is used to describe an object. For example, strawberries could have a vector `[3, 0, 1]` – more likely the array would be a lot longer than that.<br/>
-*Note*, the meaning of each value in the array, depends on what Machine Learning model we use to generate them.
+像[Weaviate](/developers/weaviate/)这样的向量数据库使用**机器学习模型**来分析数据并**计算向量嵌入**。向量嵌入与数据一起**存储在数据库中**，然后用于查询数据。
 
-In order to judge how similar two objects are, we can compare their vector values, by using various **Distance Metrics**.
+简而言之，向量嵌入是一个由数字组成的数组，用于描述一个对象。例如，草莓可以有一个向量 `[3, 0, 1]`，数组的长度往往比这个更长。<br/>
+*注意*，数组中每个值的含义取决于我们使用的机器学习模型来生成它们。
 
-In the *context of a Vector Search*, **Distance Metric** is a function that takes two vectors as input and calculates a distance value between the vectors. The distance can take many shapes, it can be the geometric distance between two points, it could be an angle between the vectors, it could be a count of vector component differences, etc. Ultimately, we use the calculated distance to judge how close or far apart two vector embeddings are. These metrics are used in machine learning for classification and clustering tasks, especially in semantic search.
+为了判断两个对象的相似程度，我们可以通过使用不同的**距离度量**来比较它们的向量值。
 
-> Distance Metrics convey how similar or dissimilar two vector embeddings are.
+在**向量搜索的上下文**中，**距离度量**是一个函数，它以两个向量作为输入，并计算这两个向量之间的距离值。这个距离可以有很多形式，可以是两个点之间的几何距离，也可以是向量之间的角度，还可以是向量分量之间的差异计数，等等。最终，我们使用计算得到的距离来判断两个向量嵌入之间的接近程度或远离程度。这些度量方法在机器学习中被用于分类和聚类任务，尤其在语义搜索中。
 
-In this article, we explore the variety of distance metrics ([Cosine](#cosine-distance), [Dot product](#dot-product-distance), [Euclidean](#l2-squared-distance), [Manhattan](#manhattan-distance), and [Hamming](#hamming-distance)), the idea behind each, how they are calculated, and how they compare to each other.
+> 距离度量衡传达了两个向量嵌入的相似或不相似程度。
 
-## Background
-If you already have a working knowledge of Vector Search, then you can skip straight to the [Cosine Distance](#cosine-distance) section.
+在本文中，我们探讨了各种距离度量衡（[余弦相似度](#cosine-distance)、[点积](#dot-product-distance)、[欧氏距离](#l2-squared-distance)、[曼哈顿距离](#manhattan-distance)和[汉明距离](#hamming-distance)），以及每种距离度量衡的背后原理、计算方法以及它们之间的比较。
 
-### Vectors in Multi-Dimensional Space
-Vector databases keep the semantic meaning of your data by representing each object as a vector embedding. Each embedding is a point in a high-dimensional space. For example, the vector for bananas (both the text and the image) is located near apples and not cats.
+## 背景
+如果您已经对向量搜索有了工作经验，那么可以直接跳到[余弦距离](#cosine-distance)部分。
 
-![Visual of Vector Search](./img/weaviate-vector-search-engine.png)
+### 多维空间中的向量
+向量数据库通过将每个对象表示为向量嵌入来保持数据的语义含义。每个嵌入都是高维空间中的一个点。例如，香蕉（文本和图像）的向量位于苹果附近而不是猫附近。
 
-*The above image is a visual representation of a vector space. To perform a search, your search query is converted to a vector - similar to your data vectors. The vector database then computes the similarity between the search query and the collection of data points in the vector space.*
+![向量搜索的可视化](./img/weaviate-vector-search-engine.png)
 
-### Vector Databases are Fast
-The best thing is, vector databases can **query large datasets**, containing **tens or hundreds of millions of objects** and still **respond** to queries in a tiny **fraction of a second**.
+*上面的图片是向量空间的可视化表示。为了进行搜索，您的搜索查询会被转换为一个向量，类似于您的数据向量。向量数据库会计算搜索查询与向量空间中的数据点集合之间的相似度。*
 
-Without getting too much into details, one of the big reasons why vector databases are so fast is because they use the **Approximate Nearest Neighbor** (ANN) algorithm to index data based on vectors. ANN algorithms organize indexes so that the vectors that are closely related are stored next to each other.
+### 向量数据库的速度很快
+最好的是，向量数据库可以查询包含数千万或数亿个对象的大型数据集，并且仍然能够在极短的时间内响应查询。
 
-Check out this article to learn ["Why is Vector Search are so Fast"](/blog/why-is-vector-search-so-fast) and how vector databases work.
+不详细介绍，向量数据库之所以如此快速的一个重要原因是它们使用了近似最近邻（ANN）算法来基于向量索引数据。ANN算法通过组织索引，使得相关的向量彼此相邻存储。
 
-### Why are there different distance metrics?
-Depending on the Machine Learning model used, vectors can have ~100 dimensions or go into thousands of dimensions.
+查看这篇文章以了解["为什么向量搜索如此快速"](/blog/why-is-vector-search-so-fast)以及向量数据库的工作原理。
 
-The time it takes to calculate the distance between two vectors grows based on the number of vector dimensions. Furthermore, some distance metrics are more compute-heavy than others. That might be a challenge for calculating distances between vectors with thousands of dimensions.
+### 为什么存在不同的距离度量方式？
+根据使用的机器学习模型，向量可以具有约100个维度或上千个维度。
 
-For that reason, we have different distance metrics that balance the speed and accuracy of calculating distances between vectors.
+计算两个向量之间的距离所需的时间取决于向量维度的数量。此外，某些距离度量比其他度量更加计算密集。这可能对计算具有数千个维度的向量之间的距离构成挑战。
 
-## Cosine distance
-The cosine similarity measures the angle between two vectors in a multi-dimensional space – with the idea that similar vectors point in a similar direction. Cosine similarity is commonly used in Natural Language Processing (NLP). It measures the similarity between documents regardless of the magnitude. This is advantageous because if two documents are far apart by the euclidean distance, the angle between them could still be small. For example, if the word ‘fruit' appears 30 times in one document and 10 in the other, that is a clear difference in magnitude, but the documents can still be similar if we only consider the angle. The smaller the angle is, the more similar the documents are.
+因此，我们有不同的距离度量方法，可以在速度和准确度之间进行平衡，用于计算向量之间的距离。
 
-The cosine similarity and cosine distance have an inverse relationship. As the distance between two vectors increases, the similarity will decrease. Likewise, if the distance decreases, then the similarity between the two vectors increases.
+## 余弦距离
+余弦相似度测量多维空间中两个向量之间的夹角，其基本思想是相似的向量指向相似的方向。余弦相似度常用于自然语言处理（NLP）中。它测量文档之间的相似度，而不考虑其大小。这是有优势的，因为如果两个文档在欧几里得距离上相距较远，它们之间的夹角仍然可能很小。例如，如果单词“fruit”在一个文档中出现30次，在另一个文档中出现10次，这是明显的大小差异，但如果只考虑夹角，这两个文档仍然可以是相似的。夹角越小，文档越相似。
+
+余弦相似度和余弦距离存在反向关系。当两个向量之间的距离增加时，相似度会减少。同样地，如果距离减小，则两个向量之间的相似度增加。
 
 <img
     src={require('./img/new-similarity-distance.png').default}
-    alt="Similarity-Distance"
+    alt="相似度-距离"
     style={{ maxWidth: "50%" }}
 />
 
-The cosine similarity is calculated as:
+余弦相似度的计算公式如下：
 
 <img
     src={require('./img/cosine-similarity-formula.png').default}
-    alt="Cosine Similarity Formula"
+    alt="余弦相似性公式"
     style={{ maxWidth: "50%" }}
 />
 
-__A·B__ is the product (dot) of the vectors A and B
+__A·B__ 是向量 A 和向量 B 的内积
 
-__\|\|A\|\|  and \|\|B\|\|__ is the length of the two vectors
+__\|\|A\|\|  和 \|\|B\|\|__ 是两个向量的长度
 
-__\|\|A\|\| * \|\|B\|\|__ is the cross product of the two vectors
+__\|\|A\|\| * \|\|B\|\|__ 是两个向量的叉乘
 
-The **cosine distance** is then calculated as: 1 - Cosine Similarity
+然后，**余弦距离**计算如下: 1 - 余弦相似性
 
-Let's use an example to calculate the similarity between two fruits – strawberries (vector A) and blueberries (vector B). Since our data is already represented as a vector, we can calculate the distance.
+让我们以一个例子来计算两个水果之间的相似度 - 草莓（向量 A）和蓝莓（向量 B）。由于我们的数据已经表示为向量，我们可以计算距离。
 
-Strawberry → `[4, 0, 1]`<br/>
-Blueberry →  `[3, 0, 1]`
+草莓 → `[4, 0, 1]`<br/>
+蓝莓 →  `[3, 0, 1]`
 
 <img
     src={require('./img/cosine-example.png').default}
-    alt="Cosine Similarity Example"
+    alt="余弦相似度示例"
     style={{ maxWidth: "50%" }}
 />
 
-A distance of 0 indicates that the vectors are identical, whereas a distance of 2 represents opposite vectors. The similarity between the two vectors is 0.998 and the distance is 0.002. This means that strawberries and blueberries are closely related.
+距离为0表示向量相同，而距离为2表示向量相反。两个向量之间的相似度为0.998，距离为0.002。这意味着草莓和蓝莓密切相关。
 
-### Cosine versus Dot Product
-To calculate the cosine distance, you need to use the dot product. Likewise, the dot product uses the cosine distance to get the angle of the two vectors. You might wonder what the difference is between these two metrics. The cosine distance tells you the angle, whereas the dot product reports the angle and magnitude. If you normalize your data, the magnitude is no longer observable. Thus, if your data is normalized, the cosine and dot product metrics are exactly the same.
+### 余弦相似度与点积的比较
+要计算余弦距离，您需要使用点积。同样，点积使用余弦距离来获取两个向量的角度。您可能想知道这两个度量之间的区别是什么。余弦距离告诉您角度，而点积报告角度和大小。如果您对数据进行了归一化处理，大小就不再可观测。因此，如果您的数据已经归一化，余弦和点积度量是完全相同的。
 
-## Dot Product distance
-The dot product takes two or more vectors and multiplies them together. It is also known as the scalar product since the output is a single (scalar) value. The dot product is a similarity metric and shows the direction of two vectors. The output value can be any real number. If the vectors are in different directions, then the dot product will be negative (see image below). Similarly, if the vectors are in the same direction, then the dot product is positive.
+## 点积距离
+点积操作将两个或多个向量相乘。它也被称为标量积，因为输出是一个单一的（标量）值。点积是一种相似度度量，显示了两个向量的方向。输出值可以是任意实数。如果向量处于不同的方向，则点积将为负（见下图）。同样地，如果向量处于相同的方向，则点积为正。
 
 <img
     src={require('./img/direction.png').default}
-    alt="Direction of Vectors"
+    alt="向量的方向"
     style={{ maxWidth: "50%" }}
 />
 
-The dot product is calculated as:
+点积的计算公式如下：
 
 <img
     src={require('./img/dot-product-formula.png').default}
-    alt="Dot Product Calculation"
+    alt="点积计算"
     style={{ maxWidth: "50%" }}
 />
 
-We will use the same example from above to calculate the dot product of the two vectors.
+我们将使用上面的示例来计算这两个向量的点积。
 
-Strawberry →  `[4, 0, 1]`<br/>
-Blueberry →  `[3, 0, 1]`
+草莓 →  `[4, 0, 1]`<br/>
+蓝莓 →  `[3, 0, 1]`
 
 **A · B** = (4\*3) + (0\*0) + (1\*1) = 13
 
-The dot product of the two vectors is 13. This indicates that the vectors are similar to one another. To calculate the distance, you need to take the negative dot product. The negative dot product reports the distance between the vectors. It keeps the intuition that a smaller distance value means they are similar.
+这两个向量的点积为13。这表明这两个向量彼此相似。要计算距离，需要取负的点积。负的点积表示向量之间的距离。它保持了一个更小的距离值意味着它们更相似的直觉。
 
-## L2-Squared distance
-The Squared Euclidean (L2-Squared) calculates the distance between two vectors by taking the sum of the squared vector values. The distance can be any value between zero and infinity. If the distance is zero, the vectors are identical. The larger the distance, the farther apart the vectors are.
+## L2平方距离
+L2-Squared（平方欧氏距离）通过计算两个向量的平方和来计算它们之间的距离。该距离可以是从零到无穷大的任意值。如果距离为零，则表示向量相同。距离越大，向量之间的距离就越远。
 
-The squared euclidean distance is calculated as:
+平方欧氏距离的计算公式如下：
 
 <img
     src={require('./img/l2-squared-formula.png').default}
@@ -128,58 +132,58 @@ The squared euclidean distance is calculated as:
     style={{ maxWidth: "50%" }}
 />
 
-The squared euclidean distance of strawberries `[4, 0, 1]` and blueberries `[3, 0, 1]` is equal to 1.
+草莓 `[4, 0, 1]` 和蓝莓 `[3, 0, 1]` 的平方欧氏距离等于1。
 
 **L2** = (4 - 3)<sup>2</sup> + (0 - 0)<sup>2</sup> + (1 - 1)<sup>2</sup> = 1
 
-## Manhattan distance
-Manhattan distance, also known as "L1 norm" and "Taxicab Distance", calculates the distance between a pair of vectors. The metric is calculated by summing the absolute distance between the components of the two vectors.
+## 曼哈顿距离
+曼哈顿距离，也称为"L1范数"和"出租车距离"，计算一对向量之间的距离。该度量是通过求两个向量的各个分量之间的绝对差的总和来计算的。
 
 <img
     src={require('./img/manhattan-formula.png').default}
-    alt="Manhattan Distance Formula"
+    alt="曼哈顿距离公式"
     style={{ maxWidth: "50%" }}
 />
 
-The name comes from the grid layout resembling the streets of Manhattan. The city is designed with buildings on every corner and one-way streets. If you're trying to go from point A to point B, the shortest path isn't straight through because you cannot drive through buildings. The fastest route is one with fewer twists and turns.
+这个名称来自于类似曼哈顿街道网格布局。这座城市的设计是在每个街角都有建筑物和单行道。如果你想从A点到B点，最短的路径不是直线的，因为你不能穿过建筑物。最快的路线是少转弯的路线。
 
 <img
     src={require('./img/weaviate-manhatten-distance.png').default}
-    alt="Manhattan Distance"
+    alt="曼哈顿距离"
     style={{ maxWidth: "50%" }}
 />
 
-### Manhattan versus Euclidean Distance
-The Manhattan distance (L1 norm) and Euclidean distance (L2 norm) are two metrics used in machine learning models. The L1 norm is calculated by taking the sum of the absolute values of the vector. The L2 norm takes the square root of the sum of the squared vector values. The Manhattan distance is faster to calculate since the values are typically smaller than the Euclidean distance.
+### 曼哈顿距离与欧几里得距离
+曼哈顿距离（L1范数）和欧几里得距离（L2范数）是机器学习模型中使用的两个度量标准。L1范数通过对向量的绝对值求和来计算。L2范数通过对向量值的平方求和再开根号来计算。由于曼哈顿距离的值通常比欧几里得距离小，所以计算速度更快。
 
-### When to use it
-Generally, there is an accuracy vs. speed tradeoff when choosing between the Manhattan and Euclidean distance. It is hard to say precisely when the Manhattan distance will be more accurate than Euclidean; however, Manhattan is faster since you don't have to square the differences. You want to use the Manhattan distance as the dimension of your data increases. For more information on which distance metric to use in high-dimensional spaces, check out this paper by [Aggarwal et al.](https://bib.dbvis.de/uploadedFiles/155.pdf)
+### 何时使用它
+一般来说，在选择曼哈顿距离和欧氏距离之间存在准确性与速度的权衡。很难准确地说何时曼哈顿距离比欧氏距离更准确；然而，曼哈顿距离更快，因为您不需要对差值进行平方。当数据的维度增加时，您应该使用曼哈顿距离。关于在高维空间中使用哪种距离度量的更多信息，请参阅[Aggarwal等人的论文](https://bib.dbvis.de/uploadedFiles/155.pdf)。
 
-![Hamming and Manhattan Distance](./img/hamming-manhattan.png)
+![汉明距离和曼哈顿距离](./img/hamming-manhattan.png)
 
-## Hamming distance
-The Hamming distance is a metric for comparing two numeric vectors. It computes how many changes are needed to convert one vector to the other. The fewer changes are required, the more similar the vectors.
+## 汉明距离
+汉明距离是一种用于比较两个数值向量的度量标准。它计算将一个向量转换为另一个向量所需的变化次数。需要的变化次数越少，向量越相似。
 
-There are two ways to implement the Hamming distance:
+有两种实现汉明距离的方式：
 
-1. Compare two numeric vectors
-1. Compare two binary vectors
+1. 比较两个数值向量
+2. 比较两个二进制向量
 
-Weaviate has implemented the first method, comparing numeric vectors. In the next section, I will describe an idea to use the Hamming distance in tandem with Binary Passage Retrieval.
+Weaviate已经实现了第一种方法，即比较数值向量。在下一节中，我将描述一种将汉明距离与二进制段检索结合使用的想法。
 
-Let's use an example to calculate the Hamming distance. Imagine we have a dataset containing a variety of fruit and vegetables. Your first query is to see which item pairs best with your banana pancakes. To achieve that we need to compare the banana pancakes' vector with the other vectors. Like this:
+让我们用一个例子来计算汉明距离。假设我们有一个包含各种水果和蔬菜的数据集。你的第一个查询是要查看哪种食物最适合搭配香蕉煎饼。为了实现这个目标，我们需要将香蕉煎饼的向量与其他向量进行比较。就像这样：
 
-| Banana Pancakes | [5,6,8] | **Hamming Distance** |
+| 香蕉煎饼 | [5,6,8] | **汉明距离** |
 | --- | --- | --- |
-| Blueberries     | [5,6,9] |         1        	   |
-| Broccoli     	  | [8,2,9] |         3        	   |
+| 蓝莓 | [5,6,9] | 1 |
+| 西兰花 | [8,2,9] | 3 |
 
-As seen above, blueberries are a better pairing than broccoli. This was done by comparing the position of the numbers in the vector representations of foods.
+如上所示，与西兰花相比，蓝莓是更好的搭配。这是通过比较食物向量表示中的数字位置来完成的。
 
-### Hamming distance and Binary Passage Retrieval
-Binary Passage Retrieval (BPR) translates vectors into a binary sequence. For example, if you have text data that has been converted into a vector ("Hi there" -> [0.2618, 0.1175, 0.38, …]), it can then be translated to a string of binary numbers (0 or 1). Although it is condensing the information in the vector, this technique can keep the semantic structure despite representing it as 0 or 1.
+### 汉明距离和二进制段落检索
+二进制通道检索（BPR）将向量转换为二进制序列。例如，如果您有将文本数据转换为向量的数据（"Hi there" -> [0.2618, 0.1175, 0.38, ...]），则可以将其转换为一串二进制数字（0或1）。尽管它压缩了向量中的信息，但这种技术可以在表示为0或1的情况下保持语义结构。
 
-To compute the Hamming distance between two strings, you compare the position of each bit in the sequence. This is done with an XOR bit operation. XOR stands for "exclusive or", meaning if the bits in the sequence do not match, then the output is 1. Keep in mind that the strings need to be of equal length to perform the comparison. Below is an example of comparing two binary sequences.
+计算两个字符串之间的汉明距离，需要比较序列中每个位的位置。这可以通过进行异或位操作来实现。异或表示"排外或"，意味着如果序列中的位不匹配，则输出为1。请注意，字符串的长度需要相等才能进行比较。下面是比较两个二进制序列的示例。
 
 <img
     src={require('./img/hamming-xor.png').default}
@@ -187,28 +191,27 @@ To compute the Hamming distance between two strings, you compare the position of
     style={{ maxWidth: "40%" }}
 />
 
-There are three positions where the numbers are different (highlighted above). Therefore, the Hamming distance is equal to 3. [Norouzi et al.](https://papers.nips.cc/paper/2012/hash/59b90e1005a220e2ebc542eb9d950b1e-Abstract.html) stated that binary sequences are storage efficient and allow storing massive datasets in memory. There is a great page in the [Weaviate documentation](/developers/weaviate/concepts/binary-passage-retrieval) that explains this in more detail.
+在上面突出显示的三个位置上，数字是不同的。因此，海明距离等于3。[Norouzi等人](https://papers.nips.cc/paper/2012/hash/59b90e1005a220e2ebc542eb9d950b1e-Abstract.html)指出，二进制序列具有高效的存储能力，并允许在内存中存储大规模数据集。[Weaviate文档](/developers/weaviate/concepts/binary-passage-retrieval)中有一个很好的页面对此进行了更详细的解释。
 
-## How to Choose a Distance Metric
-As a rule of thumb, it is best to use the distance metric that matches the model that you're using. For example, if you're using a [Siamese Neural Network](https://en.wikipedia.org/wiki/Siamese_neural_network) (SNN) the contrastive loss function incorporates the euclidean distance. Similarly, when fine-tuning your sentence transformer you define the loss function. The [CosineSimilarityLoss](https://www.sbert.net/docs/package_reference/losses.html#cosinesimilarityloss) takes two embeddings and computes the similarity based on the cosine similarity.
+## 如何选择距离度量
+作为一个经验法则，最好使用与您正在使用的模型相匹配的距离度量。例如，如果您正在使用[孪生神经网络](https://en.wikipedia.org/wiki/Siamese_neural_network)（SNN），对比损失函数将包含欧几里得距离。同样，当微调您的句子转换器时，您需要定义损失函数。[CosineSimilarityLoss](https://www.sbert.net/docs/package_reference/losses.html#cosinesimilarityloss)接受两个嵌入向量，根据余弦相似度计算相似性。
 
-To summarize, there is no ‘one size fits all' distance metric. It depends on your data, model, and application. As mentioned above, there are cases where the cosine distance and dot product are the same; however, the magnitude may or may not be important. This also goes for the accuracy/speed tradeoff between the Manhattan and euclidean distance.
+总结来说，没有适用于所有情况的“一刀切”距离度量标准。它取决于您的数据、模型和应用程序。如上所述，有些情况下余弦距离和点积是相同的；然而，大小可能重要也可能不重要。曼哈顿距离和欧几里得距离之间的精度/速度权衡也是如此。
 
-> Use the distance metric that matches the model that you're using.
+> 使用与您正在使用的模型相匹配的距离度量标准。
 
+## 在Weaviate中的实现
 
-## Implementation in Weaviate
+总的来说，Weaviate用户可以在五种不同的距离度量方法中选择来支持他们的数据集。[在这里](/developers/weaviate/config-refs/distances#distance-implementations-and-optimizations)可以详细了解每种度量方法。Weaviate使得根据您的应用程序选择度量方法变得很容易。通过对模式进行一次编辑，您可以使用Weaviate上实现的任何度量方法（`cosine`、`dot`、`l2-squared`、`hamming`和`manhattan`），或者您可以灵活地创建自己的度量方法！
 
-In total, Weaviate users can choose between five various distance metrics to support their dataset. [Here](/developers/weaviate/config-refs/distances#distance-implementations-and-optimizations) you can find each metric in detail. Weaviate makes it easy to choose a metric depending on your application. With one edit to your schema, you can use any of the metrics implemented on Weaviate (`cosine`, `dot`, `l2-squared`, `hamming`, and `manhattan`), or you have the flexibility to create your own!
+### 优化
 
-### Optimizations
-Even with ANN-indexes, which reduce the number of distance calculations necessary, a vector database still spends a large portion of its compute time calculating vector distances. As a result, it is very important that the engine can do this not just correctly, but also efficiently.
+即使使用了减少距离计算次数的ANN索引，向量数据库仍然会花费大量计算时间来计算向量之间的距离。因此，引擎不仅需要正确地执行这些计算，还需要高效地执行。
 
-The distance metrics in Weaviate have been optimized to be highly efficient using "Single Instruction, Multiple Data" ("SIMD") instruction sets. Using these instructions, a CPU can do multiple calculations in a single CPU cycle. To achieve this, we had to write some of our distance metrics in [pure Assembly code](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/dot_amd64.s). [Here is an overview](/developers/weaviate/config-refs/distances#distance-implementations-and-optimizations) of the current state of optimizations; including which distance metrics have SIMD optimizations for which architecture.
+Weaviate中的距离度量标准已经经过优化，使用了"Single Instruction, Multiple Data"（"SIMD"）指令集，以实现高效率。使用这些指令，CPU可以在一个CPU周期内完成多次计算。为了实现这一点，我们不得不使用[pure Assembly code](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/dot_amd64.s)编写了一些距离度量标准。[这里](/developers/weaviate/config-refs/distances#distance-implementations-and-optimizations)是当前优化状态的概述，包括哪些距离度量标准针对哪种架构进行了SIMD优化。
 
-### Open source contributions
-Weaviate is open-source and values feedback and input from the community. A community member contributed to the Weaviate project by adding two new metrics to the 1.15 release. How cool is that! If this is something you're interested in, [here](https://github.com/weaviate/weaviate/tree/master/adapters/repos/db/vector/hnsw/distancer) is the repository with the implementation of the current metrics.
-
+### 开源贡献
+Weaviate是开源的，并且非常重视来自社区的反馈和意见。社区成员通过在1.15版本中添加了两个新的度量标准来对Weaviate项目做出了贡献。这太酷了！如果您对此感兴趣，[这里](https://github.com/weaviate/weaviate/tree/master/adapters/repos/db/vector/hnsw/distancer)是当前度量标准实现的存储库。
 
 import WhatNext from '/_includes/what-next.mdx'
 

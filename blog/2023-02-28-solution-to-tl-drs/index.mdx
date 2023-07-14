@@ -1,120 +1,123 @@
 ---
-title: The solution to TL;DRs - Weaviate's summarizer module
-slug:  solution-to-tl-drs
-authors: [jp]
+authors:
+- jp
 date: 2023-02-28
-tags: ['integrations']
+description: Did you know that Weaviate can summarize information during retrieval?
+  Learn how you can summarize your data to tackle the problem of information overload.
 image: ./img/hero.png
-description: Did you know that Weaviate can summarize information during retrieval? Learn how you can summarize your data to tackle the problem of information overload.
+slug: solution-to-tl-drs
+tags:
+- integrations
+title: The solution to TL;DRs - Weaviate's summarizer module
 ---
 
-<!-- truncate -->
-![The solution to TL;DRs - Weaviate's summarizer module](./img/hero.png)
+<!-- 截断 -->
+![TL;DRs的解决方案- Weaviate的摘要模块](./img/hero.png)
 
-(*Note: You can skip to the TL;DR version [below](/blog/solution-to-tl-drs#bonus-tldr-version-edited)* 😉)
+（*注意：您可以直接跳转到TL;DR版本 [下面](/blog/solution-to-tl-drs#bonus-tldr-version-edited)* 😉）
 
-How often do you find yourself facing a wall of text in an email, a report, or a paper, and letting out a sigh? Nobody enjoys hacking their way through boring, dense prose. Especially if it's just to see if the information is even relevant.
+您有多经常在电子邮件、报告或论文中面对一堵文字墙，然后叹了口气？没有人喜欢费力地穿越枯燥、密集的散文。特别是为了确定信息是否相关。
 
-In this day and age, this is a more common problem than ever. For a while now, the bottleneck in knowledge work has been our rate of information discovery and consumption. So how do we solve this problem?
+在当今时代，这个问题比以往任何时候都更常见。相当长一段时间以来，知识工作的瓶颈一直是我们的信息发现和消费速度。那么我们该如何解决这个问题呢？
 
-You probably already know that Weaviate, as a vector database, can help with information cataloging and discovery. But did you know that Weaviate can also summarize information during retrieval?
+您可能已经知道，作为一个向量数据库，Weaviate可以帮助进行信息目录和发现。但是您是否知道，在检索过程中，Weaviate还可以对信息进行摘要？
 
-Our summarizer module ([`sum-transformers`](/developers/weaviate/modules/reader-generator-modules/sum-transformers)) can be added to a Weaviate instance to do exactly that.
+我们的摘要模块（[`sum-transformers`](/developers/weaviate/modules/reader-generator-modules/sum-transformers)）可以添加到 Weaviate 实例中以完成这个任务。
 
-And as a bonus, we will also show you how to use our new generative module (`generative-openai`) to do the same thing as well.
+而且，作为额外的奖励，我们还将向您展示如何使用我们的新生成模块（`generative-openai`）来完成相同的任务。
 
-By the end, you will see how you can use Weaviate to reduce the amount of TL;DRs ([too long; did not read](https://www.merriam-webster.com/dictionary/TL%3BDR)) in your life and in the lives of those around you.
+到最后，您将看到如何使用Weaviate来减少您生活中以及周围人生活中的TL;DR（太长了；没时间读）数量。
 
-## `sum-transformers` in action
+## `sum-transformers` 的实际应用
 
-Since we’re talking about reducing TL;DRs - let’s cut to the chase. The `sum-transformers` module does one thing - summarize a piece of text into shorter text. For example, it will produce a pithy, to-the-point summary like this:
+既然我们在谈论减少TL;DR，让我们直入主题。`sum-transformers` 模块只做一件事 - 将一段文本进行总结，生成一个较短的文本摘要。例如，它将生成一个简洁、直接的摘要，如下所示：
 
-> *The Sydney Opera House is a multi-venue performing arts centre in Sydney, Australia. The building was designed by Danish architect Jørn Utzon and opened in 1973. It is one of the most popular visitor attractions in Australia, visited by more than eight million people annually.*
+> *悉尼歌剧院是位于澳大利亚悉尼的一个多功能表演艺术中心。该建筑由丹麦建筑师约恩·乌松设计，于1973年开放。它是澳大利亚最受欢迎的旅游景点之一，每年有超过八百万人参观。*
 
-From an original text that has about 7x the length!
+来自一篇原文的长度约为原文的7倍！
 
 <details>
-  <summary>See original text</summary>
+  <summary>查看原文</summary>
 
-*The Sydney Opera House is a multi-venue performing arts centre in Sydney. Located on the foreshore of Sydney Harbour, it is widely regarded as one of the world's most famous and distinctive buildings and a masterpiece of 20th-century architecture. Designed by Danish architect Jørn Utzon, but completed by an Australian architectural team headed by Peter Hall, the building was formally opened by Queen Elizabeth II on 20 October 1973 after a gestation beginning with Utzon's 1957 selection as winner of an international design competition. The Government of New South Wales, led by the premier, Joseph Cahill, authorised work to begin in 1958 with Utzon directing construction. The government's decision to build Utzon's design is often overshadowed by circumstances that followed, including cost and scheduling overruns as well as the architect's ultimate resignation. The building and its surrounds occupy the whole of Bennelong Point on Sydney Harbour, between Sydney Cove and Farm Cove, adjacent to the Sydney central business district and the Royal Botanic Gardens, and near to the Sydney Harbour Bridge.*
+*悉尼歌剧院是位于悉尼海港滨水区的多功能表演艺术中心。它被广泛认为是世界上最著名和独特的建筑之一，也是20世纪建筑的杰作。该建筑由丹麦建筑师约恩·乌兹隆设计，但由由彼得·霍尔领导的澳大利亚建筑团队完成。在乌兹隆于1957年赢得国际设计竞赛后，澳大利亚新南威尔士州政府，由总理约瑟夫·卡希尔领导，于1958年授权开始建设。政府决定建造乌兹隆的设计往往被后来发生的各种情况所掩盖，包括成本和进度超支以及建筑师最终辞职。该建筑及其周边占据了悉尼港的班尼隆角整个区域，位于悉尼湾和农场湾之间，毗邻悉尼中央商务区和皇家植物园，靠近悉尼海港大桥。*
 
-*The building comprises multiple performance venues, which together host well over 1,500 performances annually, attended by more than 1.2 million people. Performances are presented by numerous performing artists, including three resident companies: Opera Australia, the Sydney Theatre Company and the Sydney Symphony Orchestra. As one of the most popular visitor attractions in Australia, the site is visited by more than eight million people annually, and approximately 350,000 visitors take a guided tour of the building each year. The building is managed by the Sydney Opera House Trust, an agency of the New South Wales State Government.*
+*这座建筑包括多个表演场地，每年举办超过1500场演出，吸引了超过120万人次观众。演出由众多表演艺术家呈现，包括三个常驻团体：澳大利亚歌剧院、悉尼剧院公司和悉尼交响乐团。作为澳大利亚最受欢迎的旅游景点之一，该场所每年吸引超过800万人次的游客，大约有35万游客参加建筑导览。该建筑由悉尼歌剧院信托基金会管理，是新南威尔士州政府的一个机构。*
 
-*On 28 June 2007, the Sydney Opera House became a UNESCO World Heritage Site, having been listed on the (now defunct) Register of the National Estate since 1980, the National Trust of Australia register since 1983, the City of Sydney Heritage Inventory since 2000, the New South Wales State Heritage Register since 2003, and the Australian National Heritage List since 2005. The Opera House was also a finalist in the New7Wonders of the World campaign list.*
+*2007年6月28日，悉尼歌剧院成为联合国教科文组织世界遗产，此前自1980年起被列入（现已废止的）国家遗产登记册，自1983年起被列入澳大利亚国家信托登记册，自2000年起被列入悉尼市文化遗产清单，自2003年起被列入新南威尔士州文化遗产登记册，自2005年起被列入澳大利亚国家文化遗产清单。歌剧院还是新7大奇迹运动清单的入围者。*
 
 </details>
 
-Here are other examples, where the module produced summaries of biographical, mythical, and technical information:
+以下是其他示例，其中该模块生成了有关传记、神话和技术信息的摘要：
 
 <details>
   <summary>
-    Lewis Hamilton (80% reduction)
+    路易斯·汉密尔顿（80%减少）
   </summary>
 
 :::note Summarized text
 Sir Lewis Carl Davidson Hamilton (born 7 January 1985) is a British racing driver. In Formula One, Hamilton has won a joint-record seven World Drivers' Championship titles (tied with Michael Schumacher), and holds the records for the most wins (103), pole positions (103) and podium finishes (191) Hamilton joined the McLaren young driver programme in 1998 at the age of 13, becoming the youngest racing driver ever to be contracted by a Formula One team. After six years with McLaren, Hamilton signed with Mercedes in 2013.
 :::
 
-#### Original text
+#### 原始文本
 
-Sir Lewis Carl Davidson Hamilton   (born 7 January 1985) is a British racing driver currently competing in Formula One, driving for Mercedes-AMG Petronas Formula One Team. In Formula One, Hamilton has won a joint-record seven World Drivers' Championship titles (tied with Michael Schumacher), and holds the records for the most wins (103), pole positions (103), and podium finishes (191), among others.
+刘易斯·卡尔·戴维森·汉密尔顿（Lewis Carl Davidson Hamilton）（1985年1月7日出生）是一位英国赛车手，目前在梅赛德斯AMG宝马奔驰一级方程式车队参加比赛。在一级方程式赛车中，汉密尔顿赢得了七个世界车手冠军头衔（与迈克尔·舒马赫并列），并保持着最多胜利（103场）、最多杆位（103次）和最多上台次数（191次）等多项纪录。
 
-Born and raised in Stevenage, Hertfordshire, Hamilton joined the McLaren young driver programme in 1998 at the age of 13, becoming the youngest racing driver ever to be contracted by a Formula One team. This led to a Formula One drive with McLaren for six years from 2007 to 2012, making Hamilton the first black driver to race in the series. In his inaugural season, Hamilton set numerous records as he finished runner-up to Kimi Räikkönen by one point. The following season, he won his maiden title in dramatic fashion—making a crucial overtake at the last corner on the last lap of the last race of the season—to become the then-youngest Formula One World Champion in history.  After six years with McLaren, Hamilton signed with Mercedes in 2013.
+在赫特福德郡的斯蒂文奇出生并长大，汉密尔顿在1998年以13岁的年龄加入了麦克拉伦的青年车手计划，成为有史以来被一支一级方程式车队签约的最年轻车手。这为他在2007年至2012年期间与麦克拉伦合作了六年的一级方程式比赛提供了机会，使他成为该系列赛中首位黑人车手。在他的首个赛季中，汉密尔顿创造了众多纪录，仅以一分之差屈居于基米·莱科宁之后。接下来的赛季，他以戏剧性的方式赢得了他的首个冠军——在赛季的最后一场比赛的最后一圈的最后一个弯道关键超车，成为当时历史上最年轻的一级方程式世界冠军。在与麦克拉伦合作六年后，汉密尔顿于2013年与梅赛德斯签约。
 
-Changes to the regulations for 2014 mandating the use of turbo-hybrid engines saw the start of a highly successful period for Hamilton, during which he won six further drivers' titles. Consecutive titles came in 2014 and 2015 during an intense rivalry with teammate Nico Rosberg. Following Rosberg's retirement in 2016, Ferrari's Sebastian Vettel became Hamilton's closest rival in two championship battles, in which Hamilton twice overturned mid-season point deficits to claim consecutive titles again in 2017 and 2018. His third and fourth consecutive titles followed in 2019 and 2020 to equal Schumacher's record of seven drivers' titles. Hamilton achieved his 100th pole position and race win during the 2021 season.
+2014年对涡轮增压混合动力引擎的规定变更为汉密尔顿开启了一个非常成功的时期，期间他赢得了六个进一步的车手冠军。连续的冠军分别在2014年和2015年获得，在与队友尼科·罗斯伯格的激烈竞争中取得。在罗斯伯格于2016年退役后，法拉利的塞巴斯蒂安·维特尔成为了汉密尔顿在两次锦标赛争夺中最接近的竞争对手，在这两次争夺中，汉密尔顿两次逆转了赛季中期的积分领先劣势，再次连续夺冠分别是在2017年和2018年。他的第三和第四个连续冠军分别在2019年和2020年获得，追平了舒马赫的七个车手冠军纪录。汉密尔顿在2021赛季实现了他的第100个杆位和胜利。
 
-Hamilton has been credited with furthering Formula One's global following by appealing to a broader audience outside the sport, in part due to his high-profile lifestyle, environmental and social activism, and exploits in music and fashion. He has also become a prominent advocate in support of activism to combat racism and push for increased diversity in motorsport. Hamilton was the highest-paid Formula One driver from 2013 to 2021, and was ranked as one of the world's highest-paid athletes by Forbes of twenty-tens decade and 2021. He was also listed in the 2020 issue of Time as one of the 100 most influential people globally, and was knighted in the 2021 New Year Honours. Hamilton was granted honorary Brazilian citizenship in 2022.
+Hamilton通过吸引更广泛的观众群体，进一步推动了一级方程式赛车的全球追随者人数的增长，部分原因是他高调的生活方式、环境和社会活动以及在音乐和时尚方面的成就。他还成为了支持打击种族主义和推动赛车运动多样性增加的积极倡导者。从2013年到2021年，Hamilton是薪酬最高的一级方程式赛车手，并且被福布斯评为20年代和2021年全球最高薪酬的运动员之一。他还被列入《时代》杂志2020年全球100位最有影响力人物之一，并在2021年新年荣誉授勋中被封为爵士。2022年，Hamilton获得了巴西荣誉公民身份。
 
 </details>
 
 <details>
 
   <summary>
-    The Loch Ness Monster (52% reduction)
+    尼斯湖水怪（减少了52%）
   </summary>
 
 :::note Summarized text
 The Loch Ness Monster is said to be a large, long-necked creature. Popular belief in the creature has varied since it was brought to worldwide attention in 1933. Evidence of its existence is disputed, with a number of disputed photographs and sonar readings. The pseudoscience and subculture of cryptozoology has placed particular emphasis on the creature.
 :::
 
-#### Original text
+#### 原始文本
 
-The Loch Ness Monster (Scottish Gaelic: Uilebheist Loch Nis), affectionately known as Nessie, is a creature in Scottish folklore that is said to inhabit Loch Ness in the Scottish Highlands. It is often described as large, long-necked, and with one or more humps protruding from the water. Popular interest and belief in the creature has varied since it was brought to worldwide attention in 1933. Evidence of its existence is anecdotal, with a number of disputed photographs and sonar readings.
+尼斯湖水怪（苏格兰盖尔语：Uilebheist Loch Nis），亲切地称为尼西（Nessie），是苏格兰民间传说中栖息在苏格兰高地尼斯湖的一种生物。它通常被描述为体型庞大、长脖子，并且从水中凸起一个或多个隆起。自从1933年在全球范围内引起关注以来，人们对这个生物的兴趣和信仰程度有所不同。关于它存在的证据是凭经验讲述的，伴随着一些有争议的照片和声纳读数。
 
-The scientific community explains alleged sightings of the Loch Ness Monster as hoaxes, wishful thinking, and the misidentification of mundane objects. The pseudoscience and subculture of cryptozoology has placed particular emphasis on the creature.
+科学界解释尼斯湖怪物的目击事件为骗局、一厢情愿的想法以及对普通物体的错误识别。伪科学和奇研学的子文化特别强调这个生物。
 
 </details>
 
 <details>
 
   <summary>
-    Bitmap Indexes (79% reduction)
+    位图索引（减少79%）
   </summary>
 
 :::note Summarized text
 A bitmap index is a special kind of database index that uses bitmaps. Bitmap indexes have a significant space and performance advantage over other structures for query of such data. Their drawback is they are less efficient than the traditional B-tree indexes for columns whose data is frequently updated.
 :::
 
-#### Original text
+#### 原始文本
 
-Bitmap indexes have traditionally been considered to work well for low-cardinality columns, which have a modest number of distinct values, either absolutely, or relative to the number of records that contain the data. The extreme case of low cardinality is Boolean data (e.g., does a resident in a city have internet access?), which has two values, True and False. Bitmap indexes use bit arrays (commonly called bitmaps) and answer queries by performing bitwise logical operations on these bitmaps. Bitmap indexes have a significant space and performance advantage over other structures for query of such data. Their drawback is they are less efficient than the traditional B-tree indexes for columns whose data is frequently updated: consequently, they are more often employed in read-only systems that are specialized for fast query - e.g., data warehouses, and generally unsuitable for online transaction processing applications.
+位图索引传统上被认为适用于低基数列，即具有适度数量的不同值的列，无论是绝对数量还是相对于包含数据的记录数量。低基数的极端情况是布尔数据（例如，城市居民是否有互联网访问？），它有两个值，True和False。位图索引使用位数组（通常称为位图）并通过对这些位图执行位逻辑操作来回答查询。与其他结构相比，位图索引在查询此类数据时具有显着的空间和性能优势。它们的缺点是对于频繁更新数据的列，它们比传统的B树索引效率低：因此，它们更常用于专门用于快速查询的只读系统，例如数据仓库，并且通常不适用于在线事务处理应用程序。
 
-Some researchers argue that bitmap indexes are also useful for moderate or even high-cardinality data (e.g., unique-valued data) which is accessed in a read-only manner, and queries access multiple bitmap-indexed columns using the AND, OR or XOR operators extensively. Bitmap indexes are also useful in data warehousing applications for joining a large fact table to smaller dimension tables such as those arranged in a star schema.
+一些研究人员认为，位图索引对于中等甚至高基数的数据（例如唯一值数据）在只读访问方式下也很有用，并且查询会广泛使用AND、OR或XOR运算符来访问多个位图索引列。在数据仓库应用中，位图索引也对将大型事实表与较小维度表进行连接非常有用，例如那些按照星型模式排列的表。
 
 </details>
 
-If you examine these summaries, you will notice that these sentences are not lifted verbatim from the original text. Instead, what is produced is an *abstractive* summary, which is newly produced based on the original text.
+如果您仔细查看这些摘要，您会注意到这些句子并不是直接从原始文本中提取的。相反，生成的是一种*抽象*摘要，它是基于原始文本新生成的。
 
-The summarization module achieves this at query time by passing on the text that is retrieved from Weaviate to a language model that is trained specifically for summarization.
+摘要模块通过将从Weaviate检索到的文本传递给专门用于摘要的语言模型，在查询时实现了这一目标。
 
-This means that you can set up your Weaviate instance to not only retrieve the most relevant query results for you but take the next step and add an overview of each retrieved object.
+这意味着您可以设置您的Weaviate实例，不仅可以为您检索最相关的查询结果，还可以进一步添加每个检索到的对象的概述。
 
-![Summarized documents are easier to understand](./img/weaviate-summarize.png#gh-light-mode-only)
-![Summarized documents are easier to understand](./img/weaviate-summarize-dark.png#gh-dark-mode-only)
+![概述文档更容易理解](./img/weaviate-summarize.png#gh-light-mode-only)
+![概述文档更容易理解](./img/weaviate-summarize-dark.png#gh-dark-mode-only)
 
-So, in a parallel fashion to the generative module, you can get back the information stored in Weaviate and *then some*.
+因此，与生成模块类似，您可以获取存储在Weaviate中的信息，*甚至更多*。
 
-Instead of this:
+而不是这样：
 
 ```json
 {
@@ -133,7 +136,7 @@ Instead of this:
 }
 ```
 
-You can get back:
+你可以回到：
 
 ```json
 {
@@ -160,30 +163,26 @@ You can get back:
 }
 ```
 
-Where the `<GENERATED_SUMMARY>` is actually not something that is stored in Weaviate!
+`<GENERATED_SUMMARY>`实际上不是存储在Weaviate中的内容！
 
-Here is how:
+以下是使用`sum-transformers`模块的步骤:
 
-## Using `sum-transformers`
-
-The required steps to make use of this module are as follows:
-
-1. Enable the module in your configuration file (e.g. `docker-compose.yml`).
-1. Add this to your query:
+1. 在配置文件中启用该模块（例如`docker-compose.yml`）。
+2. 将以下内容添加到您的查询中:
 
     ```graphql
     _additional { summary ( properties: ["<FIELD_TO_BE_SUMMARIZED>"]) { property result } }
     ```
 
-1. Parse the results!
+3. 解析结果！
 
-That's all there is to it. Let's take a look at each step in more detail.
+这就是全部内容了。让我们更详细地看一下每个步骤。
 
-### Configuration (`docker-compose.yml`) file
+### 配置文件 (`docker-compose.yml`)
 
-The `sum-transformers` module is to be used in addition to the usual vectorizer module, such as `text2vec-transformers`, or inference-API-based ones such as `text2vec-openai/cohere/huggingface`.
+`sum-transformers` 模块用于与常规的矢量化模块（如 `text2vec-transformers`）或基于推理 API 的模块（如 `text2vec-openai/cohere/huggingface`）一起使用。
 
-Accordingly, the relevant lines are:
+因此，相关的行为：
 
 ```yaml
 ---
@@ -202,10 +201,10 @@ services:
 ...
 ```
 
-Notice that the `ENABLE_MODULES` variable includes `sum-transformers`, and there is a `sum-transformers` section that specifies the Docker image to be used, specifies the summarizer model, and whether to use CUDA (GPU) acceleration.
+请注意 `ENABLE_MODULES` 变量中包含了 `sum-transformers`，并且有一个 `sum-transformers` 部分指定了要使用的 Docker 镜像，指定了摘要模型，以及是否使用 CUDA (GPU) 加速。
 
 <details>
-  <summary>Example of an entire configuration yaml</summary>
+  <summary>完整配置 yaml 的示例</summary>
 
 ```yaml
 ---
@@ -252,7 +251,7 @@ services:
 
 </details>
 
-With these variables specified, an instance of Weaviate can be spun up with the summarizer module enabled. Next, it's a matter of making queries:
+指定了这些变量后，可以启动一个带有summarizer模块的Weaviate实例。接下来，就是进行查询的问题了：
 
 :::note For WCS - use `generative-openai`
 At the time of writing, Weaviate Cloud Services (WCS) instances do not support the `sum-transformers` module.
@@ -260,11 +259,11 @@ At the time of writing, Weaviate Cloud Services (WCS) instances do not support t
 However, you can perform summarizations with the `generative-openai` module, by providing a specific prompt. Take a look below 😉.
 :::
 
-### Results with summaries
+### 带有摘要的结果
 
-Summaries are available at query time. In other words, they are not pre-determined but generated from the results retrieved by the `sum-transformers` model.
+摘要在查询时可用。换句话说，它们不是预先确定的，而是从由`sum-transformers`模型检索到的结果生成的。
 
-This can be triggered as an `additional` property, with a GraphQL query syntax like so:
+可以通过GraphQL查询语法触发此功能，作为一个`additional`属性，如下所示：
 
 ```graphql
 {
@@ -283,11 +282,11 @@ This can be triggered as an `additional` property, with a GraphQL query syntax l
 }
 ```
 
-Where the `_additional { summary ... }` instructs Weaviate to carry out the summarization.
+`_additional { summary ... }` 指示 Weaviate 执行摘要操作。
 
-In this syntax, `properties` specifies the fields to be summarized, where each summary will include a `property` that echoes the field name, and `result` is the summarized text output.
+在这个语法中，`properties` 指定要进行摘要的字段，其中每个摘要将包括一个 `property`，它复制了字段名称，而 `result` 则是摘要的文本输出。
 
-Thus, it will produce a result like:
+因此，它将产生如下结果：
 
 ```json
 {
@@ -311,10 +310,10 @@ Thus, it will produce a result like:
 }
 ```
 
-Note that in this example, `Article` was the class name, `wiki_summary` was the input text and the query included the `title` field also.
+请注意，在这个示例中，`Article`是类名，`wiki_summary`是输入文本，查询中还包括了`title`字段。
 
 <details>
-  <summary>See the full GraphQL query</summary>
+  <summary>查看完整的GraphQL查询</summary>
 
 ```graphql
 {
@@ -343,13 +342,13 @@ Note that in this example, `Article` was the class name, `wiki_summary` was the 
 
 </details>
 
-Grabbing these results is relatively straightforward. But as with many tasks that involve language models, there are a few tips and tricks to help you get the most out of this wonderful tool.
+获取这些结果相对简单。但是，与许多涉及语言模型的任务一样，有一些技巧和诀窍可以帮助您充分利用这个神奇的工具。
 
-### Alternative: `generative-openai`
+### 另一种选择：`generative-openai`
 
-You might have heard of our new [`generative-openai` module](/developers/weaviate/modules/reader-generator-modules/generative-openai) already. It can take your results, and provide a prompt to a generative model to get back a response.
+您可能已经听说过我们的新的[`generative-openai`模块](/developers/weaviate/modules/reader-generator-modules/generative-openai)。它可以接收您的结果，并向生成模型提供提示以获取响应。
 
-So, this module can also be used to generate summaries by prompting it directly to do so. Below is one such example:
+因此，该模块也可以通过直接提示来生成摘要。下面是一个示例：
 
 ```graphql
 {
@@ -379,66 +378,66 @@ So, this module can also be used to generate summaries by prompting it directly 
 }
 ```
 
-This produced:
+这样产生的结果是：
 
-> A bitmap index is a special kind of database index that uses bitmaps to efficiently store and query low-cardinality data. It is often used in read-only systems such as data warehouses, and is less efficient than traditional B-tree indexes for frequently updated data. Some researchers argue that bitmap indexes can also be used for moderate or high-cardinality data, and are useful for joining large fact tables to smaller dimension tables in data warehousing applications.
+> 位图索引是一种特殊类型的数据库索引，它使用位图来高效地存储和查询低基数的数据。它通常用于只读系统，比如数据仓库，并且对于频繁更新的数据而言，它比传统的B树索引效率低下。一些研究人员认为，位图索引也可以用于中等或高基数的数据，并且在数据仓库应用中，它对于将大型事实表与较小的维度表进行连接是很有用的。
 
-From the original text below:
+从下面的原始文本中：
 
 <details>
-  <summary>See original text</summary>
+  <summary>查看原文</summary>
 
-*A bitmap index is a special kind of database index that uses bitmaps.*
+*位图索引是一种特殊类型的数据库索引，它使用位图。*
 
-*Bitmap indexes have traditionally been considered to work well for low-cardinality columns, which have a modest number of distinct values, either absolutely, or relative to the number of records that contain the data. The extreme case of low cardinality is Boolean data (e.g., does a resident in a city have internet access?), which has two values, True and False. Bitmap indexes use bit arrays (commonly called bitmaps) and answer queries by performing bitwise logical operations on these bitmaps. Bitmap indexes have a significant space and performance advantage over other structures for query of such data. Their drawback is they are less efficient than the traditional B-tree indexes for columns whose data is frequently updated: consequently, they are more often employed in read-only systems that are specialized for fast query - e.g., data warehouses, and generally unsuitable for online transaction processing applications.*
+*位图索引传统上被认为在基数较低的列上效果很好，这些列具有适度数量的不同值，无论是绝对数量还是相对于包含数据的记录数量。基数较低的极端情况是布尔数据（例如，城市居民是否有互联网接入？），它有两个值，True和False。位图索引使用位数组（通常称为位图），通过对这些位图执行位逻辑操作来回答查询。与其他结构相比，位图索引在查询此类数据时具有显着的空间和性能优势。它们的缺点是在数据频繁更新的列上效率低于传统的B树索引：因此，它们更常用于专门用于快速查询的只读系统，例如数据仓库，通常不适用于在线事务处理应用程序。*
 
-*Some researchers argue that bitmap indexes are also useful for moderate or even high-cardinality data (e.g., unique-valued data) which is accessed in a read-only manner, and queries access multiple bitmap-indexed columns using the AND, OR or XOR operators extensively. Bitmap indexes are also useful in data warehousing applications for joining a large fact table to smaller dimension tables such as those arranged in a star schema.*
+*一些研究人员认为，位图索引对于中等或高基数的数据（例如，唯一值数据）在只读方式下访问的情况下也很有用，并且查询使用AND、OR或XOR运算符广泛地访问多个位图索引列。位图索引在数据仓库应用中也很有用，用于将大型事实表与较小的维度表进行连接，例如那些按星型模式排列的表。*
 
 </details>
 
-While this is not a custom-trained summarization model, this may be a great alternative solution where `sum-transformers` module cannot be used, or where you may wish to leverage flexible, large language models that are only available through APIs.
+尽管这不是一个定制训练的摘要模型，但它可能是`sum-transformers`模块无法使用的一个很好的替代解决方案，或者您希望利用只能通过API使用的灵活、大型语言模型。
 
-## Best practice notes
+## 最佳实践注意事项
 
-### GPU usage
+### GPU 使用情况
 
-The `sum-transformers` module is configured to spin up a Docker container on your system to carry out the inference (i.e. summarization) task. While inference tasks are far less resource intensive than training, they are still non-trivial.
+`sum-transformers`模块被配置为在您的系统上启动一个Docker容器来执行推理（即摘要）任务。虽然推理任务比训练任务要少占用资源，但它们仍然是非常重要的。
 
-It will run much faster on systems that support GPU acceleration with CUDA. CPUs may be fine for occasional or private, evaluation use, but for any kind of deployment, we highly recommend utilizing GPU acceleration.
+在支持CUDA的系统上，它将运行得更快。对于偶尔或私人评估使用，使用CPU可能是可以的，但对于任何部署，我们强烈建议使用GPU加速。
 
-### Model choice
+### 模型选择
 
-Currently, the `sum-transformers` module uses the `bart-large-cnn` model under the hood by default, with an option for the `pegasus-xsum` model. Both of these are well-known, high-performance models trained by Facebook and Google respectively.
+目前，默认情况下，`sum-transformers` 模块在内部使用 `bart-large-cnn` 模型，同时提供了 `pegasus-xsum` 模型的选项。这两个模型分别由 Facebook 和 Google 训练，具有良好的性能和知名度。
 
-In addition to these two models, however, you can use any model from the Hugging Face Hub (or your own) by following [this guide](/developers/weaviate/modules/reader-generator-modules/sum-transformers#use-another-summarization-module-from-hugging-face).
+除了这两个模型之外，您还可以使用来自 Hugging Face Hub（或您自己的模型）的任何模型，只需按照 [此指南](/developers/weaviate/modules/reader-generator-modules/sum-transformers#use-another-summarization-module-from-hugging-face) 进行操作。
 
-Even when looking only at language models that are trained for summarization tasks, there is still a wide range of choices in terms of sheer numbers, which vary in the target domain (e.g. medical, legal, scientific, etc.) and size (number of parameters, i.e. speed). If you have specific needs, we recommend investigating other models.
+即使只考虑针对摘要任务训练的语言模型，仍然存在大量的选择，这些选择在目标领域（例如医学、法律、科学等）和规模（参数数量，即速度）上有所不同。如果您有特定需求，我们建议调查其他模型。
 
-### Avoid too long an input
+### 避免输入过长
 
-All transformer models have a maximum input length size. For example, `bart-large-cnn` has a maximum limit of 1024 tokens, where each token is part of a word (i.e. a few characters).
+所有的Transformer模型都有一个最大输入长度限制。例如，`bart-large-cnn`模型的最大限制是1024个标记，其中每个标记是一个词的一部分（即几个字符）。
 
-Inputting too long a text into the summarizer module will cause it to throw an error. Accordingly, if you envisage generating summaries using `sum-transformers`, we recommend considering chunking your data at import time to make sure that the content of each field is shorter than the maximum length.
+将过长的文本输入到摘要生成模块中会导致错误。因此，如果您计划使用`sum-transformers`生成摘要，我们建议在导入数据时考虑对数据进行分块处理，以确保每个字段的内容都比最大长度要短。
 
-### But also... not too short
+### 但也不要太短
 
-The [Goldilocks Principle](https://en.wikipedia.org/wiki/Goldilocks_principle) also applies here, where too short an input may cause the summarizer model to misbehave (i.e. [hallucinate](https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence))).
+[金发姑娘原则](https://en.wikipedia.org/wiki/Goldilocks_principle)在这里也适用，输入太短可能会导致摘要模型表现不佳（即[产生幻觉](https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence))）。
 
-When fed insufficient input, the model may "pad" the output with tokens that have very little grounding in the truth. Generally speaking, an input length that is shorter than a typical "summary" output length by the model is inadvisable.
+当输入的内容不足时，模型可能会使用与真实情况关联较少的标记来“填充”输出。一般来说，输入长度小于模型输出的典型“摘要”长度是不可取的。
 
-## Do more with less
+## 用更少的内容做更多的事情
 
-All in all, summarizing your data with Weaviate can be another valuable tool in your toolkit to reduce TL;DRs in our lives. By combining the power of vector search with summarization capabilities, Weaviate offers a practical, easy solution to the problem of information overload.
+总而言之，使用Weaviate总结您的数据可以成为您工具箱中的另一个有价值的工具，以减少我们生活中的TL;DR。通过将向量搜索的能力与总结功能相结合，Weaviate为信息过载问题提供了一个实用且简单的解决方案。
 
-So instead of slashing your way through thickets of prose to look for the information you need, work smarter! Whether it's with `generate-openai` or `sum-transformers` - let Weaviate lift you up to give you a bird's eye view of the whole landscape.
+所以，不要费力地在大量的文章中寻找所需的信息，要工作更智能！无论是使用 `generate-openai` 还是 `sum-transformers`，让 Weaviate 带你俯瞰整个领域。
 
-## Bonus: TL;DR version (edited):
+## 附加奖励: TL;DR 版本 (编辑):
 
-Weaviate can also summarize information during retrieval through the use of its summarizer module, `sum-transformers`.
+Weaviate 还可以通过其摘要器模块 `sum-transformers` 在检索过程中进行信息摘要。
 
-This module can shorten a piece of text into a pithy, to-the-point summary by passing the text retrieved from Weaviate to a language model trained specifically for summarization.
+通过将从Weaviate检索到的文本传递给专门用于摘要的语言模型，该模块可以将一段文本缩短为简洁、简明的摘要。
 
-By using Weaviate to summarize your data, you can reduce the amount of too long; did not read (TL;DR) content in your life and reduce the problem of information overload. The `sum-transformers` module uses the `bart-large-cnn` model by default, with an option for the `pegasus-xsum` model, but any model from Hugging Face Hub can be used.
+通过使用Weaviate来对数据进行摘要，您可以减少生活中过长或者无法阅读的内容，减少信息过载的问题。`sum-transformers`模块默认使用`bart-large-cnn`模型，也可以选择`pegasus-xsum`模型，但是任何来自Hugging Face Hub的模型都可以使用。
 
 import StayConnected from '/_includes/stay-connected.mdx'
 

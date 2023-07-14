@@ -1,80 +1,81 @@
 ---
-title: Weaviate Cloud Service Public Beta - Open Now!
-slug: wcs-public-beta
-authors: [pete]
+authors:
+- pete
 date: 2023-05-02
+description: The Weaviate Cloud Service is the easiest way to get a Weaviate cluster
+  up and running within minutes. Learn more here.
 image: ./img/hero.png
-tags: ['release']
-description: "The Weaviate Cloud Service is the easiest way to get a Weaviate cluster up and running within minutes. Learn more here."
-
+slug: wcs-public-beta
+tags:
+- release
+title: Weaviate Cloud Service Public Beta - Open Now!
 ---
-![Weaviate Cloud Service Public Beta - Open Now!](./img/hero.png)
 
-<!-- truncate -->
+![Weaviate 云服务公共测试版 - 现已开放！](./img/hero.png)
+
+<!-- 截断 -->
 
 import ReactPlayer from 'react-player/lazy'
 
-Last November, we quietly introduced the private beta of the [Weaviate Cloud Service](https://weaviate.io/pricing), a fully managed vector database as a service. Today we are announcing a big upgrade to the Weaviate Cloud and availability of the public beta release of the service.
+去年11月，我们悄悄推出了 [Weaviate 云服务](https://weaviate.io/pricing) 的私有测试版，这是一个完全托管的矢量数据库服务。今天，我们宣布对 Weaviate 云服务进行了重大升级，并且公开发布了公共测试版。
 
 <ReactPlayer url='https://youtu.be/WZMFFabyC_4' controls='true'/>
 
-The Weaviate Cloud enables AI application developers to use the [open source Weaviate vector database](https://weaviate.io/developers/weaviate) as a fully managed cloud service. It’s the easiest way to get a vector database cluster up and running within minutes, so you can get right to loading, vectorizing, and searching your data.
+Weaviate Cloud使AI应用程序开发人员能够将开源的Weaviate向量数据库作为完全托管的云服务使用。这是最简单的方式，只需几分钟即可启动一个向量数据库集群，这样您就可以立即加载、向量化和搜索数据。
 
-## Thanks for all the early feedback!
+## 感谢您提供的所有早期反馈！
 
-During the Weaviate Cloud private beta, we had several thousand people create free Weaviate Cloud sandboxes and try it out. We’d like to thank everyone who tried it and gave us feedback; it was extremely helpful. We look forward to hearing about your experience with the new (and future versions), which you can still [try for free here](https://console.weaviate.cloud/).
+在Weaviate Cloud私有测试版期间，我们有数千人创建了免费的Weaviate Cloud沙箱并进行了尝试。我们要感谢所有尝试并给予我们反馈的人们，这对我们非常有帮助。我们期待听到您对新版本（和未来版本）的体验，您仍然可以在此处[免费尝试](https://console.weaviate.cloud/)。
 
-## The Weaviate Cloud Service Public Beta
-Here’s a quick overview of what’s new and what’s coming next.
+## Weaviate Cloud服务公开测试版
+以下是新内容和即将推出的内容的快速概述。
 
-### Help yourself - Self-Service Provisioning Improvements
-One of the biggest changes from the private beta to today’s public beta release is automated Weviate database cluster provisioning. Immediately after signing up for a Weaviate Cloud account, you can begin creating, querying, securing, and controlling one or more databases via the Weaviate Cloud console. As a result of the automation improvements, newly created Weaviate database clusters will be ready for use within a minute or two.
+### 自助服务提升-自助服务提供的改进
+从私有测试版到今天的公开测试版发布，最大的变化之一是自动化的Weaviate数据库集群提供。在注册Weaviate Cloud账户后，您可以通过Weaviate Cloud控制台开始创建、查询、保护和管理一个或多个数据库。由于自动化改进，新创建的Weaviate数据库集群将在一两分钟内准备好供使用。
 
-![Weaviate Cloud Service Create Cluster Page ](./img/wcs-options.png)
+![Weaviate云服务创建集群页面](./img/wcs-options.png)
 
-### Weaviate Cloud Service runs on Google Cloud (other clouds & on-premises are options too)
-The Weaviate Cloud Service runs on Google Cloud, and by default, new Weaviate database clusters are provisioned to run on Google Cloud. When you create a new cluster, you can choose a specific Google Cloud location (region) on which to run your database cluster. We do plan to make Weaviate Cloud available on AWS and Azure; stay tuned for news on that!
+### Weaviate云服务运行在Google Cloud上（其他云和本地部署也是可选的）
+Weaviate云服务在Google Cloud上运行，并且默认情况下，新的Weaviate数据库集群会在Google Cloud上进行配置。当您创建一个新的集群时，您可以选择一个特定的Google Cloud位置（区域）来运行您的数据库集群。我们计划将Weaviate Cloud扩展到AWS和Azure；请关注相关消息！
 
-### Hybrid SaaS Option - Fully Managed, on Your Cloud
-If you’d like your database hosted on a dedicated private cloud, you can contact us and [request a Hybrid-SaaS cluster](https://weaviate.io/pricing). With the Hybrid-SaaS option, Weaviate will set up and manage your database cluster on a dedicated private cloud system on the cloud platform of your choice or on premises in your data center.
+### 混合SaaS选项-在您的云上进行全面管理
+如果您希望将您的数据库托管在专用的私有云上，您可以联系我们并[请求一个混合SaaS集群](https://weaviate.io/pricing)。通过混合SaaS选项，Weaviate将在您选择的云平台上或在您的数据中心内设置和管理您的数据库集群。
 
-## The Full Power of the Weaviate Vector Database
-The Weaviate Cloud is always updated with the latest [Weaviate open source database](https://github.com/weaviate/weaviate) version and functionality. If you’ve been using Weaviate Cloud since its release, you’ve seen it enhanced with new core Weaviate database functionality, such as:
+## Weaviate矢量数据库的全部能力
+Weaviate Cloud始终与最新的[Weaviate开源数据库](https://github.com/weaviate/weaviate)版本和功能保持同步。如果您从发布以来一直在使用Weaviate Cloud，您会发现它不断增强了核心Weaviate数据库功能，例如：
 
-- [ChatGPT plug-in](https://weaviate.io/blog/weaviate-retrieval-plugin)
-- [Bitmap indexing](https://weaviate.io/blog/weaviate-1-18-release#faster-filtering-with-roaring-bitmaps) for faster filtered search
-- [HNSW-PQ index and data compression](https://weaviate.io/blog/weaviate-1-18-release#hnsw-pq) for greater cost efficiency
-- [Database replication](https://weaviate.io/blog/weaviate-1-18-release#replication)
-- [WAND and BM25 search](https://weaviate.io/blog/weaviate-1-18-release#improvements-to-bm25-and-hybrid-search)
-- [Cursor API](https://weaviate.io/blog/weaviate-1-18-release#cursor-api) for processing query results
+- [ChatGPT插件](https://weaviate.io/blog/weaviate-retrieval-plugin)
+- [位图索引](https://weaviate.io/blog/weaviate-1-18-release#faster-filtering-with-roaring-bitmaps)以提供更快的过滤搜索功能
+- [HNSW-PQ索引和数据压缩](https://weaviate.io/blog/weaviate-1-18-release#hnsw-pq)以提高成本效益
+- [数据库复制](https://weaviate.io/blog/weaviate-1-18-release#replication)
+- [WAND和BM25搜索](https://weaviate.io/blog/weaviate-1-18-release#improvements-to-bm25-and-hybrid-search)
+- [光标API](https://weaviate.io/blog/weaviate-1-18-release#cursor-api)用于处理查询结果
 
-## Develop More Productively - Interactive Admin & Query Console
-We care a lot about the Weaviate user experience, so developer productivity is a top design priority. Hence, we implemented many new features in the Weaviate Cloud Console, which now allows you to administer your Weaviate clusters - create, delete, restore, monitor your clusters and activate high-availability settings.
+## 更高效地开发 - 交互式管理和查询控制台
+我们非常关注Weaviate的用户体验，因此开发者的生产力是我们的首要设计目标。因此，在Weaviate云控制台中，我们实现了许多新功能，现在您可以管理您的Weaviate集群 - 创建、删除、恢复、监控您的集群并激活高可用性设置。
 
-![Weaviate Cloud Service Console ](./img/wcs-connected-instances.png)
+![Weaviate云服务控制台](./img/wcs-connected-instances.png)
 
-The console also features a GraphQL IDE that allows you to interactively query your Weaviate databases. The GraphQL query editor features:
+控制台还提供了一个GraphQL IDE，可以让您与Weaviate数据库进行交互式查询。GraphQL查询编辑器具有以下功能：
 
-- Syntax highlighting
-- Intelligent type ahead of fields, arguments, types, and more
-- Real-time error highlighting and reporting for queries and variables
-- Automatic query and variables completion
+- 语法高亮显示
+- 智能提示字段、参数、类型等
+- 实时错误高亮显示和查询变量报告
+- 自动完成查询和变量
 
+![Weaviate云服务GraphQL IDE ](./img/wcs-console-example-query.png)
 
-![Weaviate Cloud Service GraphQL IDE ](./img/wcs-console-example-query.png)
+## 控制对Weaviate的访问 - API密钥管理
+为了方便控制对向量数据库的访问，所有Weaviate Cloud实例都可以生成具有完整管理员（读写）访问权限的API密钥。付费集群还支持只读API密钥。
 
-## Control Access to Weaviate - API Key Management
-To help make it easy to control access to your vector databases, all Weaviate Cloud instances can generate API keys with full admin (read and write) access. Read-only API keys are also supported for paid clusters.
+![Weaviate Cloud服务中的API密钥管理](./img/wcs-get-key.png)
 
+## 下一步，GA...
+Weaviate Cloud目前处于公共测试版阶段。我们计划在2023年后期发布正式版本，届时我们将根据公测用户的反馈进行改进。
 
-![API Key Management in Weaviate Cloud Service](./img/wcs-get-key.png)
+如果您想尝试Weaviate Cloud，可以在这里创建一个[免费的Weaviate Cloud沙箱](https://console.weaviate.cloud/)。
 
-## Next Stop, GA…
-The Weaviate Cloud is in public beta. General Availability is planned for release later in 2023, after we’ve addressed feedback from public beta users.
-
-If you’d like to try Weaviate Cloud, you can create a [free Weaviate Cloud Sandbox here](https://console.weaviate.cloud/).
-
-And if you have questions or feedback, please join the [Weaviate community on Slack](https://weaviate.io/slack). We look forward to hearing from you!
+如果您有任何问题或反馈意见，请加入[Weaviate Slack社区](https://weaviate.io/slack)。我们期待您的回音！
 
 import WhatNext from '/_includes/what-next.mdx'
 

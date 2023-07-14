@@ -1,73 +1,81 @@
 ---
-title: Weaviate 1.17 release
-slug: weaviate-1-17-release
-authors: [erika, zain, laura, dan]
+authors:
+- erika
+- zain
+- laura
+- dan
 date: 2022-12-20
-tags: ['release']
+description: Weaviate 1.17 introduces Replication, Hybrid Search, BM25, Faster Startup
+  and Imports and more. Learn all about it.
 image: ./img/hero.png
-description: "Weaviate 1.17 introduces Replication, Hybrid Search, BM25, Faster Startup and Imports and more. Learn all about it."
+slug: weaviate-1-17-release
+tags:
+- release
+title: Weaviate 1.17 release
 ---
-![Weaviate 1.17 release](./img/hero.png)
+
+![Weaviate 1.17发布](./img/hero.png)
 
 <!-- truncate -->
 
-We are happy to announce the release of Weaviate `1.17`, which brings a set of great features, performance improvements, and fixes.
+我们很高兴地宣布Weaviate `1.17`的发布，该版本带来了一系列出色的功能、性能改进和修复。
 
-## The brief
-If you like your content brief and to the point, here is the TL;DR of this release:
+## 简介
+如果您喜欢简洁明了的内容，这里是本次发布的TL;DR：
 
-1. [Replication](#replication) - configure multi-node replication to improve your database resilience and performance
-1. [Hybrid Search](#hybrid-search) - combine dense and sparse vectors to deliver the best of both search methods
-1. [BM25](#bm25) - search your data with bm25
-1. [Faster Startup and Imports](#faster-startup-and-imports) - enjoy Weaviate, that is up and running faster than ever before with more speedy data imports
-1. [Other Improvements and Bug Fixes](#other-improvements-and-bug-fixes) – enjoy a more stable Weaviate experience, courtesy of fixes and improvements delivered in nine installments since 1.16.0.
+1. [复制](#replication) - 配置多节点复制以提高数据库的弹性和性能
+1. [混合搜索](#hybrid-search) - 结合密集和稀疏向量，提供最佳的搜索方法
+1. [BM25](#bm25) - 使用bm25搜索您的数据
+1. [更快的启动和导入](#faster-startup-and-imports) - 以更快的速度启动和导入数据的Weaviate
+1. [其他改进和错误修复](#other-improvements-and-bug-fixes) - 通过在1.16.0版本之后的九个更新中提供的修复和改进，享受更稳定的Weaviate体验。
 
-Read below to learn more about each of these points in more detail.
+请继续阅读以了解更多关于每个细节的信息。
 
-## Replication
-![replication animation](./img/weaviate-replications-animation.gif)
+## 复制
+![复制动画](./img/weaviate-replications-animation.gif)
 
-Weaviate's `v1.17` release introduces **replication**. Replication enables you to set up your Weaviate environment in a cluster with multiple server nodes. Weaviate will automatically replicate data across nodes in the background.
+Weaviate的`v1.17`版本引入了**复制**功能。复制功能允许您在多个服务器节点的集群中设置Weaviate环境。Weaviate会自动在后台复制数据到各个节点。
 
-### Use Cases
-This enables a variety of [use cases](/developers/weaviate/concepts/replication-architecture/motivation). For example, if a Weaviate node goes down, another node can shoulder the load without losing availability or data. Data in Weaviate will thus have a **higher availability** for its users.
+### 使用案例
+这使得各种[使用场景](/developers/weaviate/concepts/replication-architecture/motivation)成为可能。例如，如果一个Weaviate节点宕机，另一个节点可以承担负载而不会丢失可用性或数据。因此，Weaviate中的数据对用户而言具有**更高的可用性**。
 
-Secondly, Replication can improve the **throughput of read requests**, as you can use all additional nodes to spread the load of queries. Adding extra database nodes can serve more users simultaneously.
+其次，复制可以提高**读请求的吞吐量**，因为您可以使用所有额外的节点来分散查询的负载。添加额外的数据库节点可以同时为更多用户提供服务。
 
-Thirdly, database replication enables **zero downtime upgrades**, because only a single node has to stop at a time while other replicas can continue serving.
+第三，数据库复制实现了**零停机升级**，因为只需要一个节点停止服务，其他副本可以继续提供服务。
 
-A final motivation for using database replication is **regional proximity**. With Multi-DataCenter replication, you can put Weaviate servers in different locations, which can decrease latency for users spread out geographically. The Multi-DataCenter feature is not implemented yet, [but we are already working on it](https://github.com/weaviate/weaviate/issues/2436).
+使用数据库复制的最后一个动机是**地理邻近性**。通过多数据中心复制，您可以将Weaviate服务器放置在不同的位置，从而减少地理分布的用户的延迟。多数据中心功能尚未实现，[但我们已经在进行开发工作](https://github.com/weaviate/weaviate/issues/2436)。
 
-### Replication Design in Weaviate
-Replication in Weaviate is modeled after how users typically use Weaviate. Most use cases are very-large-scale, which aim for low latency and high availability.
+### Weaviate中的复制设计
+在Weaviate中，复制是根据用户通常使用Weaviate的方式进行建模的。大多数用例都非常大规模，旨在实现低延迟和高可用性。
 
-It is often tolerable if data is temporarily out of sync, as long as consistency is reached eventually. Keeping the [CAP Theorem](/developers/weaviate/concepts/replication-architecture/#cap-theorem) trade-offs in mind, Weaviate's replication architecture **prefers availability over consistency**.
+如果数据暂时不同步，通常是可以容忍的，只要最终达到一致性即可。在考虑[CAP定理](/developers/weaviate/concepts/replication-architecture/#cap-theorem)的权衡时，Weaviate的复制架构**更偏向于可用性而非一致性**。
 
-Nevertheless, both read and write consistency will become [fully tunable](/developers/weaviate/concepts/replication-architecture/consistency) from `v1.18` (read consistency is partly tunable from `v1.17`).
+然而，从 `v1.18` 开始，读取和写入一致性都将变得[可调整](/developers/weaviate/concepts/replication-architecture/consistency)（从 `v1.17` 开始，读取一致性部分可调整）。
 
-Weaviate has a [leaderless replication design](/developers/weaviate/concepts/replication-architecture/cluster-architecture), so there is no distinction between primary and secondary nodes, thereby removing all single points of failures.
+Weaviate 采用[无主复制设计](/developers/weaviate/concepts/replication-architecture/cluster-architecture)，因此没有主节点和从节点之间的区别，从而消除了所有单点故障。
 
-### Roadmap
-With `v1.17`, the foundations of replication are built into Weaviate. In `v1.18` and later releases, more features will be added:
+### 路线图
+从`v1.17`版本开始，复制的基础功能已经内置在Weaviate中。在`v1.18`和以后的版本中，将增加更多功能：
 
-| Weaviate version | Expected release | Feature |
+| Weaviate版本 | 预计发布时间 | 功能 |
 | --- | --- | --- |
-| `v1.17` | Live | * Leaderless Replication<br />* Tunable Read Consistency for Get-by-ID requests |
-| `v1.18` | Feb 2023 | * Tunable Write Consistency<br />* Tunable Read Consistency for all requests<br />* Repairs – Read-Repairs or Background/Async Repairs |
-| TBD | TBD | * Multi-Datacenter replication (upvote it [here](https://github.com/weaviate/weaviate/issues/2436)) |
+| `v1.17` | 实时 | * 无领导复制<br />* 可调整的按ID获取请求的读一致性 |
+| `v1.18` | 2023年2月 | * 可调整的写一致性<br />* 所有请求的可调整的读一致性<br />* 修复 - 读修复或后台/异步修复 |
+| 待定 | 待定 | * 多数据中心复制（在此处投票 [here](https://github.com/weaviate/weaviate/issues/2436)） |
 
-### Learn More
-To learn more, visit the documentation pages for [Replication Architecture](/developers/weaviate/concepts/replication-architecture) and/or [Usage](/developers/weaviate/configuration/replication), where all concepts are explained in detail, supported by illustrations!
+### 了解更多
+要了解更多信息，请访问[复制架构](/developers/weaviate/concepts/replication-architecture)和/或[使用方法](/developers/weaviate/configuration/replication)的文档页面，其中详细解释了所有概念，并配有插图！
 
-## Hybrid Search
-![Hybrid Search](./img/hybrid-search.png)
+## 混合搜索
+![混合搜索](./img/hybrid-search.png)
 
-Hybrid search is a search functionality that **combines** the best features of both keyword-based search algorithms with vector search techniques. In hybrid search, sparse and dense vectors are used to represent the meaning and context of search queries and documents. Sparse embeddings are generated from models like [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) and [SPLADE](https://arxiv.org/abs/2107.05720). Dense embeddings are generated from machine learning models like [GloVe](https://text2vec.org/glove.html) and [Transformers](https://huggingface.co/docs/transformers/index).
+混合搜索是将基于关键字的搜索算法和向量搜索技术的最佳特点结合起来的搜索功能。在混合搜索中，稀疏向量和密集向量被用来表示搜索查询和文档的含义和上下文。稀疏嵌入是由诸如[BM25](https://en.wikipedia.org/wiki/Okapi_BM25)和[SPLADE](https://arxiv.org/abs/2107.05720)等模型生成的。密集嵌入是由机器学习模型如[GloVe](https://text2vec.org/glove.html)和[Transformers](https://huggingface.co/docs/transformers/index)生成的。
 
-Using both sparse and dense search methods combines the power of keyword matching with contextual semantics. For example, in the query "How to catch an Alaskan Pollock?", the semantic meaning of "catch" is revealed to be related to fishing from the context; this is where dense vectors thrive. Sparse methods on their own would not be able to associate "catch" with fishing any differently from catching a baseball or a cold. On the other hand, sparse methods can capture specific entities such as "Alaskan Pollock". This query illustrates an example where hybrid search combines the best of both sparse and dense vectors.
+同时使用稀疏和密集搜索方法，结合了关键词匹配和上下文语义的优势。例如，在查询“如何捕捉阿拉斯加鳕鱼？”中，通过上下文揭示了“捕捉”与捕鱼相关的语义含义；这正是密集向量发挥作用的地方。单独使用稀疏方法无法将“捕捉”与捕捞棒球或感冒联系起来。另一方面，稀疏方法可以捕捉特定的实体，比如“阿拉斯加鳕鱼”。这个查询展示了混合搜索将稀疏和密集向量的优点结合起来的一个例子。
 
-### Hybrid Search Query
-Here is an example of how to run a hybrid search query in GraphQL:
+### 混合搜索查询
+
+以下是在GraphQL中运行混合搜索查询的示例:
 
 ```
 {
@@ -83,34 +91,34 @@ Here is an example of how to run a hybrid search query in GraphQL:
   }
 }
 ```
-Similar to how you use `nearText`, `hybrid` is passed as an argument to a Weaviate class object. `hybrid` has two parameters: `query` and `alpha`. `query` is fairly straightforward, whereas `alpha` is a new idea. `alpha` describes the weighting between dense and sparse search methods. An alpha closer to 0 weighs sparse search more than dense, and an alpha closer to 1 weighs dense search more than sparse. Additionally, if alpha is set to 0, it only uses sparse search, and if alpha equals 1, then it uses dense search only.
+与使用`nearText`类似，`hybrid`作为参数传递给Weaviate类对象。`hybrid`有两个参数：`query`和`alpha`。`query`相对简单，而`alpha`是一个新概念。`alpha`描述了稠密搜索和稀疏搜索方法之间的权重。接近0的alpha更加重视稀疏搜索，而接近1的alpha更加重视稠密搜索。另外，如果alpha设置为0，则只使用稀疏搜索，如果alpha等于1，则只使用稠密搜索。
 
-### What's next in Hybrid
-Work on hybrid search is not over! We will continue to make improvements and introduce new features in the future. For example, there is already something in the [backlog](https://github.com/weaviate/weaviate/issues/2393) to add [`where` filters](/developers/weaviate/api/graphql/filters#where-filter) to hybrid search (give it a thumbs up while you're there). 🙂
+### Hybrid搜索的下一步是什么
+我们对混合搜索的工作并未结束！我们将继续改进并在未来引入新功能。例如，在混合搜索中已经有一些[待办事项](https://github.com/weaviate/weaviate/issues/2393)，可以在那里添加[`where`筛选器](/developers/weaviate/api/graphql/filters#where-filter)（在那里给它一个赞）。 🙂
 
-### Learn More
-The hybrid operator is available through GraphQL, REST and all Weaviate client languages. Check out the [documentation](/developers/weaviate/api/graphql/vector-search-parameters#hybrid) for more information and learn how to write the query in the other client programming languages.
+### 了解更多信息
+混合运算符可通过GraphQL、REST和所有Weaviate客户端语言使用。请查看[文档](/developers/weaviate/api/graphql/vector-search-parameters#hybrid)以获取更多信息，并了解如何在其他客户端编程语言中编写查询。
 
 ## BM25
 ![BM25](./img/bm25.png)
 
-BM25 ("Best Match #25" - it took quite a few iterations to arrive at the current state of the art 😉) is a [family of ranking functions](https://link.springer.com/referenceworkentry/10.1007/978-0-387-39940-9_921) that is widely used in information retrieval to score and rank documents based on their relevance to a given search query.
+BM25（"最佳匹配25" - 经过多次迭代才达到了当前的艺术水平 😉）是一种广泛用于信息检索的排名函数系列，根据文档与给定搜索查询的相关性对其进行评分和排名。
 
-### BM25 Operator
-In Weaviate v1.17, we introduce a search operator called [`bm25`](/developers/weaviate/api/graphql/vector-search-parameters#bm25), which performs a case-insensitive keyword search, then ranks the results using the BM25F ranking function - **B**est **M**atch **25** with Extension to Multiple Weighted **F**ields, a variant of BM25 that can take into account different weights for different properties (fields) of the document, in order to produce more accurate results.
+### BM25 运算符
+在Weaviate v1.17中，我们引入了一个名为[`bm25`](/developers/weaviate/api/graphql/vector-search-parameters#bm25)的搜索操作符，它执行一个不区分大小写的关键词搜索，然后使用BM25F排名函数对结果进行排名 - **B**est **M**atch **25** with Extension to Multiple Weighted **F**ields，这是BM25的一个变体，可以考虑文档的不同属性（字段）的不同权重，以产生更准确的结果。
 
-### Core Concept
-The basic idea behind BM25 is to score a document based on the number of times a particular term appears in the document, as well as the overall length of the document - one occurrence in a tweet is much more significant than one occurrence in a book. Essentially, this is done using a combination of term frequency (TF - the more times the term appears, the higher the score) and inverse document frequency (IDF - if a term occurs rarely in the documents in the corpus, then whenever it does occur, that occurrence is probably significant).
+### 核心概念
+BM25背后的基本思想是根据特定术语在文档中出现的次数以及文档的总长度对文档进行评分。在推特中出现一次与在书中出现一次相比，推特中的一次出现更具有重要性。基本上，这是通过使用词频（TF - 术语出现的次数越多，得分越高）和逆文档频率（IDF - 如果一个术语在语料库中的文档中很少出现，那么无论何时它出现，该出现可能都是重要的）的组合来实现的。
 
-[TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) is in fact the name of a ranking function [upon which BM25 builds](https://kmwllc.com/index.php/2020/03/20/understanding-tf-idf-and-bm-25/). The idea has been refined to codify numerous information retrieval intuitions such as, if a term appears three times in a document and six times in another, that doesn't automatically mean the second document is twice as relevant.
+[TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)实际上是一种排名函数的名称，[BM25是基于此构建的](https://kmwllc.com/index.php/2020/03/20/understanding-tf-idf-and-bm-25/)。这个想法已经被改进，以编码许多信息检索的直觉，例如，如果一个术语在一个文档中出现三次，在另一个文档中出现六次，并不意味着第二个文档的相关性是第一个文档的两倍。
 
-### When to use BM25
-BM25 is best used when an exact match for the query keywords is desired (and the order of the words in the query is not important) and in out-of-domain searches (when the model is not specifically trained on the corpus of documents). If stemming or semantic similarity are desired, Weaviate's [vector search](/developers/weaviate/api/graphql/vector-search-parameters#hybrid) will be better suited.
+### 何时使用BM25
+当需要精确匹配查询关键词（且查询词的顺序不重要）以及进行领域外搜索（当模型未经过特定语料库训练）时，BM25是最佳选择。如果需要使用词干处理或语义相似度，Weaviate的[向量搜索](/developers/weaviate/api/graphql/vector-search-parameters#hybrid)将更适合。
 
-### BM25 Query Example
-The `bm25` operator takes one required parameter, a string `query`, and an optional `properties` parameter - an array of property names, each of which being optionally weighted by a factor placed after a `^` character.
+### BM25查询示例
+`bm25`操作符接受一个必需的参数`query`，以及一个可选的`properties`参数 - 一个属性名称的数组，每个属性名称都可以在`^`字符后面加上一个可选的权重因子。
 
-Here is a GraphQL example using the `bm25` argument:
+以下是使用`bm25`参数的GraphQL示例:
 
 ```graphql
 {
@@ -130,51 +138,52 @@ Here is a GraphQL example using the `bm25` argument:
 }
 ```
 
-The response contains the `score` in the `_additional` object.
-### Learn More
-The `bm25` operator is available through GraphQL, REST and all Weaviate client languages. Check out the [documentation](/developers/weaviate/api/graphql/vector-search-parameters#bm25) for more information.
+响应中包含 `_additional` 对象中的 `score` 字段。
+### 了解更多
+`bm25` 运算符可通过 GraphQL、REST 和所有 Weaviate 客户端语言进行使用。请查看 [文档](/developers/weaviate/api/graphql/vector-search-parameters#bm25) 获取更多信息。
 
-## Faster Startup and Imports
-![Faster Startup and Imports](./img/faster-startup.png)
+## 更快的启动和导入
+![更快的启动和导入](./img/faster-startup.png)
 
-With Weaviate `v1.17` come faster startup times as a result of persisting computations on disk that were previously being computed everytime at startup. For example the startup time with the Wikipedia dataset has improved from ~5 mins to now ~1min. To dig a little deeper, as a part of the initialization of the LSM store segment we build a bloom filter for the segment, the runtime for which is proportional to the segment size, and we also calculate the "count net additions" (CNAs). Both of these operations which were previously computed everytime in-memory during the initialization phase are now persisted on-disk after the first startup allowing for faster subsequent startup times. For more details around this fix please read more [here](https://github.com/weaviate/weaviate/pull/2385). It's important to note that this change is fully backward compatible, however after upgrading to `v1.17` during the first startup the files cannot be read from disk because they don't yet exist. After the first startup they will be persisted on-disk and you should notice speedier subsequent startups.
+随着Weaviate `v1.17`的发布，启动时间得到了改善，这是因为我们将之前在每次启动时计算的计算结果持久化到磁盘上。例如，使用维基百科数据集的启动时间从大约5分钟缩短到了大约1分钟。为了深入了解，作为LSM存储段初始化的一部分，我们为该段构建了一个布隆过滤器，其运行时间与段大小成比例，并计算了"count net additions" (CNAs)。这两个操作以前在内存中在初始化阶段每次都计算，现在在首次启动后持久化到磁盘上，从而实现了更快的后续启动时间。有关此修复的更多详细信息，请阅读[此处](https://github.com/weaviate/weaviate/pull/2385)。需要注意的是，这个改变完全向后兼容，但是在升级到`v1.17`后的第一次启动时，文件无法从磁盘中读取，因为它们尚不存在。在第一次启动后，它们将被持久化到磁盘上，您应该会注意到后续启动速度更快。
 
-### Adjust Memtable Size Dynamically
-Another contributor to the faster startup times in `v1.17` is that now the size of the memtable (the in-memory portion of the LSM store) is adjusted dynamically. Previously the memtable was fixed at 10MB and on large clusters with parallel imports this 10MB was inadequate and would act as a bottleneck since it would fill up so quickly that it would constantly need to be flushed. Now, with this change, the memtable starts off at 10MB but can be increased in size everytime the last flush duration is less than a specific threshold which allows it to dynamically adjust its capacity over time. You can read more about this change [here](https://github.com/weaviate/weaviate/pull/2425).
+### 动态调整Memtable大小
+`v1.17`中加快启动时间的另一个贡献者是现在动态调整了内存表（LSM存储的内存部分）的大小。以前内存表固定为10MB，在具有并行导入的大型集群上，这10MB是不足的，并且会成为瓶颈，因为它很快就会填满，需要不断刷新。现在，通过这个改变，内存表从10MB开始，但是每当最后一个刷新持续时间小于特定阈值时，它的容量就会增加，从而使其能够随时间动态调整。您可以在[这里](https://github.com/weaviate/weaviate/pull/2425)阅读更多关于此变更的信息。
 
-### Improve Batch Import Latency
-We also introduced a series of fixes as a result of which you'll see fewer latency spikes when importing large datasets. The main problem here was that when importing large datasets over time compactions would take longer and longer which ended up blocking the import. Due to this, previously some batches could block for minutes on very large imports. You can read all about the fixes in detail [here](https://github.com/weaviate/weaviate/pull/2421).
+### 提高批量导入延迟
 
-In summary, the main benefits you should see as a result of all the changes above in `v1.17` are faster startup times with speedier imports and less latency spikes.
+我们还推出了一系列修复措施，以减少导入大型数据集时的延迟峰值。主要问题是，当随着时间的推移导入大型数据集时，压缩操作所需的时间会越来越长，最终导致导入被阻塞。因此，以前在非常大的导入中，某些批次可能会被阻塞数分钟。您可以在[此处](https://github.com/weaviate/weaviate/pull/2421)详细了解所有修复措施。
 
-## Other Improvements and Bug Fixes
-![Other Improvements and Bug Fixes](./img/other-improvements.png)
+总结一下，在`v1.17`中所做的所有变化中，您应该能够看到以下主要好处：更快的启动时间，更快的导入速度和更少的延迟峰值。
 
-There haven't been any new fixes that are exclusive to `v1.17`. However, there have been six patch releases between `v1.16` and `v1.17`, below we highlight the fixes contained in those patches:
+## 其他改进和错误修复
+![其他改进和错误修复](./img/other-improvements.png)
 
-* Fix filters with len() in path in [#2340](https://github.com/weaviate/weaviate/pull/2340)
-* Fix concurrent Write / Read Performance Regression (introduced in v1.16.0) in [#2352](https://github.com/weaviate/weaviate/pull/2352)
-* Fix SEGFAULT error (a race between reads and compaction) in [#2349](https://github.com/weaviate/weaviate/pull/2349)
-* Fix "stuck API" (deadlock situation) in [#2349](https://github.com/weaviate/weaviate/pull/2349)
-* Fix another potential SEGFAULT issue during compactions in [#2363](https://github.com/weaviate/weaviate/pull/2363)
-* Fix length and null state filtering for empty arrays in [#2367](https://github.com/weaviate/weaviate/pull/2367)
-* Prevent IndexNullState and IndexPropertyLength to be updated in [#2368](https://github.com/weaviate/weaviate/pull/2368)
-* Remove obsolete invertedIndexConfig.cleanupIntervalSeconds in [#2376](https://github.com/weaviate/weaviate/pull/2376)
-* Self-Service Docker Images in [#2369](https://github.com/weaviate/weaviate/pull/2369)
-* Adjusts batch size to decrease test execution time in [#2372](https://github.com/weaviate/weaviate/pull/2372)
-* Update Dependencies to fix known vulnerabilities in [#2378](https://github.com/weaviate/weaviate/pull/2378)
-* Provide alternative to OpenAI deprecation of "Answers" endpoint through qna-openai module in [#2346](https://github.com/weaviate/weaviate/pull/2346)
-* Skips re-vectorize objects on PATCH if not necessary in [#2383](https://github.com/weaviate/weaviate/pull/2383)
-* Fix potential deadlock by releasing the index lock in case of error in [#240](https://github.com/weaviate/weaviate/pull/2401)
-* Additional tokenization tests in [#2339](https://github.com/weaviate/weaviate/pull/2339)
-* Fix group with nearVector in [#2423](https://github.com/weaviate/weaviate/pull/2423)
-* Improve defaults for DefaultCohereModel and DefaultTruncate in [#243](https://github.com/weaviate/weaviate/pull/2434)
+`v1.17`中没有任何独有的新修复。然而，在`v1.16`和`v1.17`之间有六个补丁版本发布，以下是这些补丁中包含的修复内容的重点：
 
-For a more detailed breakdown of the fixes please see the release notes:
+* 修复路径中len()的筛选器问题 [#2340](https://github.com/weaviate/weaviate/pull/2340)
+* 修复并发写入/读取性能回归问题（在v1.16.0中引入）[#2352](https://github.com/weaviate/weaviate/pull/2352)
+* 修复SEGFAULT错误（读取和压缩之间的竞争）[#2349](https://github.com/weaviate/weaviate/pull/2349)
+* 修复"卡住的API"（死锁情况）[#2349](https://github.com/weaviate/weaviate/pull/2349)
+* 修复在[ #2363 ](https://github.com/weaviate/weaviate/pull/2363)中在压缩过程中的另一个潜在SEGFAULT问题
+* 修复空数组的长度和空状态过滤问题在[ #2367 ](https://github.com/weaviate/weaviate/pull/2367)中
+* 防止在[ #2368 ](https://github.com/weaviate/weaviate/pull/2368)中更新IndexNullState和IndexPropertyLength
+* 删除在[ #2376 ](https://github.com/weaviate/weaviate/pull/2376)中过时的invertedIndexConfig.cleanupIntervalSeconds
+* [#2369](https://github.com/weaviate/weaviate/pull/2369)中的自助式Docker镜像
+* [#2372](https://github.com/weaviate/weaviate/pull/2372)中调整批处理大小以减少测试执行时间
+* [#2378](https://github.com/weaviate/weaviate/pull/2378)中更新依赖项以修复已知的漏洞
+* [#2346](https://github.com/weaviate/weaviate/pull/2346)中通过qna-openai模块提供了对"Answers"端点的备用解决方案
+* 如果在PATCH中不必要，跳过重新向量化对象的步骤，相关问题见[#2383](https://github.com/weaviate/weaviate/pull/2383)
+* 修复在发生错误时释放索引锁可能导致死锁的问题，相关问题见[#2401](https://github.com/weaviate/weaviate/pull/2401)
+* 在[#2339](https://github.com/weaviate/weaviate/pull/2339)中增加了额外的分词测试
+* 修复在[#2423](https://github.com/weaviate/weaviate/pull/2423)中使用nearVector的分组问题
+* 在[#243](https://github.com/weaviate/weaviate/pull/2434)中改进了DefaultCohereModel和DefaultTruncate的默认值
+
+有关修复的更详细说明，请参阅发布说明：
 [v1.16.1](https://github.com/weaviate/weaviate/releases/tag/v1.16.1), [v1.16.2](https://github.com/weaviate/weaviate/releases/tag/v1.16.2), [v1.16.3](https://github.com/weaviate/weaviate/releases/tag/v1.16.3), [v1.16.4](https://github.com/weaviate/weaviate/releases/tag/v1.16.4), [v1.16.5](https://github.com/weaviate/weaviate/releases/tag/v1.16.5), [v1.16.6](https://github.com/weaviate/weaviate/releases/tag/v1.16.6), [v1.16.7](https://github.com/weaviate/weaviate/releases/tag/v1.16.7).
 
-## Enjoy
-We hope you enjoy all the new features, new operators, performance improvements, and bug fixes that made this the best Weaviate release yet!🔥
+## 享受吧
+我们希望您享受所有新功能、新操作符、性能改进和错误修复，这使得这个Weaviate版本成为最好的版本！🔥
 
 import ShareFeedback from '/_includes/share-feedback.md';
 

@@ -1,45 +1,49 @@
 ---
-title: Pulling back the curtains on text2vec
-slug: pulling-back-the-curtains-on-text2vec
-authors: [jp]
+authors:
+- jp
 date: 2023-01-10
-tags: ['integrations', 'concepts']
+description: Ever wonder how Weaviate turns objects into vectors, behind-the-scenes?
+  Find out in this post!
 image: ./img/hero.png
-description: Ever wonder how Weaviate turns objects into vectors, behind-the-scenes? Find out in this post!
+slug: pulling-back-the-curtains-on-text2vec
+tags:
+- integrations
+- concepts
+title: Pulling back the curtains on text2vec
 ---
 
-<!-- truncate -->
+<!-- 截断 -->
 
-![Pulling back the curtains on text2vec](./img/hero.png)
+![揭开text2vec的面纱](./img/hero.png)
 
-You probably know that Weaviate converts a text corpus into a set of vectors - each object is given a vector that captures its 'meaning'. But you might not know exactly how it does that, or how to adjust that behavior. Here, we will pull back the curtains to examine those questions, by revealing some of the mechanics behind `text2vec`'s magic.
+您可能知道Weaviate将文本语料库转换为一组向量 - 每个对象都被赋予一个捕捉其“含义”的向量。但您可能不知道它是如何实现这一点的，或者如何调整这种行为。在这里，我们将揭开面纱，探讨这些问题的答案，揭示一些`text2vec`魔法背后的机制。
 
-First, we will reproduce Weaviate's output vector using only an external API. Then we will see how the text vectorization process can be tweaked, before wrapping up by discussing a few considerations also.
+首先，我们将仅使用外部API重新生成Weaviate的输出向量。然后我们将看到如何调整文本向量化过程，最后讨论一些相关考虑事项。
 
-## Background
+## 背景
 
-I often find myself saying that Weaviate makes it fast and easy to produce a vector database from text. But it can be easy to forget just how fast and how easy it can make things.
+我经常说Weaviate能够快速而简单地从文本中生成向量数据库。但有时很容易忘记它究竟有多快、多容易。
 
-It is true that even in the “old days” of say, five to ten years ago, producing a database with vector capabilities was technically possible. You *simply* had to (*inhales deeply*) develop a vectorization algorithm, vectorize the data, build a vector index, build a database with the underlying data, integrate the vector index with the database, then forward results from a vector index query to the database and combine the outputs from both (*exhales*).
+在过去的五到十年里，即使在“旧时代”，技术上也是可以制作具备向量功能的数据库的。你只需要（深呼吸）开发一个向量化算法，将数据向量化，构建一个向量索引，构建一个包含底层数据的数据库，将向量索引与数据库集成，然后将向量索引查询的结果发送到数据库，并将两者的输出合并（呼气）。
 
-The past for vector searching definitely was not a “simpler time”, and the appeal of modern vector databases like Weaviate is pretty clear given this context.
+过去的向量搜索绝对不是一个"简单的时代"，鉴于这样的背景，现代向量数据库（如Weaviate）的吸引力非常明显。
 
-But while the future is here, it isn't yet perfect. Tools like Weaviate can seem like a magician's mystery box. Our users in turn ask us *exactly* how Weaviate does its magic; how it turns all of that data into vectors, and how to control the process.
+但是，尽管未来已经来临，但它还不完美。像Weaviate这样的工具可能看起来就像魔术师的神秘盒子。作为回应，我们的用户会*确切地*询问Weaviate是如何施展魔法的；它是如何将所有的数据转化为向量的，以及如何控制这个过程。
 
-So let's take a look inside the magic box together in this post.
+因此，在这篇文章中，让我们一起来探索这个魔法盒子的内部。
 
-If you would like to follow along, the Jupyter notebook and data are available [here](https://github.com/weaviate/weaviate-examples/tree/main/text2vec-behind-curtain). You can use our free [Weaviate Cloud Services](https://console.weaviate.cloud) (WCS) sandbox, or set up your own Weaviate instance also.
+如果您想跟着操作，可以在[这里](https://github.com/weaviate/weaviate-examples/tree/main/text2vec-behind-curtain)获取Jupyter笔记本和数据。您可以使用我们免费的[Weaviate云服务](https://console.weaviate.cloud)（WCS）沙盒，或者自己设置Weaviate实例。
 
-> Note: The vectorization is done by [Weaviate “core”](https://github.com/weaviate/weaviate) and not at the client level. So even though we use Python examples, the principles are universally applicable.
-Let's get started!
+> 注意：向量化是由[Weaviate“core”](https://github.com/weaviate/weaviate)完成的，而不是在客户端层面进行的。因此，即使我们使用Python示例，原理是普遍适用的。
+让我们开始吧！
 
-## Text2vec: behind the scenes
+## Text2vec：幕后花絮
 
-Weaviate's `text2vec-*` modules transform text data into dense vectors for populating a Weaviate database. Each `text2vec-*` module uses an external API (like `text2vec-openai` or `text2vec-huggingface`) or a local instance like `text2vec-transformers` to produce a vector for each object.
+Weaviate的`text2vec-*`模块将文本数据转换为稠密向量，以便填充Weaviate数据库。每个`text2vec-*`模块使用外部API（如`text2vec-openai`或`text2vec-huggingface`）或本地实例（如`text2vec-transformers`）为每个对象生成一个向量。
 
-Let's try vectorizing data with the `text2vec-cohere` module. We will be using data from `tiny_jeopardy.csv` [available here](https://github.com/weaviate/weaviate-examples/tree/main/text2vec-behind-curtain) containing questions from the game show Jeopardy. We'll just use a few (20) questions here, but the [full dataset on Kaggle](https://www.kaggle.com/datasets/tunguz/200000-jeopardy-questions) includes 200k+ questions.
+让我们尝试使用`text2vec-cohere`模块对数据进行向量化。我们将使用来自`tiny_jeopardy.csv`的数据[在这里可用](https://github.com/weaviate/weaviate-examples/tree/main/text2vec-behind-curtain)，其中包含了来自游戏节目Jeopardy的问题。这里我们只使用了一些（20个）问题，但是[Kaggle上的完整数据集](https://www.kaggle.com/datasets/tunguz/200000-jeopardy-questions)包含了20万多个问题。
 
-Load the data into a Pandas dataframe, then populate Weaviate like this:
+将数据加载到Pandas dataframe中，然后像这样填充Weaviate：
 
 ```python
 for i, row in df.iterrows():
@@ -51,14 +55,14 @@ for i, row in df.iterrows():
 client.batch.flush()
 ```
 
-This should add a series of `Question` objects with text properties like this:
+这应该添加一系列的`Question`对象，具有如下的文本属性：
 
 ```text
 {'question': 'In 1963, live on "The Art Linkletter Show", this company served its billionth burger',
  'answer': "McDonald's"}
 ```
 
-Since we use the `text2vec-cohere` module to vectorize our data, we can query Weaviate to find data objects most similar to any input text. Look for entries closest to `fast food chains` like so:
+由于我们使用`text2vec-cohere`模块对我们的数据进行向量化，因此我们可以查询Weaviate，找到与任何输入文本最相似的数据对象。像这样查找与`快餐连锁店`最接近的条目：
 
 ```python
 near_text = {"concepts": ["fast food chains"]}
@@ -70,35 +74,35 @@ wv_resp = client.query.get(
 ).with_additional(['distance', 'vector']).do()
 ```
 
-This yields the McDonald's `Question` object above, including the object vector and the distance. The result is a `768`-dimensional vector that is about `0.1` away from the query vector.
+这将产生上面的麦当劳`Question`对象，包括对象向量和距离。结果是一个`768`维的向量，与查询向量相距约`0.1`。
 
-This all makes intuitive sense - the entry related to the largest fast food chain (McDonald's) is returned from our “fast food chains” query.
+这一切都很直观 - 与最大的快餐连锁店（麦当劳）相关的条目从我们的“快餐连锁店”查询中返回。
 
-But wait, how was that vector derived?
+但是，等等，这个向量是如何得到的呢？
 
-This is the 'magic' part. So let's look behind the curtain, and see if we can reproduce the magic. More specifically, let's try to reproduce Weaviate's output vector for each object by using an external API.
+这是“神奇”的部分。让我们看看幕后，看看我们是否能够复制这个“魔术”。具体来说，让我们尝试使用外部API来复制Weaviate为每个对象生成的输出向量。
 
-![pulling back the curtains](./img/pulling-back-the-curtains-text2vec.png)
+![拉开窗帘](./img/pulling-back-the-curtains-text2vec.png)
 
-### Matching Weaviate's vectorization
+### 匹配Weaviate的向量化
 
-We know that the vector for each object corresponds to its text. What we don't know is how, exactly.
+我们知道每个对象的向量对应于其文本。我们不知道的是具体的关联方式。
 
-As each object only contains the two properties, `question` and `answer`, let's try concatenating our text and comparing it to Weaviate's. And instead of the `text2vec-cohere` module, we will go straight to the Cohere API.
+由于每个对象只包含两个属性，`question`和`answer`，让我们尝试将文本连接起来，并将其与Weaviate进行比较。而且，我们将直接使用Cohere API，而不是`text2vec-cohere`模块。
 
-Concatenating the text from the object:
+连接对象中的文本：
 
 ```python
 str_in = ' '.join([i for i in properties.values()])
 ```
 
-We see:
+我们看到：
 
 ```text
 'In 1963, live on "The Art Linkletter Show", this company served its billionth burger McDonald\'s'
 ```
 
-Then, use the Cohere API to generate the vector like so, where `cohere_key` is the API key (keep it secret!), and `model` is the vectorizer.
+然后，使用Cohere API生成向量，如下所示，其中`cohere_key`是API密钥（保持秘密！），`model`是向量化器。
 
 ```python
 import cohere
@@ -106,7 +110,7 @@ co = cohere.Client(cohere_key)
 co_resp = co.embed([str_in], model="multilingual-22-12")
 ```
 
-Then we run a `nearVector` based query to find the best matching object to this vector:
+然后我们运行一个基于`nearVector`的查询，以找到与该向量最匹配的对象：
 
 ```python
 client.query.get(
@@ -117,27 +121,27 @@ client.query.get(
 ).with_additional(['distance']).do()
 ```
 
-Interestingly, we get a distance of `0.0181` - small, but not zero. In other words - we did something differently to Weaviate!
+有趣的是，我们得到了一个距离为`0.0181`的结果，虽然很小，但不为零。换句话说，我们与Weaviate做了一些不同的事情！
 
-Let's go through the differences one by one, which hopefully will help you to see Weaviate's default behavior.
+让我们逐一讨论这些不同之处，希望能帮助您了解Weaviate的默认行为。
 
-First, Weaviate sorts properties alphabetically (a-z) before concatenation. Our initial concatenation had the `question` text come first, so let's reverse it to:
+首先，Weaviate在拼接之前按字母顺序（a-z）对属性进行排序。我们最初的拼接是将`question`文本放在前面，所以让我们将其反转为：
 
 ```text
 'McDonald\'s In 1963, live on "The Art Linkletter Show", this company served its billionth burger '
 ```
 
-This lowers the distance to `0.0147`.
+这将距离降低到`0.0147`。
 
-Weaviate adds the class name to the text. So we will prepend the word `question` producing:
+Weaviate将类名添加到文本中。因此，我们将在单词之前添加`question`，得到：
 
 ```text
 'question McDonald\'s In 1963, live on "The Art Linkletter Show", this company served its billionth burger'
 ```
 
-Further lowering the distance to `0.0079`.
+进一步降低距离至 `0.0079`。
 
-Then the remaining distance can be eliminated by converting the text to lowercase like so:
+然后可以通过将文本转换为小写来消除剩余的距离，如下所示:
 
 ```python
 str_in = ''
@@ -149,42 +153,42 @@ str_in = str_in.lower().strip()  # remove trailing whitespace
 str_in = 'question ' + str_in
 ```
 
-Producing:
+生成中:
 
 ```text
 'question mcdonald\'s in 1963, live on "the art linkletter show", this company served its billionth burger'
 ```
 
-Performing the `nearVector` search again results in zero distance (`1.788e-07` - effectively zero)!
+再次执行`nearVector`搜索时，结果为零距离（`1.788e-07` - 实际上是零）！
 
-In other words - we have manually reproduced Weaviate's default vectorization process. It's not overly complex, but knowing it can certainly be helpful. Let's recap exactly what Weaviate does.
+换句话说，我们手动复制了Weaviate的默认向量化过程。它并不是过于复杂，但了解它肯定会有所帮助。让我们回顾一下Weaviate的确切操作。
 
-### Text vectorization in Weaviate
+### Weaviate中的文本向量化
 
 import VectorizationBehavior from '/_includes/vectorization.behavior.mdx';
 
 <VectorizationBehavior/>
 
-Now that we understand this, you might be asking - is it possible to customize the vectorization process? The answer is, yes, of course.
+既然我们了解了这一点，你可能会问 - 是否可以自定义向量化过程？答案是，当然可以。
 
-## Tweaking text2vec vectorization in Weaviate
+## 在Weaviate中调整text2vec向量化
 
-Some of you might have noticed that we have not done anything at all with the schema so far. This meant that the schema used is one generated by the auto-schema feature and thus the vectorizations were carried out using default options.
+你们中的一些人可能已经注意到，到目前为止我们还没有对模式进行任何操作。这意味着使用的模式是由自动生成模式功能生成的，因此向量化是使用默认选项进行的。
 
-The schema is the place to define, among other things, the data type and vectorizer to be used, as well as cross-references between classes. As a corollary, the vectorization process can be modified for each class by setting the relevant schema options. In fact, you can [define the data schema](/developers/weaviate/configuration/schema-configuration) for each class individually.
+模式是定义数据类型和矢量化器等内容的地方，也可以在类之间设置交叉引用。作为一个推论，可以通过设置相关的模式选项来修改每个类的矢量化过程。实际上，您可以为每个类单独[定义数据模式](/developers/weaviate/configuration/schema-configuration)。
 
-All this means that you can also use the schema to tweak Weaviate's vectorization behavior. The relevant variables for vectorization are `dataType` and those listed under `moduleConfig` at both the class level and property level.
+这意味着您可以使用模式来调整Weaviate的向量化行为。与向量化相关的变量是`dataType`以及在类级别和属性级别下`moduleConfig`中列出的变量。
 
-* At the **class** level, `vectorizeClassName` will determine whether the class name is used for vectorization.
-* At the **property** level:
-    * `skip` will determine whether the property should be skipped (i.e. ignored) in vectorization, and
-    * `vectorizePropertyName` will determine whether the property name will be used.
-* The property `dataType` determines whether Weaviate will ignore the property, as it will ignore everything but `string` and `text` values.
+* 在**类**级别上，`vectorizeClassName`将确定是否使用类名进行向量化。
+* 在**属性**级别上：
+    * `skip`将确定属性是否应在向量化中被跳过（即被忽略），
+    * `vectorizePropertyName`将确定是否使用属性名称。
+* `dataType`属性确定Weaviate是否忽略该属性，因为它只会忽略除`string`和`text`值之外的所有内容。
 
-> You can read more about each variable in the [schema configuration documentation](/developers/weaviate/configuration/schema-configuration).
-Let's apply this to our data to set Weaviate's vectorization behavior, then we will confirm it manually using the Cohere API as we did above.
+> 您可以在[模式配置文档](/developers/weaviate/configuration/schema-configuration)中了解有关每个变量的更多信息。
+让我们将此应用于我们的数据，以设置Weaviate的向量化行为，然后我们将使用Cohere API手动确认，就像我们之前所做的那样。
 
-Our new schema is below - note the commented lines:
+我们的新模式如下所示 - 请注意已注释的行：
 
 ```python
 question_class = {
@@ -223,11 +227,11 @@ question_class = {
 client.schema.create_class(question_class)
 ```
 
-The schema is defined such that at least some of the options, such as `moduleConfig`/`text2vec-cohere` /`vectorizeClassName` and `properties`/`moduleConfig`/`text2vec-cohere`/`vectorizePropertyName` differ from their defaults.
+在模式中定义了一些选项，例如`moduleConfig`/`text2vec-cohere`/`vectorizeClassName`和`properties`/`moduleConfig`/`text2vec-cohere`/`vectorizePropertyName`，它们与其默认值不同。
 
-And as a result, a `nearVector` search with the previously-matching Cohere API vector is now at a distance of `0.00395`.
+结果是，使用先前匹配的Cohere API向量进行的`nearVector`搜索现在与距离`0.00395`的向量匹配。
 
-To get this back down to zero, we must revise the text generation pipeline to match the schema. Once we've done that, which looks like this:
+为了将其降至零，我们必须修改文本生成流程以匹配模式。一旦我们完成了这个，它的样子是这样的：
 
 ```python
 str_in = ''
@@ -240,27 +244,25 @@ for k in sorted(input_props.keys()):
 str_in = str_in.lower().strip()
 ```
 
-Searching with the vector generated from this input, the closest matching object in Weaviate once again has a distance of zero. We've come full circle 🙂.
+使用从这个输入生成的向量进行搜索时，与Weaviate中最接近的匹配对象的距离再次为零。我们又回到了原点🙂。
 
-## Discussions & wrap-up
+## 讨论和总结
 
-So there it is. Throughout the above journey, we saw how exactly Weaviate creates vectors from the text data objects, which is:
+所以，就是这样。在上面的旅程中，我们看到了Weaviate如何从文本数据对象中创建向量，具体包括以下几个步骤：
 
-- Vectorize properties that use `string` or `text` data types
-- Sorts properties in alphabetical (a-z) order before concatenating values
-- Prepends the class name
-- And converts the whole string to lowercase
+- 对使用`string`或`text`数据类型的属性进行向量化
+- 在连接值之前按字母顺序（a-z）对属性进行排序
+- 在属性值之前添加类名
+- 并将整个字符串转换为小写
+- 我们还看到了如何通过每个类的模式定义来调整此操作。
 
-And we also saw how this can be tweaked through the schema definition for each class.
+其中一个影响是，向量化要求是模式定义中非常重要的考虑因素。它可能决定在将相关数据对象导入Weaviate之前如何拆分它们，以及选择导入哪些字段。
 
-One implication of this is that your vectorization requirements are a very important part of considerations in the schema definition. It may determine how you break down related data objects before importing them into Weaviate, as well as which fields you choose to import.
+让我们再次考虑我们的问答题语料库作为一个具体的例子。假设我们正在构建一个问答应用程序，允许用户搜索问题。那么，最好将每个问答项导入两个类，一个用于问题，一个用于答案，以避免根据用户的查询透露答案。但是我们仍然可以使用答案与用户的输入进行比较。
 
-Let's consider again our quiz question corpus as a concrete example. Imagine that we are building a quiz app that allows our users to search for questions. Then, it may be preferable to import each quiz item into two classes, one for the question and one for the answer to avoid giving away the answer based on the user's query. But we may yet use the answer to compare to the user's input.
+另一方面，在某些情况下，将多个字段的文本数据导入为一个对象可能更可取。这样，用户可以进行匹配意义的搜索，而无需过多考虑信息所在的确切字段。我们不应忽视其他搜索方法，如BM25F或混合搜索，这些决策都会对其产生影响。
 
-On the other hand, in some cases, it may be preferable to import text data with many fields as one object. This will allow the user to search for matching meanings without as much consideration given to which field the information is contained in exactly. We would be amiss to not mention other search methods such as BM25F, or hybrid searches, both of which would be affected by these decisions.
-
-Now that you've seen exactly what happens behind the curtains, we encourage you to try applying these concepts yourself the next time you are building something with Weaviate. While the changes to the similarities were somewhat minor in our examples, in some domains and corpora their impact may be certainly larger. And tweaking the exact vectorization scheme may provide that extra boost your Weaviate instance is looking for.
-
+既然你已经看到了幕后发生的事情，我们鼓励你在下次使用Weaviate构建项目时尝试应用这些概念。虽然在我们的示例中相似性的变化可能较小，但在某些领域和语料库中，它们的影响可能会更大。调整准确的向量化方案可能会为你的Weaviate实例提供额外的提升。
 
 import StayConnected from '/_includes/stay-connected.mdx'
 

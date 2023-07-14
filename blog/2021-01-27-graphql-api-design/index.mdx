@@ -1,44 +1,46 @@
 ---
-title: How Weaviate's GraphQL API was designed
-slug: graphql-api-design
-authors: [laura]
+authors:
+- laura
 date: 2021-01-27
-tags: ['concepts']
+description: Any kind of data storage architecture needs an API. Learn how and why
+  Weaviate picked GraphQL.
 image: ./img/hero.png
-# canonical-url: https://medium.com/semi-technologies/how-weaviates-graphql-api-was-designed-b38885aa9cee
-# canonical-name: Medium
-description: "Any kind of data storage architecture needs an API. Learn how and why Weaviate picked GraphQL."
+slug: graphql-api-design
+tags:
+- concepts
+title: How Weaviate's GraphQL API was designed
 ---
-![How Weaviate's GraphQL API was designed](./img/hero.png)
 
-<!-- truncate -->
+![Weaviate的GraphQL API设计](./img/hero.png)
 
-Choosing a good API, its design and development, is a crucial but time-consuming process, especially if you want to develop one in an ongoing software development project.
+<!-- 截断 -->
 
-Weaviate uses the API query language [GraphQL](https://graphql.org/). GraphQL enables efficient development and provides high user experience (UX) for data interaction.
+选择一个良好的API，进行设计和开发，是一个至关重要但耗时的过程，尤其是如果你想在一个持续的软件开发项目中开发一个API。
 
-In this article we explain how the use of GraphQL leverages the UX of Weaviate, and how we approach the design of this API.
+Weaviate使用API查询语言[GraphQL](https://graphql.org/)。GraphQL能够实现高效的开发，并为数据交互提供高用户体验（UX）。
 
-![Demo of Weaviate](./img/weaviate-demo.gif?i=8)
+在本文中，我们将解释GraphQL的使用如何提升Weaviate的用户体验，以及我们如何设计这个API。
 
-## What is Weaviate and why does it need an API?
-Weaviate is an [open-source](https://github.com/weaviate/weaviate) Vector Database: for understandable knowledge representation, enabling semantic search and automatic classification. Weaviate does not only store data, but also its (automatically derived) context, consisting of linguistic information and relations to other concepts. The result is a network of knowledge, or a graph of data.
+![Weaviate的演示](./img/weaviate-demo.gif?i=8)
 
-One core question is: How do we interact with this new type of data storage? Interacting with big data, enriched with contextual information, might sound even more overwhelming than interacting with a traditional, relational database.
+## 什么是Weaviate，为什么它需要一个API？
+Weaviate是一个开源的向量数据库：用于可理解的知识表示，实现语义搜索和自动分类。Weaviate不仅存储数据，还存储其（自动派生的）上下文，包括语言信息和与其他概念的关系。结果是一个知识网络或数据图。
 
-Data needs to be added, retrieved and manipulated, all controlled by the user but enabled by the underlying database interface. Here's where APIs jump in. Because of Weaviate's graph-based architecture, an alternative to traditional RESTful APIs was what we were looking for.
+一个核心问题是：我们如何与这种新类型的数据存储进行交互？与富有上下文信息的大数据进行交互，可能比与传统的关系型数据库进行交互更加令人不知所措。
 
-## What is GraphQL, and why does Weaviate use it?
-[GraphQL](https://graphql.org/) is an API query language, which was open-sourced by Facebook in 2012 and currently maintained by the Linux Foundation. The core strength of GraphQL is that the client is fully in control of what data is returned. This means that over-fetching is never a problem and the need for multiple requests is removed. In addition, using GraphQL allows fast API development and easy API evolvement over time, because of its powerful development tools and single evolving versioning.
+数据需要由用户进行添加、检索和操作，而这一切都由用户控制，但由底层数据库接口实现。在这方面，API起到了关键作用。由于Weaviate的基于图的架构，我们正在寻找一种替代传统的RESTful API的方法。
 
-All in all, many reasons to adopt GraphQL for the graph-like structure of Weaviate. GraphQL seems the perfect solution for intuitive database interaction and efficient development. Weaviate still uses traditional RESTful endpoints (using OpenAPI/Swagger) to add data, but the main interaction for data consumption goes via GraphQL.)
+## GraphQL是什么，为什么Weaviate使用它？
+[GraphQL](https://graphql.org/) 是一种API查询语言，由Facebook在2012年开源，并目前由Linux Foundation进行维护。GraphQL的核心优势在于客户端完全控制返回的数据。这意味着过度获取数据永远不是一个问题，而且不需要多次请求。此外，使用GraphQL可以快速开发API，并且由于其强大的开发工具和单一的版本演进，使得API随时间的推移变得更易于演化。
 
-GraphQL still follows the same constraints as REST APIs, but data is organized into a graph using only one interface. Thus instead of endpoints, the API is organized in terms of types and fields. The fields of interest are specified by the client, chosen from a schema defined by the server. This requires a well formulated schema. Let's dive into how we approach the design of Weaviate's GraphQL API.
+总而言之，采用GraphQL的原因有很多，其中之一是Weaviate的图形结构。GraphQL似乎是直观的数据库交互和高效开发的完美解决方案。虽然Weaviate仍然使用传统的RESTful端点（使用OpenAPI/Swagger）来添加数据，但主要的数据消费交互是通过GraphQL进行的。
 
-## Human-Centered API Design
-So, how does our GraphQL design, development and implementation cycle look like? We approach this very carefully, since we are talking about a design for end-users, made by developers, two sides that differ in many ways. Instead of a data-driven approach, we took a user point of view. Humans tend to talk in interactions; we ask questions when we want to retrieve something, and use verbs or even commands if we want someone or something to do something for us. So why not also apply the same behaviour to interaction with data? So try to think about what you would want to get out of the database in different use cases (as a user), and how this could be done most efficiently. What naturally follows is the words that are frequently used in these interactions. We used these words in the design of our GraphQL schema.
+GraphQL仍然遵循与REST API相同的约束，但数据是使用一个接口组织成图形结构。因此，API不再以端点的形式组织，而是以类型和字段的形式组织。客户端指定感兴趣的字段，这些字段从服务器定义的模式中选择。这需要一个良好构建的模式。让我们深入探讨一下我们如何设计Weaviate的GraphQL API。
 
-Let's look at an example. Consider you (digitally) store supermarket items in Weaviate, and now want to know which items are low in storage. This could be achieved by the following query:
+## 以人为中心的API设计
+那么，我们的GraphQL设计、开发和实施周期是什么样的？我们非常谨慎地处理这个问题，因为我们谈论的是一个由开发人员制作的面向最终用户的设计，这两个方面在许多方面存在差异。我们没有采用数据驱动的方法，而是采用了用户的观点。人类倾向于以互动的方式交流；当我们想要检索某些内容时，我们会提问，如果我们想要让某人或某物为我们做某事，我们会使用动词甚至是命令。那么为什么在与数据交互时也不采用同样的行为方式呢？因此，尝试思考一下在不同的用例中（作为用户）您希望从数据库中获取什么，并且如何以最高效的方式实现这一点。自然而然地，我们使用这些交互中经常使用的单词来设计我们的GraphQL模式。
+
+让我们看一个例子。假设您在Weaviate中将超市商品进行数字化存储，并且现在想知道哪些商品库存较低。这可以通过以下查询实现:
 
 ```graphql
 {
@@ -56,7 +58,7 @@ Let's look at an example. Consider you (digitally) store supermarket items in We
 }
 ```
 
-Which may return:
+可能返回：
 
 ```json
 {
@@ -85,9 +87,9 @@ Which may return:
 }
 ```
 
-Here's how this query is structured. "Get" is a high level schema item that we defined. "Get" is a verb that we use when we want to retrieve something. What comes next is defined by the data schema of the user. This supermarket use case is storing "Products", with at least the properties "name", and "inStock". The user might also store properties like "barcode" and "expirationDate", but chose not to retrieve those in this request. The goal of this query is to Get all the Products where the Stock is less than 100. See how the query is formed?
+这是查询的结构。"Get"是我们定义的一个高级模式项。"Get"是一个我们在想要检索某些内容时使用的动词。接下来的内容是由用户的数据模式定义的。这个超市的使用案例中存储了"Products"，至少包含了"name"和"inStock"这两个属性。用户还可以存储"barcode"和"expirationDate"等属性，但选择在这个请求中不检索这些属性。这个查询的目标是获取所有库存少于100的产品。看到查询是如何构建的了吗？
 
-The following query shows the automatic contextualization of concepts in Weaviate. Let's say we are only interested in the fruit items that are low in stock, but we never explicitly stored the supermarket products by category like ‘fruits', ‘dairy' and ‘household'. We can then make the following query, where we want to Get all the Products where the Stock is less than 100, which are related to the text concept "fruits". Now, only the Banana and Pineapple will be returned because these items are most related to fruits. If we are looking for more results, then Baguette will be shown earlier in the list than Toilet paper, because it is semantically (and in a real supermarket) closer to fruits.)
+下面的查询展示了Weaviate中概念的自动上下文化。假设我们只对库存较低的水果商品感兴趣，但我们从未明确将超市商品按照类别存储，比如“水果”，“乳制品”和“家居用品”。我们可以使用以下查询，其中我们想要获取所有库存少于100的产品，这些产品与文本概念“水果”相关。现在，只有香蕉和菠萝会被返回，因为这些商品与水果最相关。如果我们想要更多结果，那么面包会在卫生纸之前显示在列表中，因为它在语义上（在真实的超市中也是如此）更接近水果。
 
 ```graphql
 {
@@ -110,14 +112,13 @@ The following query shows the automatic contextualization of concepts in Weaviat
 }
 ```
 
-## Iterative Prototyping and Feedback
-In the end, developers and UX designers need to collaborate in this requirement engineering process. The challenge is to match the user needs with technical possibilities, while supporting all features the underlying database has to offer. For the GraphQL API design of Weaviate, an iterative approach was taken. Quick prototypes of new ideas are made all the time, which are passed in a circle of UX designers, core developers and end-users, continuously gathering and implementing constructive feedback. Only when everyone is happy with the proposal (thus not only the developers), a final ‘pass' is made to the core developers to implement it in the software.
+## 迭代式原型设计与反馈
+最终，开发人员和用户体验设计师需要在需求工程过程中进行协作。挑战在于将用户需求与技术可能性相匹配，同时支持底层数据库提供的所有功能。对于Weaviate的GraphQL API设计，采取了迭代的方法。不断制作新想法的快速原型，并在UX设计师、核心开发人员和最终用户之间进行循环传递，不断收集和实施建设性的反馈。只有当所有人都对提案满意（不仅仅是开发人员），才会向核心开发人员提交最终的“通过”，以将其实施到软件中。
 
-## In conclusion
-With Weaviate, we want to allow the end-user to be focused on their data, and thus not spend too much effort on thinking about how to actually access and interact with it. Only then we can ensure high user experience, and open doors to new insights. With GraphQL, users can count on predictable, fast and stable results, because they are in control of the data interaction. Using our human-centered, iterative design process, with a continuous prototyping and feedback loop, we enable efficient and effective data interaction.
+## 总结
+通过Weaviate，我们希望使最终用户专注于他们的数据，而不需要花费太多精力去思考如何访问和与之交互。只有这样，我们才能确保高用户体验，并为新的洞察力打开大门。通过GraphQL，用户可以依靠可预测、快速和稳定的结果，因为他们可以控制数据的交互。使用我们以人为中心的迭代设计过程，结合持续的原型制作和反馈循环，我们实现了高效和有效的数据交互。
 
-[Click here](/developers/weaviate/api/graphql) to learn more about the complete GraphQL structure.
-
+[点击这里](/developers/weaviate/api/graphql) 了解更多关于完整的GraphQL结构。
 
 import WhatNext from '/_includes/what-next.mdx'
 

@@ -1,75 +1,77 @@
 ---
-title: Multi-Tenancy Vector Search with millions of tenants
-slug: multi-tenancy-vector-search
-authors: [etienne]
+authors:
+- etienne
 date: 2023-06-15
+description: Learn about the new native multi-tenancy feature
 image: ./img/hero.png
-tags: ['engineering', 'concepts']
-description: "Learn about the new native multi-tenancy feature"
-
+slug: multi-tenancy-vector-search
+tags:
+- engineering
+- concepts
+title: Multi-Tenancy Vector Search with millions of tenants
 ---
 
-![Multi-Tenancy ](./img/hero.png)
+![多租户](./img/hero.png)
 
-<!-- truncate -->
+<!-- 省略部分 -->
 
-Large-scale setups were always a great reason to choose Weaviate. Last year we wrote about the first time [a Weaviate setup ran with a billion objects & vectors](/blog/sphere-dataset-in-weaviate). What was a mere experiment back then is a regular production case today. But earlier this year, we saw a shift in usage patterns: As we onboarded more and more large-scale and enterprise users, the definition of scale shifted from the number of vectors to the number of individual tenants that can run on a single setup.
+大规模的设置一直是选择Weaviate的一个重要原因。去年我们曾经写过[Weaviate首次以十亿个对象和向量的规模运行的情况](/blog/sphere-dataset-in-weaviate)。当时只是一个简单的实验，而如今却成为了常规的生产案例。但是在今年初，我们注意到了使用模式的变化：随着我们吸纳了越来越多的大规模和企业用户，规模的定义从向量的数量转变为能够在单个设置上运行的个别租户的数量。
 
-Previously, Weaviate offered multiple ways to tackle multi-tenancy, but none were intended for a massive scale. Weaviate `v1.20` - coming in July 2023 - changes this once and for all: Native multi-tenancy support that scales to millions of tenants with 10s of thousands of active tenants per node. Yet scale is not the only point that makes the new multi-tenancy feature great; we put a lot of emphasis on compliance and a smooth UX. GDPR-compliant deletes with one command are just one of the many features. Let me walk you through what’s coming in the next Weaviate release and show you why I’m incredibly excited about this one.
+以前，Weaviate提供了多种处理多租户的方式，但没有一种是用于大规模的。Weaviate `v1.20` - 将在2023年7月发布 - 终于改变了这一点：原生的多租户支持可以扩展到数百万个租户，每个节点有数万个活跃租户。然而，规模并不是新的多租户功能的唯一亮点；我们非常注重合规性和流畅的用户体验。符合GDPR的一键式删除只是众多功能中的一个。让我为您介绍即将发布的Weaviate版本，并向您展示为什么我对此感到非常兴奋。
 
-## The need for multi-tenancy
-We define multi-tenancy as the need to serve multiple distinct users or user groups from a single application. Imagine a fictional company called ACME Accounting Group that offers online accounting services that use AI to make accounting easy and fun. The company has over one million customers. Each customer is a company that can have many users and even more documents. Alice, who works for AliceCorp, should never be able to see the accounting information of Bob, who works for BobInc. Therefore, AliceCorp and BobInc are tenants from the perspective of ACME Accounting. Besides access isolation, ACME Accounting has other requirements for a multi-tenancy setup:
+## 多租户的需求
+我们将多租户定义为在单个应用程序中为多个不同的用户或用户组提供服务的需求。想象一家名为ACME会计集团的虚构公司，它提供使用人工智能使会计变得简单而有趣的在线会计服务。该公司拥有超过一百万个客户。每个客户都是一个公司，可以拥有许多用户和更多的文档。Alice在AliceCorp工作，不应该能够看到Bob在BobInc工作的会计信息。因此，从ACME会计的角度来看，AliceCorp和BobInc是租户。除了访问隔离之外，ACME会计对多租户设置还有其他要求：
 
-* **Speed**: With millions of tenants, narrowing a request down to a single tenant should not take much work.
+* **速度**：对于拥有数百万租户的情况，将请求限定到单个租户不应该需要太多的工作量。
 
-* **Easy on and offboarding**: Just because ACME Accounting already has a million customers doesn’t mean that adding your business to ACME should take a considerable computational load. If AliceCorp cancels its contract, this should not affect other tenants.
+* **简单的入驻和退出**：即使ACME会计已经拥有了数百万的客户，添加您的业务到ACME也不应该产生巨大的计算负载。如果Alice公司取消了合约，这不应该影响其他租户。
 
-* **Resource boundaries**: If members of BobInc all get together to produce their annual report, this can put a lot of load onto ACME’s system. This should not interfere with AliceCorp, which might also have essential accounting deadlines.
+* **资源边界**: 如果BobInc所有成员都聚集在一起制作他们的年度报告，这可能会给ACME的系统带来很大的负荷。这不应该干扰到AliceCorp，后者可能也有重要的会计期限。
 
-* **Cost-efficiency**: With usage peaking around tax season but most tenants inactive for many days of the month, ACME shouldn’t have to pay for a large setup that is essentially idle most of the time.
+* **成本效益**: 在税收季节使用率达到峰值，但大多数租户大部分时间都处于非活动状态，ACME不应该为一个基本上闲置大部分时间的大型设置付费。
 
-* **Diversity of tenants**: ACME has both large and small customers. Their setup needs to be able to handle tenants of vastly different sizes. While most tenants are small, a few tenants can make up a large bulk of the data.
+* **租户的多样性**：ACME公司既有大型客户，也有小型客户。他们的设置需要能够处理不同规模的租户。虽然大多数租户都很小，但少数租户可能占据了大部分数据。
 
-## A time before multi-tenancy support
-Before Weaviate `v1.20`, you had two options to model a multi-tenancy landscape. Both had considerable drawbacks which made us completely rethink multi-tenancy:
+## 在支持多租户之前的时期
+在Weaviate `v1.20`之前，您有两个选项来建模多租户景观。这两个选项都有相当大的缺点，使我们完全重新考虑了多租户：
 
-### Using Classes
-Classes were already isolation units within Weaviate, so you were already halfway there: Good isolation, easy deletes, and no filter required to scope a request to a tenant. However, there was one major problem: With classes, it was incredibly difficult to run with more than 5 to 10,000 tenants. Workarounds were needed to make it scale further, and there was a lot of duplication in the schema.
+### 使用类（Classes）
+在Weaviate中，类已经是隔离单元，所以你已经完成了一半的工作：良好的隔离性、简单的删除操作，而且不需要使用过滤器来限定请求的租户范围。然而，存在一个主要问题：使用类时，在处理超过5到10,000个租户时非常困难。需要使用一些解决方案来进一步扩展，并且模式中存在很多重复内容。
 
-### Using filters
-Another approach was to use a single class and use Weaviate’s built-in filtering feature to scope a request to a tenant. However, this came with multiple problems. From a performance perspective, you would build a giant monolithic vector index with potentially billions of vectors, yet you would only ever query a tiny fraction of it. With a median tenant storing between 1,000 and 100,000 objects, you would typically query less than 0.01% of the index. What a waste of resources. Additionally, dropping many tenants simultaneously would lead to expensive repair operations on the shared index. Resource isolation for tenants was also not possible.
+### 使用过滤器
+另一种方法是使用单个类，并利用Weaviate的内置过滤功能将请求范围限定在一个租户内。然而，这种方法存在多个问题。从性能的角度来看，您将构建一个巨大的单体向量索引，可能包含数十亿个向量，然而您只会查询其中的一小部分。一个平均租户存储1,000到100,000个对象，您通常只查询索引的不到0.01%。这是多么浪费资源啊。此外，同时删除多个租户将导致对共享索引进行昂贵的修复操作。租户的资源隔离也是不可能的。
 
-## No more workarounds: Native multi-tenancy support for the largest of cases
+## 不再需要变通方法：为最大的情况提供原生的多租户支持
 
 ![multi-tenancy](./img/multi-tenancy-dark.png#gh-dark-mode-only)
 ![multi-tenancy](./img/multi-tenancy-light.png#gh-light-mode-only)
 
-Let me walk you through the best parts of the native multi-tenancy feature in Weaviate `v1.20` and even some of the plans that we have for upcoming releases. As you will see, Multi-Tenancy is not just an additional feature. It is rethinking from the ground up how your business, with its many customers, scales with Weaviate.
+让我带您了解Weaviate `v1.20`版本中最好的本地多租户功能，甚至一些我们在即将发布的版本中计划的内容。正如您将看到的，多租户不仅是一个额外的功能，它从根本上重新思考了您的业务如何与Weaviate一起扩展，以满足众多客户的需求。
 
-### Ease of use of your favorite Weaviate features
-Weaviate’s new multi-tenancy mode is opt-in. If you don’t require it, there are no changes for you. But if you have a multi-tenancy case, all you need to do is select multi-tenancy for your class (or classes). You can keep using all your favorite features, including super-fast queries, cross-references, and replication. The only change? For every operation, specify the tenant key – a user-defined property in your schema. That’s all that changes. Weaviate will handle the rest for you.
+### 您最喜欢的Weaviate功能的易用性
+Weaviate的新的多租户模式是可选择的。如果您不需要它，对您没有任何变化。但是，如果您有一个多租户的情况，您只需要选择多租户的类（或类）。您可以继续使用所有您喜欢的功能，包括超快速查询、交叉引用和复制。唯一的变化是，对于每个操作，需要指定租户密钥-这是您模式中的一个用户定义属性。这就是所有的变化。Weaviate会为您处理其余的事情。
 
-### Built-in isolation through lightweight shards
-To make sure we have isolation for both technical and compliance reasons, Weaviate must also store the data per tenant separately. This allows quick deletes, reduces resource sharing, restricts access, and more. Weaviate uses partition shards for this. With `v1.20`, shards have become a lot more lightweight because we expect you to have a lot of them. You can easily run with 50,000+ active shards per node. With just 20 nodes, you can support 1M concurrently active tenants. And with support for inactive tenants (coming soon - read below), there is no limit per node at all.
+### 通过轻量级分片实现的内置隔离
+为了确保技术和合规性的隔离，Weaviate必须将数据按租户单独存储。这样可以快速删除数据，减少资源共享，限制访问等。Weaviate使用分区分片来实现这一目的。从`v1.20`版本开始，分片变得更加轻量级，因为我们预计您会有很多分片。您可以轻松地在每个节点上运行50,000个以上的活动分片。只需20个节点，即可支持100万个并行活动租户。并且支持非活动租户（即将推出-请阅读下文），每个节点都没有任何限制。
 
-### Fast and efficient querying
-You don’t need to set a filter to restrict a query to a tenant. The simple addition of a tenant key is enough, and Weaviate will find the right tenant’s shard for you. More importantly, every tenant has a dedicated high-performance vector index providing query speeds as if the tenant was the only user on your cluster. With more features in the pipeline, such as tenant-specific rate limiting or tenant-specific replication factors, you can customize performance per tenant even further.
+### 快速高效的查询
+您无需设置筛选器来限制查询到一个租户。只需简单地添加租户密钥即可，Weaviate将为您找到正确的租户分片。更重要的是，每个租户都有一个专门的高性能向量索引，提供了查询速度，就好像该租户是您集群中唯一的用户一样。随着更多功能的推出，例如针对租户的速率限制或租户特定的复制因子，您甚至可以进一步定制每个租户的性能。
 
-### GDPR-compliant and efficient deletes
-When discussing solutions made for many users, our first intuition is to worry about how we onboard and serve them. But deleting them is equally important – both for technical and legal reasons. Take GDPR as an example. Can you guarantee that all data related to a specific user is gone? With Weaviate’s multi-tenancy compliant deletes, you can! All data specific to a tenant is isolated in a dedicated shard. Deleting the entire tenant is as easy as deleting a file from your system.
+### 符合GDPR并高效的删除操作
+讨论为多个用户提供的解决方案时，我们首先要考虑的是如何引导和为他们提供服务。但同样重要的是删除他们的数据 - 无论是出于技术还是法律原因。以GDPR为例，你能保证与特定用户相关的所有数据都被删除了吗？通过Weaviate的多租户合规删除功能，你可以做到！每个租户的数据都被隔离在一个专用的分片中。删除整个租户就像从系统中删除一个文件一样简单。
 
-But deleting tenants is also interesting from a technical perspective; certain events can lead to mass onboarding followed by mass offboarding. For example, when your app goes viral on social media, you might get a lot of sign-ups for a free trial. While we wish you a high conversion rate, some of your trial users must be removed after 2 weeks. This should be quick and painless. It definitely shouldn’t affect your users who stay onboard. With a shared single index, it would. With Weaviate’s multi-tenancy isolation, it won’t.
+但是从技术角度来看，删除租户也是很有趣的；某些事件可能会导致大规模的入职后紧接着大规模的离职。例如，当您的应用在社交媒体上爆红时，您可能会有很多人注册免费试用。虽然我们希望您有很高的转化率，但是在2周后必须删除一些试用用户。这应该是快速而无痛的。它绝对不应该影响留下来的用户。在共享的单一索引下，它会受到影响。但是在Weaviate的多租户隔离下，它不会受到影响。
 
-### Massive Scale
-Weaviate’s multi-tenancy support was built to scale with your business from the ground up. Supporting over 50,000+ active tenants per node, you need just a 20-node cluster for 1 million active tenants with billions of vectors in total. Run out of space, but want to onboard more tenants? Simply add a new node to your existing cluster. Weaviate will automatically schedule new tenants on the node with the least resource usage. With Weaviate’s rebalancing features (coming soon), you can ensure tenants are distributed across nodes exactly how you want them to – or leave it to Weaviate to do it for you.
+### 大规模
+Weaviate的多租户支持是从一开始就为您的业务进行了扩展。每个节点支持超过50,000个活跃租户，您只需要一个由20个节点组成的集群来管理100万个活跃租户和数十亿个向量。如果空间不足，但想要添加更多的租户，只需在现有集群中添加一个新节点即可。Weaviate将自动将新的租户安排在资源使用最少的节点上。通过Weaviate即将推出的重新平衡功能，您可以确保租户按照您的要求分布在不同的节点上，或者让Weaviate为您自动处理。
 
-### Active and inactive tenants
-With traditional search and other vector search solutions, infrastructure is typically sized for the number of objects or vectors that could be served. But why should you pay for expensive compute and memory resources for users who aren’t currently active? Enabled by Weaviate’s strict isolation between tenants, Weaviate allows you to distinguish between active and inactive tenants. A user hasn’t been logged in for an hour? Their tenant shouldn’t take up valuable memory or file descriptors. A user hasn’t been logged in for days? Let’s offload their data to cloud storage and reload it on demand. Whether you want to control which of your users should be active or let Weaviate decide to activate and deactivate tenants automatically, you’ll save on infrastructure costs for sure!
+### 活跃和非活跃租户
+传统的搜索和其他向量搜索解决方案通常根据可服务的对象或向量数量来确定基础设施的规模。但是对于当前不活跃的用户，为什么您要为他们支付昂贵的计算和内存资源费用呢？得益于Weaviate在租户之间的严格隔离，您可以区分活动和非活动租户。一个用户一个小时没有登录了？他们的租户不应该占用宝贵的内存或文件描述符。一个用户好几天没有登录了？让我们将他们的数据转移到云存储并按需重新加载。无论您是想控制哪些用户应该是活动的，还是让Weaviate决定自动激活和停用租户，您肯定能节省基础设施成本！
 
-*Support for inactive tenants is coming later in 2023.*
+*对于未激活的租户，将在2023年后支持。*
 
-## We couldn’t have done it without you
-We know we built exactly what you need the most because you helped us design it. We’re incredibly grateful for all the community support and feedback, the out-in-the-open design discussions, and the valuable feedback from our existing and future customers. I can’t wait to demo the best parts of the Weaviate multi-tenancy future to all of you. Whether you’ve been part of the design discussions or are hearing about this for the first time, we appreciate all your feedback, so drop us a note with your thoughts and questions.  I’m incredibly proud of what our team has built and can’t wait for July 2023 when we go live with Weaviate `v1.20`!
+## 没有您的支持，我们无法完成这一切。
+我们知道我们构建的正是您最需要的，因为您帮助我们设计了它。我们非常感谢社区的支持和反馈，公开的设计讨论以及现有和未来客户的宝贵反馈。我迫不及待地想向大家展示Weaviate多租户未来的最佳部分。无论您是否参与了设计讨论，或者是第一次听到这个消息，我们都非常感谢您的反馈，请给我们留言，分享您的想法和问题。我为我们的团队所建立的成果感到非常自豪，迫不及待地期待2023年7月我们发布Weaviate `v1.20`版本！
 
 
 import WhatNext from '/_includes/what-next.mdx'

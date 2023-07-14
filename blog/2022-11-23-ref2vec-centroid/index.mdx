@@ -1,54 +1,59 @@
 ---
-title: What is Ref2Vec and why you need it for your recommendation system
-slug: ref2vec-centroid
-authors: [connor]
+authors:
+- connor
 date: 2022-11-23
-tags: ['integrations', 'concepts']
+description: Weaviate introduces Ref2Vec, a new module that utilises Cross-References
+  for Recommendation!
 image: ./img/hero.png
-description: "Weaviate introduces Ref2Vec, a new module that utilises Cross-References for Recommendation!"
+slug: ref2vec-centroid
+tags:
+- integrations
+- concepts
+title: What is Ref2Vec and why you need it for your recommendation system
 ---
+
 ![Ref2vec-centroid](./img/hero.png)
 
 <!-- truncate -->
 
-Weaviate 1.16 introduced the [Ref2Vec](/developers/weaviate/modules/retriever-vectorizer-modules/ref2vec-centroid) module. In this article, we give you an overview of what Ref2Vec is and some examples in which it can add value such as recommendations or representing long objects.
+Weaviate 1.16引入了[Ref2Vec](/developers/weaviate/modules/retriever-vectorizer-modules/ref2vec-centroid)模块。在本文中，我们将为您概述Ref2Vec的概念，并提供一些示例，说明它可以在推荐或表示长对象等方面添加的价值。
 
-## What is Ref2Vec?
-The name Ref2Vec is short for reference-to-vector, and it offers the ability to vectorize a data object with its cross-references to other objects. The Ref2Vec module currently holds the name ref2vec-**centroid** because it uses the average, or centroid vector, of the cross-referenced vectors to represent the **referencing** object. The benefit of this approach is that the referencing object can be characterized from its actions and relationships as well as refined over time.
+## 什么是Ref2Vec?
+Ref2Vec 的名称是 reference-to-vector 的缩写，它提供了将数据对象与其对其他对象的交叉引用进行向量化的能力。Ref2Vec 模块目前的名称为 ref2vec-**centroid**，因为它使用交叉引用向量的平均值或质心向量来表示**引用**对象。这种方法的好处是可以从引用对象的动作和关系中对其进行特征化，并随着时间的推移进行改进。
 
-In one example, we could use Ref2Vec in a Weaviate database containing **User** and **Product** classes of objects to produce recommendations. Here, the Product class may include various types of vectorized items, such as shoes, or clothing, and a User could be vectorized by its relationships to Product instances. So a User who has liked 3 shoe Product instances will be represented as the average vector of the 3 shoe Product vectors, whereas another User might be represented by an average vector of whatever Product instances that they liked. This can be used for recommendation, for instance, by treating the averaged vector of the User as a search query in Product objects.
+在一个示例中，我们可以在包含**用户(User)**和**产品(Product)**对象的Weaviate数据库中使用Ref2Vec来生成推荐。在这里，产品类可能包含各种类型的向量化物品，比如鞋子或服装，而用户可以通过与产品实例的关系来进行向量化。因此，喜欢3个鞋子产品实例的用户将被表示为这3个鞋子产品向量的平均向量，而另一个用户可能被表示为他们喜欢的任何产品实例的平均向量。这可以用于推荐，例如，将用户的平均向量视为在产品对象中的搜索查询。
 
-The following image depicts how Ref2Vec aggregates the representations of 3 Product items to represent a User who has purchased a pair of boots, shorts, and Weaviate t-shirt!
+下面的图片展示了Ref2Vec如何聚合3个产品项的表示，以表示购买了一双靴子、短裤和Weaviate T恤的用户！
 
-![Ref2Vec Image](./img/ref2vec.png)
+![Ref2Vec图片](./img/ref2vec.png)
 
-Such a representation of the User, by an aggregation of their cross-references, allows Weaviate to conveniently and immediately learn from each User's preferences and actions to provide improved and up-to-date characterizations. Ref2Vec can in other words capture each User's interests and tendencies across multiple axes, such as product categories or even fashion styles! And by doing so, the resulting recommendations can more closely match the User's product and style preferences.
+通过对用户的交叉引用进行聚合，这种对用户的表征使得Weaviate能够方便快速地从每个用户的偏好和行为中学习，以提供改进和最新的特征描述。换句话说，Ref2Vec可以捕捉到每个用户在多个维度上的兴趣和倾向，比如产品类别甚至时尚风格！通过这样做，生成的推荐结果可以更好地匹配用户的产品和风格偏好。
 
-We envision Ref2Vec to have great potential in multiple application areas. Let's take a look at a few of them in more detail, starting with recommendation systems.
+我们认为Ref2Vec在多个应用领域具有巨大潜力。让我们更详细地看一下其中的一些，首先是推荐系统。
 
-## Recommendation in Weaviate
-Many of you might primarily know Weaviate as a vector database and search engine, but Weaviate can also power high-quality, lightning-fast recommendations. This is because Recommendation is a very similar task to Search from the perspective of a vector database. Both tasks leverage the ANN index of vector representations to search for a suitable object. The key difference is that in Search, relevance is typically contained entirely within the query. In Recommendation, relevance is additionally dependent on the user, making the query a subjective, user-dependent task rather than an objective task. So if a User searches for "adidas  shoes for the summer", not only does Weaviate need to find these particular kinds of shoes, but it also needs to rank them based on relevance to the particular user's interests!
+## Weaviate 中的推荐功能
+很多人可能主要将Weaviate视为矢量数据库和搜索引擎，但Weaviate也可以提供高质量、极速的推荐功能。这是因为从矢量数据库的角度来看，推荐和搜索是非常相似的任务。这两个任务都利用了矢量表示的ANN索引来搜索合适的对象。关键区别在于，在搜索中，相关性通常完全包含在查询中。而在推荐中，相关性还取决于用户，使得查询成为了主观、用户相关的任务，而不是客观的任务。因此，如果用户搜索的是"夏季的阿迪达斯鞋子"，Weaviate不仅需要找到这些特定类型的鞋子，还需要根据与特定用户兴趣的相关性对它们进行排序！
 
-With Ref2Vec, this task is made easier by representing a user's interests by drawing a graph of cross-references from the user to objects the user has engaged with. This gives Weaviate unique points of reference for each user that can be used to rank the search results.
+通过使用Ref2Vec，可以更轻松地表示用户的兴趣，通过绘制用户与用户交互的对象之间的交叉引用图。这为Weaviate提供了每个用户的独特参考点，可以用于对搜索结果进行排名。
 
-In Weaviate, Classes represent data objects such as Users, Products, or Brands. The vector for an instance of a Class, such as a Product, is obtained from a Machine Learning model's inference of (typically) an image or text description of the Product. Additionally, Weaviate's cross-references enable relations between Classes, such as Users that "liked" a Product. For example, User, Product, and Brand objects may each have a vector representation, symbolic properties like name or price, and relations as shown below.
+在Weaviate中，类代表数据对象，例如用户、产品或品牌。类的实例，例如产品的向量，通过机器学习模型对产品的图像或文本描述进行推断获得。此外，Weaviate的交叉引用功能使得类之间可以建立关联，例如用户对产品的“喜欢”。例如，用户、产品和品牌对象可以具有向量表示、名称或价格等符号属性，并且如下所示建立关系。
 
-![Cross-reference](./img/Weaviate-Ref2Vec_1.png)
+![交叉引用](./img/Weaviate-Ref2Vec_1.png)
 
-Ref2Vec gives Weaviate another way to vectorize a class, such as the User class, based on their relationships to other classes. This allows Weaviate to quickly create up-to-date representations of users based on their relationships such as recent interactions. If a user clicks on 3 shoe images on an e-commerce store, it is a safe bet that they want to see more shoes. Ref2Vec captures this intuition by calculating vectors that aggregate each User's interaction with another class.
+Ref2Vec为Weaviate提供了另一种基于类之间关系的向量化方法，例如User类。这使得Weaviate能够根据用户与其他类的关系快速创建最新的用户表示。如果用户在电子商务网站上点击了3张鞋子图片，可以肯定他们想看更多的鞋子。Ref2Vec通过计算向量来捕捉这种直觉，这些向量汇总了每个用户与其他类的交互。
 
-The below animation visualizes a real example of this in e-Commerce images. The demo is organized such that user interactions are outlined with a green box and moved to the top-left of the grid. The nearest neighbors to the ref2vec-centroid are then arranged from left-to-right top-down.
+下面的动画展示了电子商务图片中的一个实际示例。演示中用户的交互通过一个绿色框进行了标记，并移动到网格的左上角。然后，与ref2vec-centroid最近的邻居按从左到右、从上到下的顺序排列。
 
 import centroidVideo from './img/ref2vec-centroid-demo.mp4';
 
 <video width="100%" autoplay loop controls>
   <source src={centroidVideo} type="video/mp4" />
-Your browser does not support the video tag.
+您的浏览器不支持视频标签。
 </video>
 
-This animation shows how selecting multiple backpacks (such as two school-style book bags) can help personalize the user's recommendations (so showing more backpacks in a similar style rather than the duffle bags). We also see here how selecting multiple digital LED screen watches moves results away from analog watches. In other words, the User vector is being updated in real-time here to take into account their preferences and actions, which helps to produce more relevant results at speed. Another benefit of Ref2Vec is that this calculation is not compute-heavy, leading to low overhead.
+动画展示了如何选择多个背包（比如两个学校风格的书包）可以帮助个性化用户的推荐（显示更多相似风格的背包，而不是旅行袋）。我们还可以看到，选择多个数字LED屏幕手表会使结果远离模拟手表。换句话说，用户向量在这里实时更新，以考虑他们的偏好和行为，这有助于快速生成更相关的结果。Ref2Vec的另一个好处是计算量不大，开销较低。
 
-With Ref2Vec, you can use Weaviate to provide Recommendation with "user-as-query". This is a very common and powerful way to build Home Feed style features in apps. This can be done by sending queries like this to Weaviate:
+使用Ref2Vec，您可以使用Weaviate提供基于"用户作为查询"的推荐功能。这是一种在应用程序中构建类似主页Feed功能的常见且强大的方式。可以通过向Weaviate发送以下类型的查询来实现：
 
 ```graphql
 {
@@ -65,16 +70,16 @@ With Ref2Vec, you can use Weaviate to provide Recommendation with "user-as-query
 }
 ```
 
-This short query encapsulates the power of Ref2Vec. Although all the query does is provide the ID of the User object, Ref2Vec has done the hard work by inferring a centroid vector from the User's references to other vectors. And as the set of references continues to evolve, the Ref2Vec vectors will continue to evolve also, ensuring that the User vector remains up-to-date with their latest interests.
+这个简短的查询体现了Ref2Vec的强大之处。虽然查询只提供了用户对象的ID，但Ref2Vec通过推断用户对其他向量的引用来生成一个中心向量。随着引用集合的不断演变，Ref2Vec向量也会不断演化，确保用户向量与他们最新的兴趣保持更新。
 
-Whether your goal is to construct a Home Feed interface for users or to pair with search queries, Ref2Vec provides a strong foundation to enable Recommendation with fairly low overhead. For example, it can achieve personalized re-ranking, also known as a session-based recommendation, without persisting user data over a long sequence of interactions. A new user could have personalization available after a few interactions on the app which will help them quickly settle in and feel at home, helping to overcome what is known as the cold-start problem.
+无论您的目标是为用户构建一个主页推荐界面，还是与搜索查询配对，Ref2Vec都提供了一个强大的基础，以实现具有相对较低开销的推荐功能。例如，它可以实现个性化的重新排序，也被称为基于会话的推荐，而无需在长时间的交互序列中持久化用户数据。一个新用户在应用程序上进行几次交互后就可以使用个性化功能，这将帮助他们快速适应并感到宾至如归，帮助克服所谓的冷启动问题。
 
 
-## Representing long objects
+## 表示长对象
 
-One of the most outstanding problems in Search technology is finding suitable representations for long objects. In this sense, "long" is used to describe text documents that significantly exceed the 512 token input limit on Deep Transformer Neural Networks. This problem is a large part of what motivates our interest in Hybrid Search techniques that combine the flexibility of Vector Search with the sparse BM25 word counting algorithm well suited for >512 token text sequences. We think Ref2Vec can also help address this challenge.
+在搜索技术中，最突出的问题之一是找到适合长文本对象的表示方法。在这个意义上，“长”用来描述那些远超过深度变换神经网络512个标记输入限制的文本文档。这个问题是我们对混合搜索技术感兴趣的主要原因之一，该技术将向量搜索的灵活性与适用于超过512个标记的文本序列的稀疏BM25词计数算法相结合。我们认为Ref2Vec也可以帮助解决这一挑战。
 
-To be clear, Weaviate already offers a solution to represent long documents with Cross-References! As an example, [the Wikipedia Demo](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate) breaks the long Wikipedia articles into a (Paragraph, inArticle, Article) data schema in which each Paragraph contains less than 512 tokens of text. This allows us to combine the title of the Article with the vector search in the Paragraph vectors in Weaviate with the following query:
+要明确的是，Weaviate已经提供了一种表示长文档的交叉引用的解决方案！例如，[Wikipedia演示](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate)将长的维基百科文章拆分为（段落、文章内、文章）的数据架构，其中每个段落包含少于512个文本标记。这使我们能够将文章的标题与Weaviate中段落向量的向量搜索相结合，使用以下查询：
 
 ```graphql
 {
@@ -97,21 +102,20 @@ To be clear, Weaviate already offers a solution to represent long documents with
 }
 ```
 
-So Weaviate already has a strong solution to long documents in play. However, what if we are searching through Scientific Papers, Legal contracts, or Screenplays such that we need to make long-range references between the Paragraphs?
+Weaviate已经具备了处理长文档的强大解决方案。然而，如果我们需要在科学论文、法律合同或剧本中进行搜索，并且需要在段落之间进行长距离引用，该怎么办呢？
 
-In this case, Ref2Vec can be used to average the vectors that represent each **Paragraph** to form the representation of the referencing **Article Class**. In other words, each Article instance would refer to constituent Paragraph instances, and the Ref2Vec module would calculate the vector of the Article as the centroid of the Paragraph vectors. We can then search directly through these Articles with an aggregated vector representation from each Wikipedia Article, thus helping to identify full articles that best match the query.
+在这种情况下，可以使用Ref2Vec对表示每个**段落**的向量进行平均，以形成引用**文章类**的表示。换句话说，每个文章实例将引用组成的段落实例，Ref2Vec模块将计算文章的向量作为段落向量的中心点。然后，我们可以通过每个维基百科文章的聚合向量表示直接搜索这些文章，从而帮助找到最符合查询的完整文章。
 
-## More Coming Soon
-We are very excited about the potential of Ref2Vec, and how it leverages existing symbolic data to augment vector searches in a new way. One of my favorite articles about Weaviate is Bob van Luijt's ["The AI-First Database Ecosystem"](/blog/semantic-search-with-wikipedia-and-weaviate). In this article, Bob describes emerging **waves** of database technology; from SQL, to NoSQL, and now, AI-first databases that focus "on data that is processed by a machine learning model first, where the AI models help in processing, storing and searching through the data as opposed to traditional ways".
+## 更多内容即将到来
+我们对Ref2Vec的潜力感到非常兴奋，以及它如何利用现有的符号数据以一种新的方式增强向量搜索。我最喜欢的一篇关于Weaviate的文章是Bob van Luijt的《AI优先的数据库生态系统》。在这篇文章中，Bob描述了新兴的数据库技术的**浪潮**，从SQL到NoSQL，现在是首次以AI为中心的数据库，注重“首先由机器学习模型处理的数据，其中AI模型帮助在处理、存储和搜索数据方面与传统方式不同”。您可以在[这里](/blog/semantic-search-with-wikipedia-and-weaviate)阅读该文章。
 
-Although Weaviate puts Machine Learning data representations first, **this doesn't mean we discard symbolic data and many features of previous systems**. Rather, we are actively searching for how symbolic data can improve neural functionality and vice versa.
+虽然Weaviate将机器学习数据表示放在首位，但这并不意味着我们抛弃了符号数据和以前系统的许多特性。相反，我们正在积极寻找符号数据如何改进神经功能，以及神经功能如何改进符号数据。
 
-Weaviate is a database that supports data structures like inverted index structures of categorical properties. Weaviate can integrate symbolic properties such as "colour" in the [HNSW vector search algorithm](https://towardsdatascience.com/effects-of-filtered-hnsw-searches-on-recall-and-latency-434becf8041c) to enable more efficient and guided search. This is called **pre-filtering** to describe applying the symbolic filter prior / during the search rather than simply after the nearest neighbors have been returned in **post-filtering**. Weaviate has clear applications of symbolic **properties** in vector search, but we have another symbolic data type that we hadn't yet leveraged in vector search – **Relational Structure**.
+Weaviate是一个支持数据结构的数据库，例如分类属性的倒排索引结构。Weaviate可以将象征性属性（例如"颜色"）集成到[HNSW向量搜索算法](https://towardsdatascience.com/effects-of-filtered-hnsw-searches-on-recall-and-latency-434becf8041c)中，以实现更高效和有导向性的搜索。这被称为**预过滤**，即在搜索之前/期间应用象征性过滤器，而不仅仅是在最近的邻居返回之后进行**后过滤**。Weaviate在向量搜索中具有象征性属性的明显应用，但我们还有另一种尚未在向量搜索中利用的象征性数据类型 - **关系结构**。
 
-Ref2Vec-Centroid goes some way to harness the joint power of vector search **combined with** relational structure, by making it easier to derive object vectors from relationships. As you have seen above, we think Ref2Vec can add value for use cases such as recommendations, re-ranking, overcoming the cold start problem and representing long objects. We are also excited to see what you build with Ref2Vec, and excited to build on this module with its future iterations.
+Ref2Vec-Centroid在利用向量搜索与关系结构的联合能力方面有所作为，通过更容易地从关系中推导出对象向量。正如您在上面所看到的，我们认为Ref2Vec在推荐、重新排序、克服冷启动问题和表示长对象等应用案例中可以增加价值。我们也很期待看到您使用Ref2Vec构建的东西，并且对于与其未来版本的模块一起构建也感到兴奋。
 
-Speaking of which, we have another blog post coming soon on the development directions of Ref2Vec for the future. We will discuss topics such as **collaborative filtering**, **multiple centroids**, **graph neural networks**, and more on **re-ranking** with Ref2Vec. Stay tuned!
-
+提到这一点，我们即将发布另一篇关于Ref2Vec未来发展方向的博客文章。我们将讨论诸如“协同过滤”、“多个质心”、“图神经网络”等主题，以及使用Ref2Vec进行“重新排序”的更多内容。敬请关注！
 
 import WhatNext from '/_includes/what-next.mdx'
 

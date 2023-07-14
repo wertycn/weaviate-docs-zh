@@ -1,77 +1,80 @@
 ---
-title: Using Cross-Encoders as reranker in multistage vector search
-slug: cross-encoders-as-reranker
-authors: [laura]
+authors:
+- laura
 date: 2022-08-09
-tags: ['search']
+description: Learn about bi-encoder and cross-encoder machine learning models, and
+  why combining them could improve the vector search experience.
 image: ./img/hero.png
-description: "Learn about bi-encoder and cross-encoder machine learning models, and why combining them could improve the vector search experience."
+slug: cross-encoders-as-reranker
+tags:
+- search
+title: Using Cross-Encoders as reranker in multistage vector search
 ---
-![Using Cross-Encoders as reranker in multistage vector search](./img/hero.png)
 
-<!-- truncate -->
+![在多阶段向量搜索中使用交叉编码器作为重新排序器](./img/hero.png)
 
-Semantic search overcomes the shortcomings of keyword-based search. If you search for "programming for data scientists", a keyword search will find "An intro to programming for data scientists", but it won't return "Python for Machine Learning use-cases".
+<!-- 截断 -->
 
-Vector databases can use machine learning to capture the context and semantics of data and search queries. Usually, machine learning models have a tradeoff between high accuracy and speed. The higher the accuracy, the more computationally expensive the model is. If we talk about search or Information Retrieval, we would like to see **accurate search results**, encompassing **wide-range queries**, whilst retaining **high speed**.
+语义搜索克服了基于关键字的搜索的缺点。如果你搜索"数据科学家的编程"，关键字搜索会找到"数据科学家的编程入门"，但不会返回"机器学习应用中的Python"。
 
-In search, or semantic matching of sentences, we can see this tradeoff in *Bi-Encoder* models compared with *Cross-Encoder* models. *Bi-Encoder* models are **fast**, but **less accurate**, while *Cross-Encoders* are **more accurate**, but **slow**. Luckily, we can combine them in a search pipeline to benefit from both models!
+矢量数据库可以利用机器学习来捕捉数据和搜索查询的上下文和语义。通常，机器学习模型在高准确性和速度之间存在权衡。准确性越高，模型的计算成本就越高。如果我们谈论搜索或信息检索，我们希望看到准确的搜索结果，涵盖广泛的查询范围，同时保持高速。
 
-In this article, you will learn about these two machine learning models, and why combining them could improve the vector search experience.
+在搜索或句子的语义匹配中，与*Cross-Encoder*模型相比，我们可以看到*Bi-Encoder*模型存在这种权衡。*Bi-Encoder*模型速度**快**，但准确性**较低**，而*Cross-Encoder*模型准确性**更高**，但速度**较慢**。幸运的是，我们可以在搜索流程中将它们结合起来，从两种模型中获益！
 
-## Bi-Encoder models
+在本文中，您将了解这两种机器学习模型，以及为什么将它们结合起来可以提高向量搜索的体验。
 
-Vector databases like [Weaviate](/developers/weaviate/) use Bi-Encoder machine learning models to compute the similarity between search queries and data in a vector space. Those machine learning models are trained to represent data (like text, images, videos, audio, etc) as **vectors**, which capture the context and semantics of the data. Similarly, search queries can also be represented by a vector embedding. A vector database can then perform a similarity search to retrieve the vectors closest to the query embedding.
+## Bi-Encoder模型
 
-The models that compute **dense vector embeddings for data** (which later can be used for **search queries**) are so-called *Bi-Encoder models*. Data vectors and query vectors can be compared by computing the similarity (for example cosine similarity) between vectors. All data items in the database can be represented by a vector embedding using a Bi-Encoder model.
+像[Weaviate](/developers/weaviate/)这样的向量数据库使用双编码器机器学习模型来计算搜索查询和向量空间中的数据之间的相似性。这些机器学习模型被训练成将数据（如文本、图像、视频、音频等）表示为**向量**，这些向量捕捉了数据的上下文和语义。类似地，搜索查询也可以用向量嵌入表示。然后，向量数据库可以执行相似性搜索以检索与查询嵌入最接近的向量。
 
-> Note. Vector databases **compute** dense vector embeddings **during import**. Calculating vectors up-front coupled with [ANN algorithms](/developers/weaviate/concepts/vector-index) (for faster retrieval) makes working with Bi-Encoder highly efficient.
+计算**数据的稠密向量嵌入**（稍后可用于**搜索查询**）的模型被称为*双编码器模型*。通过计算向量之间的相似度（例如余弦相似度），可以比较数据向量和查询向量。使用双编码器模型可以将数据库中的所有数据项表示为向量嵌入。
 
-![Vector Database](./img/vector-database.png)
+> 注意：向量数据库在导入期间计算密集向量嵌入。提前计算向量并与ANN算法（用于更快的检索）结合使用，使得与Bi-Encoder的工作高效。
 
-*Figure 1 - Representation of a Vector Database*
+![向量数据库](./img/vector-database.png)
+
+*图1 - 向量数据库的表示*
 
 ![Bi-Encoder](./img/bi-encoder.png)
 
-*Figure 2 - Representation of a Bi-Encoder model*
+*图2 - Bi-Encoder模型的表示*
 
-## Cross-Encoder models
+## 交叉编码器模型
 
-Bi-Encoder models are not the only possible way of scoring pairs of data on similarity. A different strategy is using *Cross-Encoders*. Cross-Encoder models do not produce vector embeddings for data, but use a classification mechanism for data pairs instead. The input of the model always consists of a **data pair**, for example two sentences, and outputs a value between 0 and 1 indicating the similarity between these two sentences (Figure 3). So, individual sentences cannot be passed to a Cross-Encoder model, it always needs a **pair** of "items". In terms of search, you need to use the Cross-Encoder with **each** data item and the search query, to calculate the similarity between the query and data object.
+Bi-Encoder模型并不是评分相似性的唯一可能方式。另一种策略是使用*Cross-Encoder*。Cross-Encoder模型不会为数据生成向量嵌入，而是使用分类机制来处理数据对。模型的输入始终由一个**数据对**组成，例如两个句子，并输出一个介于0和1之间的值，表示这两个句子之间的相似度（图3）。因此，单独的句子不能传递给Cross-Encoder模型，它总是需要一个**配对**的"项目"。在搜索方面，您需要使用Cross-Encoder分别对每个数据项和搜索查询进行计算，以计算查询和数据对象之间的相似度。
 
 ![Cross-Encoder](./img/cross-encoder.png)
 
-*Figure 3 - Representation of a Cross-Encoder model*
+*图3 - 交叉编码器模型的表示*
 
 
-If a Cross-Encoder model is trained on a representative training set, it [achieves higher accuracy than Bi-Encoders](https://arxiv.org/abs/1908.10084). However, since you need to use the Cross-Encoder model during a search for every single data item in combination with the query, this method is very inefficient. For a real-life semantic search application – with thousands or millions of objects – this would be impractical, as it would take "forever" to perform the search.
+如果在一个代表性的训练集上训练了一个交叉编码器模型，它[比双编码器模型具有更高的准确性](https://arxiv.org/abs/1908.10084)。然而，由于在每个数据项与查询的组合中都需要使用交叉编码器模型进行搜索，这种方法非常低效。对于一个实际的语义搜索应用程序，如果有成千上万甚至上百万的对象，这将是不切实际的，因为执行搜索将需要很长时间。
 
-## Combining Bi-Encoders and Cross-Encoders
+## 结合双编码器和交叉编码器
 
-We can combine the two methods to benefit from the strong points of both models! I'd like to illustrate this idea with an example. Imagine you are a fisherman who is looking for salmon in a sea full of fish of numerous species. First, you sail to the waters rich in fish, and you use a big net with the optimal bait for salmon to catch a lot of fish. You hope to find some salmon, but your net also catches other kinds of fish that you are not interested in. Next, you sort the catch by keeping the salmon and throwing the other fish back into the sea. This sorting step is time-consuming and expensive, but very effective.
+我们可以将这两种方法结合起来，从两种模型的优点中受益！我想用一个例子来说明这个想法。想象一下，你是一个在一个充满各种鱼类的海洋中寻找鲑鱼的渔夫。首先，你驶向鱼类丰富的水域，并使用一张带有最佳鲑鱼诱饵的大网捕捉很多鱼。你希望能找到一些鲑鱼，但你的网也会捕捉到其他你不感兴趣的鱼类。接下来，你通过将鲑鱼保留下来，将其他鱼类扔回海中进行分类。这个分类步骤很耗时和昂贵，但非常有效。
 
-![Fisherman as multistage search](./img/fisherman.jpg)
+![渔夫作为多阶段搜索](./img/fisherman.jpg)
 
-*Figure 4 - Fisherman as multistage search*
+*图 4 - 渔夫作为多阶段搜索*
 
-Catching fish with the big net represents how Bi-Encoders work. Bi-Encoders are fast, but are not as accurate as the expensive fisherman aka the Cross-Encoder. Cross-Encoders are time-consuming, like the fisherman who would need to limit the number of fishing rounds they could do. So we can chain those two methods behind each other (see Figure 5). First, you use a Bi-Encoder to retrieve a *list of result candidates*, then you use a Cross-Encoder on this list of candidates to pick out (or rerank) the most relevant results. This way, you benefit from the efficient retrieval method using Bi-Encoders and the high accuracy of the Cross-Encoder, so you can use this on large scale datasets!
+使用大网捕鱼代表了Bi-Encoder的工作原理。Bi-Encoder速度快，但准确性不如昂贵的渔夫，也就是Cross-Encoder。Cross-Encoder耗时较长，就像渔夫需要限制捕鱼次数一样。因此，我们可以将这两种方法串联在一起（参见图5）。首先，您使用Bi-Encoder检索一个*结果候选列表*，然后您使用Cross-Encoder在这个候选列表上挑选出（或重新排序）最相关的结果。这样，您既可以从Bi-Encoder的高效检索方法中受益，又可以从Cross-Encoder的高准确性中受益，因此可以在大规模数据集上使用它！
 
-![Multistage search pipeline](./img/weaviate-pipeline-long.png)
+![多阶段搜索流程](./img/weaviate-pipeline-long.png)
 
-*Figure 5 - Multistage search pipeline using Weaviate*
+*图5 - 使用Weaviate的多阶段搜索流程*
 
-## Pre-trained Cross-Encoder models
+## 预训练的Cross-Encoder模型
 
-As noted, Cross-Encoders can achieve high *in-domain* accuracy. To get the most accurate results, we train our models on datasets representative of their specialized use case.
+正如前面提到的，Cross-Encoder可以实现高*领域内*准确性。为了获得最准确的结果，我们使用代表其专业用例的数据集对模型进行训练。
 
-Pretrained Sentence Transformers Cross-Encoder models are [available on HuggingFace](https://huggingface.co/Cross-Encoder). There you can find many different models, for example [a model trained on MS Marco](https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1), which you could use in a search application with general natural language data (the model is trained on Bing search queries). If you have a search task for a dataset that is *out-of-domain*, you should train or fine-tune a model, see [here](https://www.sbert.net/examples/training/cross-encoder/README.html) for examples.
+预训练的句子转换器交叉编码器模型可以在[HuggingFace](https://huggingface.co/Cross-Encoder)上获取。在那里，您可以找到许多不同的模型，例如[在MS Marco上训练的模型](https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1)，您可以在通用自然语言数据的搜索应用程序中使用该模型（该模型是在Bing搜索查询上训练的）。如果您有一个属于*非领域内*的数据集的搜索任务，您应该训练或微调一个模型，请参考[这里](https://www.sbert.net/examples/training/cross-encoder/README.html)中的示例。
 
-## Conclusion
+## 结论
 
-We can combine the fast Bi-Encoders and accurate Cross-Encoders in a search pipeline to improve the search experience. With a vector database like [Weaviate](/), you can store and retrieve vectors and data efficiently using Bi-Encoder models to encode data and queries. A search pipeline can then continue with a Cross-Encoder model which reranks a list of retrieved search result candidates.
+我们可以将快速的双编码器和准确的交叉编码器结合在一个搜索流程中，以提高搜索体验。使用像[Weaviate](/)这样的向量数据库，您可以使用双编码器模型对数据和查询进行编码，从而高效地存储和检索向量和数据。然后，搜索流程可以继续使用交叉编码器模型对检索到的搜索结果候选列表进行重新排序。
 
-This blog post was inspired by [Nils Reimer's work on Bi-Encoders and Cross-Encoders](https://www.sbert.net/examples/applications/cross-encoder/README.html).
-
+这篇博客文章的灵感来自[Nils Reimer在Bi-Encoders和Cross-Encoders上的工作](https://www.sbert.net/examples/applications/cross-encoder/README.html)。
 
 import WhatNext from '/_includes/what-next.mdx'
 

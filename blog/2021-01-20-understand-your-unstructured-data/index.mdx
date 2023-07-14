@@ -1,38 +1,39 @@
 ---
-layout: post
-title: What if you could understand your unstructured data?
-slug: understand-your-unstructured-data
-authors: [laura]
+authors:
+- laura
 date: 2021-01-20
-tags: ['concepts']
+description: Learn how the AI-first vector database Weaviate unlocks the potential
+  of unstructured data and why this is important.
 image: ./img/hero.png
-# canonical-url: https://medium.com/semi-technologies/what-if-you-could-understand-your-unstructured-data-92f0861e016
-# canonical-name: Medium
-description: "Learn how the AI-first vector database Weaviate unlocks the potential of unstructured data and why this is important."
+layout: post
+slug: understand-your-unstructured-data
+tags:
+- concepts
+title: What if you could understand your unstructured data?
 ---
-![What if you could understand your unstructured data?](./img/hero.png)
 
-<!-- truncate -->
+![如果您能理解您的非结构化数据，会怎么样？](./img/hero.png)
 
-## Intro
-These days, more and more organizations are adopting a data-driven culture. Business processes and customer experience benefit from good data collection, management and analysis. But in order to really benefit from available data, it is essential to also understand the unstructured data, like free text in PDF documents, emails, invoices or voice transcriptions. Unstructured data is especially hard to index, manage and understand. Since around [80% of all data is unstructured](https://www.forbes.com/sites/forbestechcouncil/2019/01/29/the-80-blind-spot-are-you-ignoring-unstructured-organizational-data/), it is hard to actually search and retrieve insights from most of the data.
+<!-- 截断 -->
 
-The Weaviate vector database unlocks the potential of unstructured data. Searching by fuzzy terms and classification of rich data like free text becomes possible with Weaviate. It uses AI-driven indexing and search technologies to enable real-time text processing. With machine learning methods, Weaviate automatically classifies texts. Finding information you are looking for and providing recommendations is possible because knowledge and information is placed in context.
+## 简介
+这些天，越来越多的组织正在采用数据驱动的文化。良好的数据收集、管理和分析有助于业务流程和客户体验的提升。但是，为了真正从可用数据中受益，还必须理解非结构化数据，比如PDF文档、电子邮件、发票或语音转录中的自由文本。非结构化数据尤其难以索引、管理和理解。由于约80%的数据是非结构化的，因此实际上很难从大部分数据中搜索和获取洞见。
 
-## How does Weaviate work?
-Data usually refers to something in the real world. Traditional databases and search engines often struggle with understanding the context of data, a situation or a search query. The context of data is important, because it enables storage and search by fuzzy concepts instead of exact matching keywords. Weaviate automatically places concepts and words in relation to its context by using machine learning. It understands that the Eiffel Tower is a landmark in Paris, and will place these concepts closely together in the database model. Showing [orange tompouces](https://en.wikipedia.org/wiki/Tompouce) when looking for treats around King's day in the Netherlands is an example of finding concepts related to the context.
+Weaviate向量数据库释放了非结构化数据的潜力。通过模糊术语搜索和对自由文本等丰富数据进行分类，使用Weaviate变得可能。它使用基于人工智能的索引和搜索技术，实现实时文本处理。借助机器学习方法，Weaviate可以自动对文本进行分类。通过将知识和信息置于上下文中，可以找到您正在寻找的信息并提供推荐。
 
-## Example use cases
-Now let's get more serious than landmarks and holiday treats (although we should agree that tompouces are essential during King's day), and find out how also your business could benefit from search and classification of unstructured data.
+## Weaviate的工作原理是什么？
+数据通常指的是现实世界中的某些东西。传统的数据库和搜索引擎往往难以理解数据的上下文、情景或搜索查询。数据的上下文是重要的，因为它能够实现模糊概念的存储和搜索，而不仅仅是精确匹配关键词。Weaviate通过使用机器学习自动将概念和单词与其上下文相关联。它知道埃菲尔铁塔是巴黎的一个地标，并将这些概念紧密地放在数据库模型中。当在荷兰国王日寻找与上下文相关的美食时，例如找到与橙色tompouce（一种荷兰传统糕点）相关的概念。
 
-## Automatic classification
-Data classification is often done manually or by expensive external data science teams. ERP (enterprise resource planning) and supply chain management systems rely on correct classification of for example employees' travel expenses or ingredient labeling of product packages. Automatic classification by Weaviate reduces manual classification errors and eliminates expensive, single-to-use classification applications. Automatic classification can also be applied to cybersecurity and event management, where intervention on threats and riskful events should be taken real-time. Current platforms deal with very large amounts of streaming data, consisting of mostly free text. Weaviate can automatically recognize threats in free text, and classify if and which mitigation should be taken. With Weaviate this can be achieved near real-time, even on a very large scale.
+## 示例用例
+现在让我们比起地标和节日美食更认真些（虽然我们应该同意，在国王的日子里，Tompouce是必不可少的），并了解一下您的业务如何从对非结构化数据进行搜索和分类中受益。
 
-## Semantic search
-Traditional search systems return items that have an exact match with the search terms. This means that searching through your emails for ‘reimbursement' will skip all results about ‘compensation'. Searching for ‘science fiction' in a traditional book search engine, might lead to anything related to ‘science' or ‘fiction' so this would include ‘neuroscience' but not ‘a book about the future'. Weaviate uses semantic search, and matches search results to the user's intent through contextual meaning. For e-commerce websites this means that people searching for ‘jumpers' will also see ‘sweatshirts' simply because their contextual meaning is the same although the keywords do not match.
+## 自动分类
+数据分类通常是手动完成的，或通过昂贵的外部数据科学团队完成。企业资源规划（ERP）和供应链管理系统依赖于正确分类，例如员工差旅费用或产品包装的成分标签。Weaviate的自动分类减少了手动分类错误，并消除了昂贵且单一使用的分类应用程序。自动分类也可以应用于网络安全和事件管理，在这些领域中，对威胁和风险事件的干预应该实时进行。当前的平台处理大量的流数据，其中大部分是自由文本。Weaviate可以自动识别自由文本中的威胁，并确定是否需要采取哪些缓解措施。借助Weaviate，即使在非常大规模的情况下，这一目标也可以实时实现。
 
-See how automatically placing orange tompouces in the context of King's day might thus actually lead to upselling your products and happier customers? Now there's certainly also potential hidden in the majority of your data. Think about how an AI-driven vector-search can unlock this from your organization's data!
+## 语义搜索
+传统的搜索系统返回与搜索词完全匹配的项目。这意味着在搜索电子邮件中的'reimbursement'时，将跳过所有关于'compensation'的结果。在传统的图书搜索引擎中搜索'science fiction'可能会导致与'science'或'fiction'相关的任何内容，所以这可能包括'neuroscience'，但不包括'关于未来的书籍'。Weaviate使用语义搜索，通过上下文的意义将搜索结果与用户的意图匹配。对于电子商务网站来说，这意味着搜索'jumpers'的人也会看到'sweatshirts'，因为它们的上下文意义相同，尽管关键词不匹配。
 
+看到在“国王日”这个背景下自动放置橙色甜饼是如何实际上促进产品销售和让客户更加满意的吗？现在你的大部分数据中肯定也隐藏着潜力。想想看，一个由AI驱动的向量搜索如何可以从你的组织数据中释放出这些潜力！
 
 import WhatNext from '/_includes/what-next.mdx'
 

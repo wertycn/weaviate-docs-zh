@@ -1,41 +1,43 @@
 ---
-title: Generative Feedback Loops with LLMs for Vector Databases
-slug: generative-feedback-loops-with-LLMs
-authors: [connor]
+authors:
+- connor
 date: 2023-05-05
+description: An introduction to creating generative feedback loops with LLMs in Weaviate.
 image: ./img/hero.png
-tags: ['integrations', 'how-to']
-description: "An introduction to creating generative feedback loops with LLMs in Weaviate."
-
+slug: generative-feedback-loops-with-LLMs
+tags:
+- integrations
+- how-to
+title: Generative Feedback Loops with LLMs for Vector Databases
 ---
 
-![Generative Feedback Loop with an LLM Visualization](./img/hero.png)
+![生成式反馈循环与LLM可视化](./img/hero.png)
 
-<!-- truncate -->
+<!-- 省略部分 -->
 
-Large Language Models are heralding a new era in information technology. To better understand this revolution, it’s important to consider the historical context. The printing press significantly reduced the cost of reproducing information, while the internet cut out the middleman, making the distribution of information virtually free. [In Aggregation Theory](https://stratechery.com/2015/aggregation-theory/), Ben Thompson writes about how the free distribution of the internet allowed companies to modularize (or unbundle) services and focus on user experience. Ben states that “companies that win the user experience can generate a virtuous cycle where their ownership of consumers/users attracts suppliers which improves the user experience”.
+大型语言模型正在引领信息技术的新时代。为了更好地理解这一革命，重要的是考虑历史背景。印刷机大大降低了信息复制的成本，而互联网消除了中间商，使信息的发布几乎成本为零。在《聚合理论》(Aggregation Theory)中，本·汤普森(Ben Thompson)写道，互联网的免费分发使得公司能够模块化(或解耦)服务，并专注于用户体验。本指出：“赢得用户体验的公司可以形成一个良性循环，他们对消费者/用户的占有吸引供应商，从而改善用户体验”。
 
-Enter Large Language Models (LLMs), a world changing technology that enables transforming and generating information at incredible speeds and low cost. **LLMs present the opportunity to expedite the virtuous cycle Aggregation Theory describes by commoditizing the human effort traditionally required to deliver great user experiences.**
+进入大型语言模型（LLMs），这是一项可以以令人难以置信的速度和低成本进行信息转换和生成的改变世界的技术。**LLMs提供了加速聚合理论所描述的良性循环的机会，通过让传统上需要大量人力才能提供出色用户体验的人类努力实现商品化。**
 
-The internet cut out the newspaper, now content can be delivered directly to you. Now we are going a step further, modifying content itself based on your personal preferences! Not only are we able to bring content with a great UX to people, but now we can generate content, in real time, based on existing information in the database to create an ever better and more personalized experience!
+互联网改变了报纸的传播方式，现在内容可以直接送到您手中。现在我们正在更进一步，根据您的个人偏好修改内容本身！我们不仅能够向用户提供优秀的用户体验，而且还能够实时生成内容，基于数据库中的现有信息，以创造更好、更个性化的体验！
 
-In this article, we are going to illustrate the concept of **Generative Feedback Loops with LLMs**. Retrieving information from the Weaviate Vector Database to prompt Weaviate’s generative module and then vectorizing and saving these generations **back** into the database! Now we can semantically search through the generated content, as well as add symbolic metadata about it.
+在本文中，我们将阐述使用LLMs进行生成反馈循环的概念。从Weaviate向量数据库中检索信息以促使Weaviate的生成模块，并将这些生成内容进行向量化和保存**返回**到数据库中！现在我们可以通过生成的内容进行语义搜索，还可以添加有关它的符号元数据。
 
-We will step into the shoes of AirBnB and implement a Generative Feedback Loop to process `Listing` objects. This shows how LLMs let us supercharge user experience by creating custom advertisements based on user preferences. We retrieve information about users from the DB, give that + information about the Listing to the LLM, and save the resulting custom advertisement back to the database.
+我们将扮演AirBnB的角色，并实现一个生成式反馈循环来处理`Listing`对象。这展示了LLM如何通过根据用户偏好创建定制广告来提升用户体验。我们从数据库中检索有关用户的信息，将该信息与Listing的信息一起提供给LLM，并将生成的定制广告保存回数据库。
 
-Here is a quick overview of the code snippets before diving in:
-1. Create a description for Listings based on x,y,z.
-2. Semantic Search through generated Listings with the Vector Database
-3. Generate Ads for these Listings and link them with cross-references.
-4. Write personalized Ads for Connor the dog owner and Bob the weightlifter
+在深入讨论之前，以下是代码片段的快速概述：
+1. 基于 x、y、z 创建 Listings 的描述。
+2. 通过向量数据库进行语义搜索生成的 Listings。
+3. 为这些 Listings 生成广告，并将它们与交叉引用链接起来。
+4. 为狗主人 Connor 和举重运动员 Bob 编写个性化广告。
 
-## Part 1: AirBnB Listing Example
+## 第一部分：AirBnB 列表示例
 
 :::note
 The Github repo with notebooks (using Weaviate embedded) can be found [here](https://github.com/weaviate/Generative-Feedback-Loops/).
 :::
 
-In this example we will be using the OpenAI `text-davinci-003` and the Cohere `command-xlarge-nightly` LLMs to generate content, but this is also possible with other providers such as HuggingFace, Anthropic, and more. Set your OpenAI or Cohere key to use with Weaviate’s generate module using the following block of code:
+在这个例子中，我们将使用OpenAI的`text-davinci-003`和Cohere的`command-xlarge-nightly` LLMs来生成内容，但也可以使用其他提供商，如HuggingFace、Anthropic等。将您的OpenAI或Cohere密钥设置为与Weaviate的生成模块一起使用，可以使用以下代码块：
 
 ```python
 import weaviate
@@ -46,26 +48,26 @@ client = weaviate.Client(embedded_options=weaviate.EmbeddedOptions(),
 client.get_meta() # see which modules are enabled in Weaviate Embedded
 ```
 
-The table below illustrates the schema of the data we will use, please see the notebook for reference of the full json dictionary to create Weaviate schemas with configurations like this:
+下表显示了我们将使用的数据架构，请参考笔记本中的完整JSON字典，以创建具有此类配置的Weaviate模式：
 
-| Property                   | Type    | Vectorize? | AI Generated? | In import dataset? |
+| 属性                   | 类型    | 向量化？ | 人工智能生成？ | 在导入数据集中？ |
 |----------------------------|---------|------------|---------------| -------------------
-| name                       | text    | ✅          | ❌            | ✅ |
-| description                | text    | ✅          | ✅            | ❌ |
-| host_name                  | text    | ❌          | ❌            | ✅ |
-| neighbourhood              | text    | ❌          | ❌            | ✅ |
-| neighbourhood_group        | text    | ❌          | ❌            | ✅ |
-| latitude                   | number  | ❌          | ❌            | ✅ |
-| longitude                  | number  | ❌          | ❌            | ✅ |
+| name                       | 文本    | ✅          | ❌            | ✅ |
+| 描述                      | 文本    | ✅          | ✅            | ❌ |
+| 主机名                   | 文本    | ❌          | ❌            | ✅ |
+| 社区                      | 文本    | ❌          | ❌            | ✅ |
+| 社区群组                | 文本    | ❌          | ❌            | ✅ |
+| 纬度                   | 数字  | ❌          | ❌            | ✅ |
+| 经度                  | 数字  | ❌          | ❌            | ✅ |
 | room_type                  | text    | ❌          | ❌            | ✅ |
 | price                      | number  | ❌          | ❌            | ✅ |
 | minimum_nights             | int     | ❌          | ❌            | ✅ |
 | number_of_reviews          | int     | ❌          | ❌            | ✅ |
 | last_review                | date    | ❌          | ❌            | ✅ |
 | reviews_per_month          | number  | ❌          | ❌            | ✅ |
-| calculated_host_listings_count | int | ❌          | ❌            | ✅ |
-| availability_365           | int     | ❌          | ❌            | ✅ |
-| hasAd                      | Ad      | ❌          | ✅            | ❌ |
+| calculated_host_listings_count | int | ❌ | ❌ | ✅ |
+| availability_365 | int | ❌ | ❌ | ✅ |
+| hasAd | Ad | ❌ | ✅ | ❌ |
 
 
 
@@ -73,16 +75,16 @@ The table below illustrates the schema of the data we will use, please see the n
 The schema can be found in this [repository](https://github.com/weaviate/Generative-Feedback-Loops/blob/main/python/listing-schema.py)
 :::
 
-## Avoiding Hallucinations: Real-Time Data with LLM Capabilities
-Utilizing prompt engineering tactics like “Please base your response only on the provided information”, we integrate data from the Listing database into the generative model. This allows us to draw from the provided information. By emphasizing the use of real-time information stored in Weaviate, we continuously update the language model with the latest data, bypassing the limitation of its encoded knowledge. Ultimately combining the peanut butter of factual information from the database with the jelly of LLM language understanding.
+## 避免产生幻觉：具备LLM能力的实时数据
+通过利用“请仅根据提供的信息回答”的提示工程策略，我们将列表数据库中的数据集成到生成模型中。这样我们就可以从提供的信息中获取相关内容。通过强调使用存储在Weaviate中的实时信息，我们可以持续更新语言模型，以获取最新的数据，从而绕过对其编码知识的限制。最终将数据库中的事实信息与LLM语言理解的精华相结合。
 
-### Generate a description for each Listing
+### 为每个列表生成描述
 
 import GenerativeFeedbackLoopsDescription from '/_includes/code/generative.feedback.loops.description.mdx';
 
 <GenerativeFeedbackLoopsDescription/>
 
-Now let's test a semantic search through the Listings, each vectorized with the respective LLM-generated `description`:
+现在让我们通过使用相应的LLM生成的`description`对列表进行语义搜索测试：
 
 import GenerativeFeedbackLoopsSearch from '/_includes/code/generative.feedback.loops.search.mdx';
 
@@ -90,15 +92,15 @@ import GenerativeFeedbackLoopsSearch from '/_includes/code/generative.feedback.l
 
 <details>
   <summary>
-    OpenAI Generations
+    OpenAI 生成
   </summary>
   <div>
 
-| Rank | Result |
+| 排名 | 结果 |
 |------|--------|
-| 1    | This private room in the Bedford-Stuyvesant neighbourhood of Brooklyn is the perfect spot for a long-term stay. The space is clean and quiet, providing a peaceful retreat from the hustle and bustle of the city. With a minimum stay of 60 nights, you'll have plenty of time to explore all that Brooklyn has to offer. The location is convenient, with easy access to public transportation and a variety of shops and restaurants nearby. Although there are no reviews yet, you can rest assured that the host is experienced and dedicated to providing a comfortable and enjoyable stay. With availability 365 days a year, this listing is a great option for anyone looking for a long-term stay in Brooklyn. |
-| 2    | This spacious 2 bedroom apartment is located in the vibrant East Harlem neighbourhood of Manhattan, just a stone's throw away from Central Park. The entire home is available for rent, providing guests with ample space and privacy during their stay. With a minimum stay of 7 nights, this listing is perfect for those looking for a longer-term rental option. Although there are currently no reviews for this property, guests can rest assured that they will be staying in a well-maintained and comfortable space. The host has two listings on Airbnb and the availability for this property is 249 days out of the year. Book now to experience the excitement of New York City from the comfort of this spacious apartment. |
-| 3    | This private room is located in the Flatbush neighborhood of Brooklyn, offering a unique country space in the heart of the city. The room is priced at $150 per night with a minimum stay of one night. Although there are currently no reviews for this listing, it is available for booking 365 days a year. The host has only one listing, ensuring a personalized and attentive experience for guests. The latitude and longitude coordinates for the property are 40.63702 and -73.96327, respectively. Book now for a peaceful and relaxing stay in the bustling city of Brooklyn. |
+| 1    | 这个位于布鲁克林的贝德福德-斯图文森特社区的私人房间是长期居住的理想选择。空间干净安静，提供了一个远离城市喧嚣的宁静休憩之所。最短入住60晚，您将有足够的时间探索布鲁克林的所有魅力。位置便利，交通便利，附近有各种商店和餐馆。虽然目前还没有评论，但您可以放心，房东经验丰富，致力于提供舒适愉快的住宿体验。365天全年可预订，这个房源是在布鲁克林寻找长期住宿的绝佳选择。 |
+| 2    | 这间宽敞的两居室公寓位于曼哈顿充满活力的东哈莱姆社区，距离中央公园仅几步之遥。整个房屋可供出租，为客人在逗留期间提供充足的空间和隐私。最少入住7晚，此房源非常适合寻找长期租赁选项的人。尽管目前对于这个房产还没有评价，但客人可以放心，他们将入住一个维护良好、舒适的空间。主人在Airbnb上有两个房源，此房产的可用性为一年中的249天。立即预订，从这间宽敞的公寓舒适地体验纽约市的激动人心。 |
+| 3    | 这间私人房间位于布鲁克林的Flatbush社区，为城市中心提供了一个独特的乡村空间。该房间的价格为每晚150美元，最低入住一晚。虽然目前还没有关于这个房源的评价，但它全年365天都可以预订。主人只有一个房源，为客人提供个性化和周到的服务。该物业的纬度和经度坐标分别是40.63702和-73.96327。立即预订，在繁忙的布鲁克林市享受宁静和放松的住宿。 |
   </div>
 </details>
 
@@ -108,39 +110,38 @@ import GenerativeFeedbackLoopsSearch from '/_includes/code/generative.feedback.l
   </summary>
   <div>
 
-| Rank | Result |
+| 排名 | 结果 |
 |------|--------|
-| 1    | Welcome to your country space in the city! This beautiful, bright, and quiet 2 bedroom apartment has been completely renovated and features a private entrance, a large kitchen with brand new stainless steel appliances, two bedrooms each with queen size beds, and a full bathroom with a soaking tub. There is also a washer and dryer in the unit as well as a dishwasher. The apartment is located in a very quiet and safe neighbourhood, and is also close to the subway and many bus lines. It is also a short walk to the beautiful Prospect Park. |
-| 2    | THE VILLAGE OF HARLEM....NEW YORK !\n\nThis is the Village of Harlem. A vibrant, colorful, eclectic, and the most famous Village in New York.\n\nI am a proud Harlem resident and I am so excited to share my home with you. I am also an avid traveler and I love to meet new people from around the world.\n\nWhen you stay at my place, you will have your own private room and bathroom. You will also have access to the kitchen and the living room.\n\nI am located in the heart of Harlem, just a few blocks from the 2/3 subway station. From there, it is just a few stops to downtown Manhattan.\n\nYou will be surrounded by the best restaurants, bars, and nightclubs that Harlem has to offer. The famous Apollo Theater is just a few blocks away. The beautiful Central Park is also a short walk away.\n\nCome and experience the real New York City in the Village of Harlem. I look forward to meeting you and showing you around my home. |
-| 3    | Huge 2 BR Upper East  Cental Park\n\nHost Sing\n\nEast Harlem\nManhattan\n\nPrice: $190\n\nThis huge 2 bedroom is located in the heart of Manhattan, steps away from Central Park. It is newly renovated with stainless steel appliances, exposed brick, and beautiful hardwood floors. The apartment is located in a very safe and convenient area, with a variety of restaurants and stores nearby. The subway is also very close, making it easy to get around the city.\n\nThis is the perfect place for anyone looking to explore New York City. |
+| 1    | 欢迎来到城市中的您的国家空间！这间美丽、明亮、安静的两居室公寓已经完全翻新，设有独立入口、带全新不锈钢家电的大厨房，两间配有大号床的卧室，以及带浸泡浴缸的全套浴室。单位内还配有洗衣机、烘干机和洗碗机。公寓位于非常安静和安全的社区，附近还靠近地铁和许多公交线路。步行也可以快速到达美丽的展望公园。 |
+| 2    | 哈莱姆村……纽约！\n\n这是哈莱姆村。一个充满活力、多彩多样、充满异国风情的纽约最著名的村庄。\n\n我是哈莱姆村的自豪居民，我非常兴奋地与您分享我的家。我也是一个热爱旅行的人，喜欢结识来自世界各地的新朋友。\n\n当您入住我的地方时，您将拥有自己的私人房间和浴室。您还可以使用厨房和客厅。\n\n我位于哈莱姆的中心地带，距离2/3号地铁站只有几个街区。从那里，只需几站就可到达曼哈顿市中心。\n\n您将被哈莱姆提供的最佳餐厅、酒吧和夜总会所环绕。著名的阿波罗剧院就在几个街区之遥。美丽的中央公园也只是一个短暂的步行路程。\n\n来到哈莱姆村，体验真正的纽约市。我期待着与您见面，并向您展示我的家。 |
+| 3    | 巨大的2卧室公寓，位于上东区中央公园\n\n东哈莱姆\n曼哈顿\n\n价格：$190\n\n这个巨大的2卧室公寓位于曼哈顿的中心地带，距离中央公园仅几步之遥。它经过全新装修，配有不锈钢电器、裸露的砖墙和漂亮的硬木地板。公寓位于一个非常安全和便利的地区，附近有各种餐馆和商店。地铁也非常近，方便在城市中四处游览。\n\n这是任何想要探索纽约市的人的理想之地。 |
 
   </div>
 </details>
 
-Note how the 3rd generation from the Cohere model outputted `Cental Park` instead of the correct spelling of `Central Park`! At first glance it looks like the model is hallucinating `Cental Park` (spelled incorrectly), but this actually is in the data. This is a nice anecdote to show how the model will attend to the input in spite of it's prior knowledge, even though it has prior knowledge about Manhattan, it will still call it `Cental Park` because that's what the retrieved content says to do.
+注意第三代Cohere模型输出的是`Cental Park`而不是正确拼写的`Central Park`！乍一看，模型似乎是在产生幻觉，拼错了`Cental Park`，但实际上这是数据中的内容。这是一个很好的轶事，表明模型会根据输入进行处理，尽管它有关于曼哈顿的先验知识，但它仍然会将其称为`Cental Park`，因为检索到的内容要求如此。
 
-### Generate New Data Objects
+### 生成新的数据对象
 
-In the previous example we’ve enhanced existing data objects by adding a `description` property. But we can now even create complete new data objects (e.g., Ads for specific target audiences) based on the new objects.
+在前面的示例中，我们通过添加 `description` 属性来增强现有的数据对象。但是现在我们甚至可以基于这些新对象创建完全新的数据对象（例如，针对特定目标受众的广告）。
 
 import GenerativeFeedbackLoopsLoop from '/_includes/code/generative.feedback.loops.loop.mdx';
 
 <GenerativeFeedbackLoopsLoop/>
 
-Let's see the resulting ads and the descriptions they were sourced from:
-
+让我们来看看生成的广告以及它们所来源的描述信息：
 
 <details>
   <summary>
-    OpenAI Generations
+    OpenAI 生成体验
   </summary>
   <div>
 
-| Description | Ad |
-|-------------|----|
-| This cozy private room in the Bedford-Stuyvesant neighbourhood of Brooklyn is the perfect place to stay for an extended period of time. Located at 40.68876 latitude and -73.94312 longitude, this room is clean and quiet, and has a minimum stay of 60 nights. With a calculated host listings count of 1 and availability of 365 days a year, you can be sure to find a spot here. There are no reviews yet, so be the first to experience this great room! | Are you looking for a place to stay for an extended period of time? Look no further than this cozy private room in the Bedford-Stuyvesant neighbourhood of Brooklyn! Located at 40.68876 latitude and -73.94312 longitude, this room is clean and quiet, and has a minimum stay of 60 nights. With a calculated host listings count of 1 and availability of 365 days a year, you can be sure to find a spot here. Be the first to experience this great room and write a review! Don't miss out on this amazing opportunity - book now! |
-| This beautiful two bedroom apartment is located in the Upper East Side of Manhattan, just a short walk away from Central Park. The apartment is situated in the East Harlem neighbourhood, and is surrounded by a variety of restaurants, shops, and other attractions. The apartment is available for rent for a minimum of seven nights, and is priced at $190 per night. The apartment is equipped with all the necessary amenities, and is available for rent for 249 days out of the year. | Welcome to this beautiful two bedroom apartment in the Upper East Side of Manhattan! Located in the East Harlem neighbourhood, this apartment is just a short walk away from Central Park and surrounded by a variety of restaurants, shops, and other attractions. Enjoy all the necessary amenities in this apartment, available for rent for a minimum of seven nights at a price of $190 per night. With 249 days available for rent out of the year, this is the perfect place to stay for your next vacation or business trip! Book now and experience the best of Manhattan! |
-| This cozy private room is located in the Flatbush neighbourhood of Brooklyn. Enjoy the convenience of being in the city while still having access to the peacefulness of the countryside. The room is available for a minimum of one night and is available for booking all year round. With a latitude of 40.63702 and longitude of -73.96327, you'll be able to explore the city with ease. This listing has no reviews yet, so be the first to experience this unique country space in the city. | Are you looking for a unique getaway in the city? Look no further than this cozy private room in the Flatbush neighbourhood of Brooklyn! Enjoy the convenience of being in the city while still having access to the peacefulness of the countryside. With a latitude of 40.63702 and longitude of -73.96327, you'll be able to explore the city with ease. This listing has no reviews yet, so be the first to experience this one-of-a-kind country space in the city. Book now for a minimum of one night and enjoy all year round! |
+| 描述 | 广告 |
+|------|----|
+| 这间位于布鲁克林的贝德福德 - 斯图维森特社区的舒适私人房间是长期居住的绝佳选择。房间位于40.68876纬度和-73.94312经度，干净安静，最短入住时间为60晚。根据主机列表计算，有1个可用房源，全年365天可预订，您可以放心选择这里。目前还没有评论，所以赶快成为第一个体验这个美妙房间的人吧！| 您正在寻找一个长期居住的地方吗？那么不要再犹豫了，这间位于布鲁克林贝德福德 - 斯图维森特社区的舒适私人房间是您的最佳选择！该房间位于40.68876纬度和-73.94312经度，干净安静，最短入住时间为60晚。根据主机列表计算，有1个可用房源，全年365天可预订，您可以放心选择这里。快来成为第一个体验这个美妙房间并撰写评论的人吧！不要错过这个绝佳机会，立即预订！|
+欢迎来到曼哈顿上东区的这间美丽的两居室公寓！位于东哈莱姆社区，这间公寓距离中央公园仅几步之遥，并且周围环绕着各种餐厅、商店和其他景点。在这间公寓中，您可以享受到所有必要的设施，最低租期为七晚，每晚价格为190美元。每年有249天可供出租，这是您下次度假或商务旅行的理想住所！立即预订，体验曼哈顿的最佳风光！
+| 这间舒适的私人房间位于布鲁克林的Flatbush社区。您可以在城市中享受便利的同时，仍然能够感受到乡村的宁静。该房间可供最少一晚入住，并全年提供预订。通过纬度40.63702和经度-73.96327，您将能够轻松探索城市。此房源尚无评论，因此成为第一个体验这个独特的乡村空间在城市中的人。| 您是否正在寻找城市中的独特度假地？那么就不要再寻找了，这间舒适的私人房间位于布鲁克林的Flatbush社区！您可以在城市中享受便利的同时，仍然能够感受到乡村的宁静。通过纬度40.63702和经度-73.96327，您将能够轻松探索城市。此房源尚无评论，因此成为第一个体验这个独一无二的乡村空间在城市中的人。立即预订，最少一晚入住，全年提供！|
 
 </div>
 </details>
@@ -152,20 +153,25 @@ Let's see the resulting ads and the descriptions they were sourced from:
   </summary>
   <div>
 
-| Description | Ad |
-| ----------- | -- |
-| Huge 2 BR Upper East  Cental Park\n\nHost Sing\n\nEast Harlem\nManhattan\n\nPrice: $190\n\nThis huge 2 bedroom is located in the heart of Manhattan, steps away from Central Park. It is newly renovated with stainless steel appliances, exposed brick, and beautiful hardwood floors. The apartment is located in a very safe and convenient area, with a variety of restaurants and stores nearby. The subway is also very close, making it easy to get around the city.\n\nThis is the perfect place for anyone looking to explore New York City. | Welcome to your home away from home in the heart of Manhattan! This huge 2 bedroom is located just steps away from Central Park and all the best that New York City has to offer.\n\nThe apartment has been newly renovated with stainless steel appliances, exposed brick, and beautiful hardwood floors. You'll love the convenience of being located in a very safe and convenient area, with a variety of restaurants and stores nearby. The subway is also very close, making it easy to get around the city.\n\nWhether you're here for business or pleasure, this is the perfect place to call home during your stay. Don't miss out on the opportunity to explore all that New York City has to offer from the comfort of this amazing apartment. Book your stay today and start planning your adventure! |
-| Welcome to your country space in the city! This beautiful, bright, and quiet 2 bedroom apartment has been completely renovated and features a private entrance, a large kitchen with brand new stainless steel appliances, two bedrooms each with queen size beds, and a full bathroom with a soaking tub. There is also a washer and dryer in the unit as well as a dishwasher. The apartment is located in a very quiet and safe neighbourhood, and is also close to the subway and many bus lines. It is also a short walk to the beautiful Prospect Park. | Welcome to your country space in the city! This beautiful, bright, and quiet 2 bedroom apartment has been completely renovated and features a private entrance, a large kitchen with brand new stainless steel appliances, two bedrooms each with queen size beds, and a full bathroom with a soaking tub. There is also a washer and dryer in the unit as well as a dishwasher. The apartment is located in a very quiet and safe neighbourhood, and is also close to the subway and many bus lines. It is also a short walk to the beautiful Prospect Park.\n\nPlease note that there is a $150 cleaning fee and a $500 security deposit. The security deposit will be refunded after your stay if there is no damage to the apartment.\n\nWe look forward to hosting you! |
-| THE VILLAGE OF HARLEM....NEW YORK !\n\nThis is the Village of Harlem. A vibrant, colorful, eclectic, and the most famous Village in New York.\n\nI am a proud Harlem resident and I am so excited to share my home with you. I am also an avid traveler and I love to meet new people from around the world.\n\nWhen you stay at my place, you will have your own private room and bathroom. You will also have access to the kitchen and the living room.\n\nI am located in the heart of Harlem, just a few blocks from the 2/3 subway station. From there, it is just a few stops to downtown Manhattan.\n\nYou will be surrounded by the best restaurants, bars, and nightclubs that Harlem has to offer. The famous Apollo Theater is just a few blocks away. The beautiful Central Park is also a short walk away.\n\nCome and experience the real New York City in the Village of Harlem. I look forward to meeting you | Welcome to THE VILLAGE OF HARLEM....NEW YORK!\n\nThis is the Village of Harlem. A vibrant, colorful, eclectic, and the most famous Village in New York.\n\nI am a proud Harlem resident and I am so excited to share my home with you. I am also an avid traveler and I love to meet new people from around the world.\n\nWhen you stay at my place, you will have your own private room and bathroom. You will also have access to the kitchen and the living room.\n\nI am located in the heart of Harlem, just a few blocks from the 2/3 subway station. From there, it is just a few stops to downtown Manhattan.\n\nYou will be surrounded by the best restaurants, bars, and nightclubs that Harlem has to offer. The famous Apollo Theater is just a few blocks away. The beautiful Central Park is also a short walk away.\n\nCome and experience the real New York City in the Village of Harlem. I look forward to meeting you and showing you around my home. |
+| 描述 | 广告 |
+| ---- | -- |
+| 巨大的2卧室位于上东区中央公园\n\n主人单独\n\n东哈莱姆\n曼哈顿\n\n价格：$190\n\n这个巨大的两卧室公寓位于曼哈顿的中心地带，步行即可到达中央公园。它经过全新翻修，配有不锈钢电器、裸露的砖墙和美丽的硬木地板。公寓位于一个非常安全和便利的地区，附近有各种餐馆和商店。地铁也非常近，方便您在城市中四处游览。\n\n这是一个完美的地方，适合任何想要探索纽约市的人。 | 欢迎来到位于曼哈顿中心的您的第二个家！这个巨大的两卧室公寓位于中央公园仅几步之遥，是纽约市最好的地方。\n\n公寓经过全新翻修，配有不锈钢电器、裸露的砖墙和美丽的硬木地板。您会喜欢位于一个非常安全和便利的地区，附近有各种餐馆和商店的便利。地铁也非常近，方便您在城市中四处游览。\n\n无论您是因公务还是娱乐而来，这都是您在逗留期间称为家的完美之地。不要错过在这个令人惊叹的公寓舒适地探索纽约市的机会。立即预订您的住宿，并开始计划您的冒险之旅！ |
+欢迎来到城市中的乡村空间！这间美丽、明亮、安静的两居室公寓已经完全翻新，设有独立入口，配备全新的不锈钢厨房电器，两间卧室都配有大号床，浴室设有浸泡式浴缸。单位内还配备了洗衣机、烘干机和洗碗机。该公寓位于非常安静和安全的社区，靠近地铁和许多公交线路。它还是美丽的前景公园的步行距离。
+
+请注意，有150美元的清洁费和500美元的押金。如果公寓没有损坏，押金将在您入住后退还。
+
+我们期待您的光临！
+| 哈莱姆村...纽约！\n\n这是哈莱姆村。一个充满活力、多彩、多元化的、纽约最著名的村庄。\n\n我是一个自豪的哈莱姆居民，非常兴奋地与您分享我的家。我也是一个热衷于旅行的人，喜欢结识来自世界各地的新朋友。\n\n当您入住我的地方时，您将拥有自己的私人房间和浴室。您还可以使用厨房和客厅。\n\n我位于哈莱姆的中心地带，距离2/3号地铁站仅几个街区。从那里，只需几站即可到达曼哈顿市中心。\n\n您将被哈莱姆提供的最佳餐厅、酒吧和夜总会所包围。著名的阿波罗剧院就在几个街区之外。美丽的中央公园也只是一个短暂的步行路程。\n\n来哈莱姆村，体验真正的纽约城。期待与您见面，并向您展示我的家。 | 欢迎来到哈莱姆村...纽约！\n\n这是哈莱姆村。一个充满活力、多彩、多元化的、纽约最著名的村庄。\n\n我是一个自豪的哈莱姆居民，非常兴奋地与您分享我的家。我也是一个热衷于旅行的人，喜欢结识来自世界各地的新朋友。\n\n当您入住我的地方时，您将拥有自己的私人房间和浴室。您还可以使用厨房和客厅。\n\n我位于哈莱姆的中心地带，距离2/3号地铁站仅几个街区。从那里，只需几站即可到达曼哈顿市中心。\n\n您将被哈莱姆提供的最佳餐厅、酒吧和夜总会所包围。著名的阿波罗剧院就在几个街区之外。美丽的中央公园也只是一个短暂的步行路程。\n\n来哈莱姆村，体验真正的纽约城。期待与您见面，并向您展示我的家。 |
+
 
 </div>
 </details>
 
-In the future we may want to add other properties to the `Ad` objects, such as dates when we ran the `Ad`, how much we spent, and what the resulting Click-Through-Rate was. We could then generate a new `Ad` by taking the top 5 highest CTR ads as a reference!
+在未来，我们可能希望为`Ad`对象添加其他属性，例如我们运行`Ad`的日期，花费了多少钱，以及所得到的点击率是多少。然后，我们可以通过参考前5个最高点击率的广告来生成一个新的`Ad`！
 
-### Targeted Ads
+### 定向广告
 
-Now we will add more data to our prompt, a high-level ad target. We will write ads targeting (1) young couples, (2) elderly couples, and (3) single travelers. We will add `target` as a property to the `Ad` class, like this:
+现在我们将为我们的提示添加更多的数据，一个高级广告目标。我们将编写针对以下三类人群的广告：(1) 年轻夫妇，(2) 老年夫妇，和 (3) 单身旅行者。我们将像这样将 `target` 添加为 `Ad` 类的属性：
 
 ```python
 target_property = {
@@ -182,19 +188,19 @@ client.schema.property.create("Ad", target_property)
 
 <details>
   <summary>
-    OpenAI Generations
+    OpenAI 时代
   </summary>
   <div>
 
 
-| Ad Target | Ad |
-|-----------|----|
-| For Young Couples | Are you looking for a cozy place to stay for an extended period of time? Look no further than this private room in the Bedford-Stuyvesant neighbourhood of Brooklyn! Located at 40.68876 latitude and -73.94312 longitude, this room is clean, quiet, and perfect for young couples. With a minimum stay of 60 nights and availability of 365 days a year, you can be sure to find a spot here. Plus, you can be the first to experience this great room - there are no reviews yet! Don't miss out on this great opportunity - book your stay today! |
-| For Elderly Couples | Are you an elderly couple looking for a place to stay for an extended period of time? Look no further than this cozy private room in the Bedford-Stuyvesant neighbourhood of Brooklyn! Located at 40.68876 latitude and -73.94312 longitude, this room is clean and quiet, and has a minimum stay of 60 nights. With a calculated host listings count of 1 and availability of 365 days a year, you can be sure to find a spot here. There are no reviews yet, so be the first to experience this great room! Enjoy the peace and quiet of this room and make it your home away from home. |
-| For Single Travelers | Are you a single traveler looking for a place to stay for an extended period of time? Look no further than this cozy private room in the Bedford-Stuyvesant neighbourhood of Brooklyn! Located at 40.68876 latitude and -73.94312 longitude, this room is clean, quiet, and has a minimum stay of 60 nights. With a calculated host listings count of 1 and availability of 365 days a year, you can be sure to find a spot here. Be the first to experience this great room and make it your home away from home! |
-| Generic Ad | Are you looking for a place to stay for an extended period of time? Look no further than this cozy private room in the Bedford-Stuyvesant neighbourhood of Brooklyn! Located at 40.68876 latitude and -73.94312 longitude, this room is clean and quiet, and has a minimum stay of 60 nights. With a calculated host listings count of 1 and availability of 365 days a year, you can be sure to find a spot here. Be the first to experience this great room and write a review! Don't miss out on this amazing opportunity - book now! |
+| 广告目标 | 广告 |
+|---------|----|
+| 对于年轻夫妇 | 您是否正在寻找一个舒适的住所，以便长时间居住？不用再找了，这个位于布鲁克林的贝德福德-斯图维森特社区的私人房间就是您的理想选择！该房间位于40.68876纬度和-73.94312经度，干净、安静，非常适合年轻夫妇居住。最短入住时间为60晚，全年365天都有房间可供选择，您一定能找到一个合适的地方。此外，您还可以成为第一个体验这个优秀房间的人 - 目前还没有评论！不要错过这个绝佳机会 - 立即预订您的入住吧！ |
+| 适合老年夫妇 | 您是一对老年夫妇，正在寻找一个长期居住的地方吗？那么不要再找了，这个位于布鲁克林的贝德福德-斯图文森特社区的舒适私人房间是您的最佳选择！该房间位于40.68876纬度和-73.94312经度，整洁安静，最短入住期为60个晚上。根据主机列表计数为1和全年365天的可用性，您可以确保在这里找到一个位置。目前还没有评论，所以快来体验一下这个美好的房间吧！享受这个房间的宁静，让它成为您离家的家。 |
+| 单人旅行者 | 您是一个单人旅行者，正在寻找一个可以长时间居住的地方吗？那么您可以考虑这个位于布鲁克林的 Bedford-Stuyvesant 社区的舒适私人房间！该房间位于纬度 40.68876，经度 -73.94312 的位置，干净、安静，最短入住时间为 60 天。主持人的房源计数为 1，全年提供 365 天的可用性，您可以放心预订。成为第一个体验这个优秀房间并将其作为您的家外之家吧！ |
+| 通用广告 | 您是否正在寻找一个长期居住的地方？不要再找了，这个舒适的私人房间位于布鲁克林的贝德福德-斯图亚文森特社区！该房间位于纬度40.68876和经度-73.94312的位置，干净安静，最少入住60个晚上。根据计算得出的主机房源数量为1，全年365天可用，您可以肯定能找到一个位置。成为第一个体验这间优秀房间并撰写评论的人！不要错过这个绝佳的机会-立即预订！ |
 
-In the future we may want to add other properties, such as dates when we ran the Ad, how much we spent, and what the resulting Click-Through-Rate was. We could then generate a new Ad by taking the top 5 highest CTR ads as a reference!
+在将来，我们可能想要添加其他属性，比如我们运行广告的日期，花费了多少钱，以及由此产生的点击率是多少。然后，我们可以通过以前5个最高的点击率广告作为参考，生成一个新的广告！
 
 </div>
 </details>
@@ -205,20 +211,20 @@ In the future we may want to add other properties, such as dates when we ran the
   </summary>
   <div>
 
-| Target | Ad |
+| 目标 | 广告 |
 | --- | --- |
-| For Young Couples | Welcome to the Village of Harlem, New York! This vibrant, colorful, eclectic, and famous village is home to a proud Harlem resident who can't wait to share their home with you. As an avid traveler, they love to meet new people from around the world and show them the best of what Harlem has to offer. When you stay at this Airbnb, you'll have your own private room and bathroom, as well as access to the kitchen and living room. The host is located in the heart of Harlem, just a few blocks from the 2/3 subway station, making it easy to get to downtown Manhattan and other parts of the city. You'll be surrounded by the best restaurants, bars, and nightclubs that Harlem has to offer, including the famous Apollo Theater and beautiful Central Park. The host looks forward to meeting you and showing you around their home, so book your stay today and experience the real New York City in the Village of Harlem! |
-| For Elderly Couples | Description: THE VILLAGE OF HARLEM....NEW YORK! This is the Village of Harlem. A vibrant, colorful, eclectic, and the most famous Village in New York. I am a proud Harlem resident and I am so excited to share my home with you. I am also an avid traveler and I love to meet new people from around the world. When you stay at my place, you will have your own private room and bathroom. You will also have access to the kitchen and the living room. I am located in the heart of Harlem, just a few blocks from the 2/3 subway station. From there, it is just a few stops to downtown Manhattan. You will be surrounded by the best restaurants, bars, and nightclubs that Harlem has to offer. The famous Apollo Theater is just a few blocks away. The beautiful Central Park is also a short walk away. Come and experience the real New York City in the Village of Harlem. I look forward to meeting you and showing you around my home. |
-| For Single Travelers | Welcome to the Village of Harlem, New York! This vibrant, colorful, eclectic, and famous village is home to a proud Harlem resident who can't wait to share their home with you. As an avid traveler, they love to meet new people from around the world. When you stay at this Airbnb, you'll have your own private room and bathroom, as well as access to the kitchen and living room. The host is located in the heart of Harlem, just a few blocks from the 2/3 subway station, making it easy to get to downtown Manhattan. You'll be surrounded by the best restaurants, bars, and nightclubs that Harlem has to offer, including the famous Apollo Theater and beautiful Central Park. The host looks forward to meeting you and showing you around their home, so book your stay today! |
-| Generic Ad | Welcome to THE VILLAGE OF HARLEM....NEW YORK! This is the Village of Harlem. A vibrant, colorful, eclectic, and the most famous Village in New York. I am a proud Harlem resident and I am so excited to share my home with you. I am also an avid traveler and I love to meet new people from around the world. When you stay at my place, you will have your own private room and bathroom. You will also have access to the kitchen and the living room. I am located in the heart of Harlem, just a few blocks from the 2/3 subway station. From there, it is just a few stops to downtown Manhattan. You will be surrounded by the best restaurants, bars, and nightclubs that Harlem has to offer. The famous Apollo Theater is just a few blocks away. The beautiful
+| 对于年轻夫妇 | 欢迎来到纽约哈莱姆村！这个充满活力、色彩斑斓、多元化且著名的村庄是一个自豪的哈莱姆居民，他迫不及待地想与您分享他们的家园。作为一个热爱旅行的人，他们喜欢结识来自世界各地的新朋友，并向他们展示哈莱姆所能提供的最好的东西。当您入住这家Airbnb时，您将拥有自己的私人房间和浴室，以及厨房和客厅的使用权。主人家位于哈莱姆的中心地带，距离2/3号地铁站仅几个街区，方便前往曼哈顿市中心和城市的其他地区。您将被哈莱姆所提供的最佳餐厅、酒吧和夜总会所包围，包括著名的阿波罗剧院和美丽的中央公园。主人期待着与您见面并带您参观他们的家，所以赶快预订您的住宿，体验哈莱姆村中真正的纽约城！ |
+| 适合老年夫妇 | 描述：哈莱姆村……纽约！ 这是哈莱姆村。一个充满活力、丰富多彩、折衷主义的纽约最著名的村庄。我是一个自豪的哈莱姆居民，非常高兴与您分享我的家。我也是一个热衷于旅行的人，喜欢结识来自世界各地的新朋友。当您入住我的地方时，您将拥有自己的私人房间和浴室。您还可以使用厨房和客厅。我位于哈莱姆的中心地带，距离2/3号地铁站仅几个街区。从那里，只需几站就能到达曼哈顿市中心。您将被哈莱姆提供的最佳餐厅、酒吧和夜总会所环绕。著名的阿波罗剧院就在几个街区之外。美丽的中央公园也只是一个短短的步行路程。来到哈莱姆村，体验真正的纽约市吧。我期待着与您见面，并带您参观我的家。 |
+| 单人旅行者专属 | 欢迎来到纽约哈莱姆村！这个充满活力、多彩、兼收并蓄的著名村庄是一个自豪的哈莱姆居民的家园，他迫不及待地想与您分享他的家。作为一个热衷于旅行的人，他喜欢结识来自世界各地的新朋友。当您入住这个Airbnb时，您将拥有自己的私人卧室和浴室，以及使用厨房和客厅的权限。主人的住所位于哈莱姆的中心地带，距离2/3号地铁站仅几个街区，便于前往曼哈顿市中心。您将被哈莱姆拥有的最好的餐厅、酒吧和夜总会所包围，包括著名的阿波罗剧院和美丽的中央公园。主人期待着与您见面并向您展示他们的家，所以立即预订您的住宿吧！ |
+| 通用广告 | 欢迎来到哈莱姆村...纽约！这是哈莱姆村。一个充满活力、色彩斑斓、多元化和最著名的村庄在纽约。我是一个自豪的哈莱姆居民，很高兴与您分享我的家。我也是一个热衷旅行的人，喜欢结识来自世界各地的新朋友。当您入住我的地方时，您将拥有自己的私人房间和浴室。您还可以使用厨房和客厅。我位于哈莱姆的中心地带，距离2/3号地铁站只有几个街区。从那里，到曼哈顿市中心只需要几站地铁。您将被哈莱姆提供的最好的餐厅、酒吧和夜总会所环绕。著名的阿波罗剧院就在几个街区之外。美丽的
 
 
   </div>
 </details>
 
 
-### Personlized Ads for Connor and Bob
-Let’s keep unpeeling the onion and show how we could even further target these ads based on user biographies.
+### 针对康纳和鲍勃的个性化广告
+让我们继续剥开这个层层叠加的洋葱，展示如何根据用户传记进一步定向这些广告。
 
 ```python
 users = client.query\
@@ -261,14 +267,14 @@ for user in users:
 
 <details>
   <summary>
-    OpenAI Generations
+    OpenAI 世代
   </summary>
   <div>
 
-| Name | Description | Targeted Ad #1 | Targeted Ad #2 |
+| 名称 | 描述 | 目标广告 #1 | 目标广告 #2 |
 | --- | --- | --- | --- |
-| Connor | Often travels with a golden doodle named Bowen. | **Attention all pet lovers!** Are you looking for a spacious and comfortable apartment in the heart of New York City that welcomes your furry friend? Look no further than this stunning 2 bedroom apartment in vibrant East Harlem...Book now and start planning your next adventure with your golden doodle named Bowen! | **Attention all travelers with furry friends!** Are you looking for a peaceful and affordable stay in the heart of Manhattan? Look no further than this private room in the Inwood neighborhood, offering a magnificent view of the Cloisters...And the best part? You can bring your golden doodle named Bowen along for the adventure! No need to leave your furry friend behind on your travels...Please note that availability for this listing is currently at zero for the next 365 days, so book now to secure your spot for your next adventure with your furry friend. |
-| Bob | Prolific weightlifter who will get upset if he doesn’t have a good gym to workout in. | **Attention all weightlifters!** Are you planning a trip to New York City and worried about finding a suitable place to stay that caters to your fitness needs? Look no further than this spacious 2 bedroom apartment located in the vibrant East Harlem neighbourhood of Manhattan...So what are you waiting for? Book now and experience the excitement of New York City from the comfort of this spacious apartment. | **Attention all weightlifters!** Are you looking for a peaceful and affordable stay in the city that won't compromise your workout routine? Look no further than this private room in the Inwood neighborhood of Manhattan...Unfortunately, availability for this listing is currently at zero for the next 365 days, but keep it in mind for your next trip to the city. Don't let your workout routine suffer while traveling - book this listing now! |
+| Connor | 经常和一只名叫Bowen的金毛小熊狗一起旅行。 | **所有宠物爱好者注意！** 您是否正在寻找纽约市中心一个宽敞舒适、欢迎您的毛茸茸朋友的公寓？不用再找了，这个位于繁华的东哈莱姆区的精美两居室公寓就是您的理想选择...立即预订，与您的金毛小熊狗Bowen一起规划下一次冒险吧！ | **所有携带毛茸茸朋友旅行者注意！** 您是否正在寻找曼哈顿中心一个宁静而经济实惠的住宿？不用再找了，这个位于因伍德社区的私人房间提供了一览无余的克洛伊斯特教堂的壮丽景色...最棒的是什么？您可以带上您的金毛小熊狗Bowen一起冒险！在旅行中不需要把您的毛茸茸朋友留在身后...请注意，此房源的可用性在未来365天内为零，所以立即预订以确保您的下一次与毛茸茸朋友的冒险的位置。 |
+| Bob | 热衷于举重的热血汉子，如果没有一个好的健身房进行锻炼，他会感到不安。 | **各位举重爱好者注意！** 您计划去纽约市旅行，担心找不到适合您健身需求的住处吗？那就不要再寻找了，这个宽敞的两居室公寓位于曼哈顿充满活力的东哈莱姆社区...那么还等什么呢？立即预订，从这个宽敞的公寓舒适地体验纽约市的魅力吧。 | **各位举重爱好者注意！** 您是否在寻找一个安静而经济实惠的住处，不会影响您的锻炼计划？那就不要再寻找了，在曼哈顿的伍德社区有一间私人房间等着您...不幸的是，该房源在接下来的365天内没有可用日期，但请记住它，为您下次来城市时做准备。在旅行中不要让您的锻炼计划受到影响-立即预订这个房源！ |
 
 </div>
 </details>
@@ -280,46 +286,54 @@ for user in users:
   </summary>
   <div>
 
-| Name | Description | Targeted Ad 1 | Targeted Ad 2 |
+| 名称 | 描述 | 目标广告 1 | 目标广告 2 |
 | --- | --- | --- | --- |
-| Connor | Connor often travels with a golden doodle named Bowen. | Welcome to your country space in the city! This beautiful, bright, and quiet 2 bedroom apartment has been completely renovated and features a private entrance, a large kitchen with brand new stainless steel appliances, two bedrooms each with queen size beds, and a full bathroom with a soaking tub. There is also a washer and dryer in the unit as well as a dishwasher. The apartment is located in a very quiet and safe neighbourhood, and is also close to the subway and many bus lines. It is also a short walk to the beautiful Prospect Park. The space: This beautiful, bright, and quiet 2 bedroom apartment has been completely renovated and features a private entrance, a large kitchen with brand new stainless steel appliances, two bedrooms each with queen size beds, and a full bathroom with a soaking tub. There is also a washer and dryer in the unit as well as a dishwasher. The apartment is located in a very quiet and safe neighbourhood, and is also close to the subway and many bus lines. It is also a short walk to the beautiful Prospect Park. The neighborhood: The apartment is located in a very quiet and safe neighbourhood, and is also close to the subway and many bus lines. It is also a short walk to the beautiful Prospect Park. The beds: The apartment has two bedrooms each with queen size beds. The bathroom: The full bathroom has a soaking tub. The kitchen: The large kitchen has brand new stainless steel appliances. The living room: The living room is bright and spacious. The dining room: The dining room is perfect for enjoying meals with friends and family. The outdoor space: The apartment has a private entrance. | Welcome to Huge 2 BR Upper East Cental Park. This huge 2 bedroom is located in the heart of Manhattan, steps away from Central Park. It is newly renovated with stainless steel appliances, exposed brick, and beautiful hardwood floors. The apartment is located in a very safe and convenient area, with a variety of restaurants and stores nearby. The subway is also very close, making it easy to get around the city. This is the perfect place for anyone looking to explore New York City. |
-| Bob | Bob is a prolific weightlifter who will get upset if he doesn’t have a good gym to workout in. | Hello, weightlifters! Are you looking for a place to stay in New York City that will allow you to pursue your fitness goals? Look no further! This huge 2 bedroom is located in the heart of Manhattan, steps away from Central Park. It is newly renovated with stainless steel appliances, exposed brick, and beautiful hardwood floors. The apartment is located in a very safe and convenient area, with a variety of restaurants and stores nearby. The subway is also very close, making it easy to get around the city. So what are you waiting for? Book your stay today and experience the best of New York City! | Welcome to your country space in the city! This beautiful, bright, and quiet 2 bedroom apartment has been completely renovated and features a private entrance, a large kitchen with brand new stainless steel appliances, two bedrooms each with queen size beds, and a full bathroom with a soaking tub. There is also a washer and dryer in the unit as well as a dishwasher. The apartment is located in a very quiet and safe neighbourhood, and is also close to the subway and many bus lines. It is also a short walk to the beautiful Prospect Park. The gym is located in the building and is easily accessible. |
+| Connor | 康纳经常和一只名叫鲍文的金毛小狗一起旅行。 | 欢迎来到城市中的您的国家空间！这间美丽、明亮、安静的两卧室公寓已经完全翻新，并配有私人入口、带全新不锈钢电器的大型厨房、两个配有大号床的卧室以及带浸泡浴缸的全套浴室。单位内还设有洗衣机和烘干机，以及洗碗机。公寓位于一个非常安静和安全的街区，也靠近地铁和许多公交线路。距离美丽的展望公园也只有很短的步行路程。
+空间：这间美丽、明亮、安静的两卧室公寓已经完全翻新，并配有私人入口、带全新不锈钢电器的大型厨房、两个配有大号床的卧室以及带浸泡浴缸的全套浴室。单位内还设有洗衣机和烘干机，以及洗碗机。公寓位于一个非常安静和安全的街区，也靠近地铁和许多公交线路。距离美丽的展望公园也只有很短的步行路程。
+附近：公寓位于一个非常安静和安全的街区，也靠近地铁和许多公交线路。距离美丽的展望公园也只有很短的步行路程。
+床铺：公寓有两间配有大号床的卧室。
+浴室：全套浴室设有浸泡浴缸。
+厨房：大型厨房配有全新的不锈钢电器。
+客厅：客厅明亮宽敞。
+餐厅：餐厅非常适合与朋友和家人共进餐。
+户外空间：公寓有私人入口。 | 欢迎来到中央公园附近的巨大两卧室公寓。这间巨大的两卧室公寓位于曼哈顿市中心，距离中央公园仅几步之遥。它是全新装修的，配有不锈钢电器、露天砖墙和漂亮的硬木地板。公寓位于一个非常安全和便利的区域，附近有各种餐馆和商店。地铁也非常近，方便在城市中四处游览。这是任何想要探索纽约市的人的理想之地。 |
+| Bob | Bob是一个非常勤奋的举重运动员，如果他没有一个好的健身房来锻炼，他会感到不安。 | 你好，举重爱好者！你正在寻找一个能让你追求健身目标的住所吗？那么你找对地方了！这个宽敞的两居室位于曼哈顿中心，毗邻中央公园。它经过全新装修，配有不锈钢电器、裸露的砖墙和漂亮的硬木地板。公寓位于一个非常安全和便利的区域，附近有各种餐馆和商店。地铁也非常近，方便你在城市中四处游玩。那么你还在等什么呢？立即预订你的住宿，体验纽约的最佳！ | 欢迎来到城中的乡村空间！这间美丽、明亮、安静的两居室公寓已经完全翻新，设有独立入口、配备全新不锈钢电器的大型厨房、两间配有大号床的卧室，以及带浸泡浴缸的全套浴室。单位内还配备有洗衣机、烘干机和洗碗机。公寓位于一个非常安静和安全的社区，附近还靠近地铁和多条公交线路。步行也可以到达美丽的前景公园。健身房就在大楼内，非常方便进出。 |
 
 </div>
 </details>
 
-## Deeper into Personalization
-Personalized digital experiences have been taken to a new level with the latest advances in AI technology. Along with personalized recommendations or search results, the content itself can now be individualized to cater to your particular needs and preferences.From ads that look for the nearest dog parks or gyms, we may imagine a future where video advertisements are generated! The video for Connor shows maybe even him and his dog walking through central park, whereas the video for Bob shows him hitting a hang clean in a local gym! We may even imagine custom metaphors when explaining complex concepts for people. For example, “life is like a game of fetch” for Connor the dog owner, or “life is like pushing and resting in the gym” for Bob the weightlifter.
+## 进一步了解个性化定制
+个性化数字体验随着人工智能技术的最新进展已经达到了一个新的水平。除了个性化推荐或搜索结果，内容本身现在可以根据您的特定需求和偏好进行个性化定制。从寻找最近的狗公园或健身房的广告开始，我们可以想象未来甚至会生成视频广告！对于康纳来说，视频可能甚至展示他和他的狗在中央公园散步，而对于鲍勃来说，视频可能展示他在当地健身房做挂推！我们甚至可以想象为人们解释复杂概念时使用自定义的隐喻。例如，对于养狗人康纳来说，“生活就像一场追逐游戏”，对于举重运动员鲍勃来说，“生活就像在健身房中推举和休息”。
 
-## Other Use Case Examples of Feedback Loops
+## 反馈循环的其他用例示例
 
-1. TV Shows: Streaming services could show different scenes or alternate endings of a movie or TV show based on the user’s preferences.
-2. Code: AI can generate cod snippets based on the user’s requirements and create a feedback loop with tests to improve the code over time.
-3. AutoCAD drawings: AI could create CAD drawings of buildings based on 3D models and store information about the materials available in the environment, making it easier for architects and engineers to design and plan construction projects.
-4. Tesla Configuration: The car’s settings could be personalized based on the user’s driving style and preferences, such as choosing a slow and relaxed drive home versus a fast and sporty one.
+1. 电视节目：流媒体服务可以根据用户的偏好展示电影或电视节目的不同场景或替代结局。
+2. 代码：AI可以根据用户的需求生成代码片段，并与测试创建一个反馈循环，以逐步改进代码。
+3. AutoCAD图纸: AI可以基于3D模型创建建筑的CAD图纸，并存储环境中可用材料的信息，使建筑师和工程师更容易设计和规划建筑项目。
+4. 特斯拉配置: 根据用户的驾驶风格和偏好，可以个性化设置汽车的设置，例如选择缓慢和轻松的回家驾驶方式，还是快速和运动的驾驶方式。
 
-## When Do Generative Feedback Loops Run?
-Having illustrated the general concept of Generative Feedback Loops, where we use data from the database to supplement the factual knowledge of generative models and then write the generated outputs back to the database for future use, let’s discuss when to kick this off.
+## 生成式反馈循环何时运行？
+在说明了生成式反馈循环的一般概念后，即我们使用来自数据库的数据来补充生成模型的事实知识，然后将生成的输出写回数据库以供将来使用，让我们讨论何时开始执行此操作。
 
-## Data Ingestion
-Data Ingestion is a shorthand reference to importing data into the database. For example, everytime a new User is added to the AirBnB database, we may want to kick off a Generative Feedback Loop of retrieving information about a listing and this new user and save the new ads targeted to this user. On the other hand, we may want to kick this off when a new Listing is added, writing ads for each of our users!
+## 数据摄入
+数据导入是指将数据导入数据库的简称。例如，每当向AirBnB数据库添加新用户时，我们可能希望启动一个生成式反馈循环，以检索有关房源和此新用户的信息，并保存针对该用户的新广告。另一方面，当添加新列表时，我们可能希望为每个用户编写广告！
 
-As another example, imagine that we have a collection of podcast episodes. Every time a new episode is added to the database, we want to kick off generation of a summary and a comparison of the podcast compared to the existing podcasts in the database. To further reinforce the idea of Generative Feedback Loops, we may retrieve a previously generated podcast summary that has been saved and indexed with semantic vector search, and use this to prompt the generative model to analyze the uniqueness of the latest podcast episode!
+作为另一个例子，假设我们有一个播客集合。每次将新的剧集添加到数据库中时，我们希望启动生成概要和与数据库中现有播客的比较。为了进一步强调生成反馈循环的概念，我们可以检索之前生成的保存并使用语义向量搜索进行索引的播客概要，并使用它来提示生成模型分析最新播客剧集的独特性！
 
-In addition to generating novel things based on our data, we may also task LLMs with adding symbolic properties.Gilardi, Alizadeh, and Kubli very recently published “ChatGPT Outperforms Crowd-Workers for Text-Annotation Tasks”. In this paper, Gilardi et al. compare the ability of humans with ChatGPT in categorizing 2,382 tweets into categories representative of 5 classification tasks such as whether a tweet is about content moderation, which of six predefined topics the tweet is about, and so on. This study illustrates how cheap and effective this technique is for adding labels to our data. When we generate these symbolic structures like “room_type”, we can then use it in filtered vector search! Filtered Vector Search has recently been made [1000(!) times faster in Weaviate thanks to roaring bitmap indexing](/blog/weaviate-1-18-release#faster-filtering-with-roaring-bitmaps)!
+除了基于我们的数据生成新颖的内容之外，我们还可以让LLMs完成添加符号属性的任务。Gilardi、Alizadeh和Kubli最近发表了一篇题为《ChatGPT在文本注释任务中胜过众包工作者》的论文。在这篇论文中，Gilardi等人将人类与ChatGPT在将2,382条推文分类为代表5个分类任务的类别方面的能力进行了比较，例如推文是否涉及内容审查，推文所涉及的六个预定义主题等。这项研究说明了这种技术在为我们的数据添加标签方面的廉价和高效性。当我们生成像“room_type”这样的符号结构时，我们可以在过滤向量搜索中使用它！通过使用Roaring Bitmap索引，Weaviate最近使过滤向量搜索的速度提高了1000倍！
 
-Another powerful idea is the emergence of `Knowledge Graphs 2.0`. We can use LLMs to suggest relations between pieces of content and then connect these nodes together with the relational edges. Check out this example of GraphGPT!
+另一个强大的想法是`知识图谱2.0`的出现。我们可以使用LLMs来提供内容之间的关系建议，然后使用关系边将这些节点连接在一起。请查看GraphGPT的示例！
 
-## From ChatGPT to AutoGPT and the role of Weaviate
-Another title for this section would be “Complex Tasks that run overnight”. The latest imagination inspiring feat of AI has been the rise of AutoGPT! AutoGPT is a loop of prompts in which the LLM breaks a complex task into subtasks, executes them, reflects on the plan, and so on until the complex task has been completed.
+## 从ChatGPT到AutoGPT以及Weaviate的作用
+这个部分的另一个标题可以是“过夜运行的复杂任务”。AI最新的创造性成就之一就是AutoGPT的崛起！AutoGPT是一个循环的提示，LLM将复杂任务分解为子任务，执行它们，反思计划，然后重复这个过程，直到完成复杂任务。
 
-Generative Feedback Loops are one of the key pieces to this puzzle. Firstly, the agent may need to save intermediate results to reference later. For example, if the agent is tasked with: “Please make an example for John on how to add ref2vec to his Weaviate app”. The agent can save a summary of John’s app after researching his code base and maybe message history on the Weaviate slack. This summary can then be used in the retrieval-augmented prompting when figuring out where to add ref2vec.
+生成式反馈循环是解决这个问题的关键之一。首先，代理程序可能需要保存中间结果以供稍后参考。例如，如果代理程序的任务是：“请为John制作一个关于如何将ref2vec添加到他的Weaviate应用程序的示例”。代理程序可以在研究John的代码库和Weaviate的Slack消息历史后保存John的应用程序摘要。然后，在确定在哪里添加ref2vec时，可以在检索增强提示中使用此摘要。
 
-Another application of Generative Feedback Loops is for humans to debug the chain of reasoning that happened when a model like this runs overnight. Further, we may imagine multi-agent systems with roles, such as marketers, artists, product designers, and engineers. By saving intermediate results, other agents can access it and keep the party going.
+另一个生成反馈循环的应用是用于人类调试像这样的模型在一夜之间运行时发生的推理链。此外，我们可以想象具有不同角色的多智能体系统，如营销人员、艺术家、产品设计师和工程师。通过保存中间结果，其他智能体可以访问它并继续进行下去。
 
-## Conclusion
+## 结论
 
-In summary, we have presented the concept of Generative Feedback Loops. This describes not only using results from the database to answer a query, but saving the resulting generation back in the database for future reference. Hopefully this example with AirBnB listings and advertisements helped inspire your thinking about how you can use this technology and where personalization seems to be headed. We ended the article by presenting a couple of scenarios of when this runs such as Data Ingestion, and the trend towards more autonomous AI assistants. Thank you so much for reading!
+总结一下，我们介绍了生成式反馈循环的概念。这不仅描述了使用数据库的结果来回答查询，还将生成的结果保存回数据库以供将来参考。希望这个关于AirBnB列表和广告的例子能够激发您对如何使用这项技术以及个性化的发展方向的思考。我们在文章最后提出了一些运行此类技术的场景，如数据摄入和更多自主的AI助手的趋势。非常感谢您的阅读！
 
 
 import WhatNext from '/_includes/what-next.mdx'

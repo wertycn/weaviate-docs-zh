@@ -1,28 +1,33 @@
 ---
-title: Weaviate 1.19 Release
-slug: weaviate-1-19-release
-authors: [jp,zain,erika]
+authors:
+- jp
+- zain
+- erika
 date: 2023-05-04
+description: Weaviate 1.19 introduces generative cohere module, gRPC API support,
+  improved data types, and more.
 image: ./img/hero.png
-tags: ['release']
-description: "Weaviate 1.19 introduces generative cohere module, gRPC API support, improved data types, and more."
-
+slug: weaviate-1-19-release
+tags:
+- release
+title: Weaviate 1.19 Release
 ---
+
 ![Weaviate 1.19](./img/hero.png)
 
 <!-- truncate -->
-We are happy to announce the release of Weaviate `1.19`, which brings a set of great features, performance improvements, and fixes.
+我们很高兴地宣布Weaviate `1.19`的发布，该版本带来了一系列强大的功能、性能改进和修复。
 
-If you like your content brief and to the point, here is the TL;DR of this release:
+如果你喜欢简洁明了的内容，这里是本次发布的TL;DR：
 
-1. [Group by arbitrary property](#group-by-arbitrary-property) – The groupBy option has been introduced to Get object retrieval, so you can group search results by any property.
-1. [New (or improved) Data Types](#new-or-improved-data-types) – Datatypes changes with text having faster filtering & more tokenization options while deprecating string to reduce complexity, and adding uuid to allow efficient uuid storage.
-1. [Generative Cohere Module](#generative-cohere-module) – Combines the best of Weaviate, retrieving and searching relevant documents with the generative capabilities of the models that Cohere is cooking up!
-1. [Tunable Consistency for Vector Search and GraphQL Get Requests](#tunable-consistency-for-vector-search-and-graphql-get-requests) – Consistency tuning with replication is now available for vector search with Get requests.
-1. [gRPC API support(experimental)](#grpc-api-support-experimental) – gRPC API support slowly being trialled, with some big potential for speedups.
-1. [Other Improvements and Bug Fixes](#other-improvements-and-bug-fixes) – fixes and improvements delivered since `1.18`.
+1. [按任意属性进行分组](#group-by-arbitrary-property) - 引入了groupBy选项以获取对象检索，可以按任意属性对搜索结果进行分组。
+1. [新的（或改进的）数据类型](#new-or-improved-data-types) - 数据类型改变，文本具有更快的过滤和更多的分词选项，同时弃用字符串以减少复杂性，并添加uuid以允许高效的uuid存储。
+2. [生成式Cohere模块](#generative-cohere-module) - 结合了Weaviate的优点，检索和搜索相关文档，以及Cohere正在研发的模型的生成能力！
+1. [可调整的向量搜索和GraphQL Get请求的一致性](#tunable-consistency-for-vector-search-and-graphql-get-requests) - 现在可以通过复制来调整向量搜索的一致性。
+2. [gRPC API支持（实验性）](#grpc-api-support-experimental) - gRPC API支持正在进行试验，有一些加速的潜力。
+3. [其他改进和错误修复](#other-improvements-and-bug-fixes) - 自`1.18`以来修复和改进的问题。
 
-Read below to learn more about each of these points in more detail.
+请阅读下面的内容，以了解更多关于这些要点的详细信息。
 
 :::danger Upgrade with Caution
 Keep in mind that after upgrading to `v1.19` a downgrade to `v1.18` will **no longer be supported**. If you anticipate having to downgrade, please create a backup before upgrading! If a backup is done with `v1.18` before upgrading, you can always go back to `v1.18` if you wish.
@@ -31,20 +36,20 @@ Keep in mind that after upgrading to `v1.19` a downgrade to `v1.18` will **no lo
 * With the prop tracker fixes (bm25), once migrated you can’t downgrade again.
 :::
 
-## Group by arbitrary property
+## 按任意属性分组
 
-![group by arbitrary property](./img/groupby.png)
+![按任意属性分组](./img/groupby.png)
 
-With the introduction of this feature, you can now group `Get` search results based on a specific property.
+通过引入这个功能，您现在可以根据特定的属性对`Get`搜索结果进行分组。
 
-Take a collection of `Passage` objects for example, each object belonging to a `Document`. If searching through `Passage` objects, you can group the results according to any property of the `Passage`, including the cross-reference property that represents the `Document` each `Passage` is associated with.
+以一组`Passage`对象为例，每个对象都属于一个`Document`。如果在`Passage`对象中进行搜索，您可以根据`Passage`的任何属性对结果进行分组，包括表示每个`Passage`关联的`Document`的交叉引用属性。
 
-The `groups` and `objectsPerGroup` limits are customizable. So in this example, you could retrieve the top 1000 objects and group them to identify the 3 most relevant `Document` objects, based on the top 3 `Passage` objects from each `Document`.
+`groups` 和 `objectsPerGroup` 的限制是可定制的。所以在这个例子中，你可以检索出前1000个对象，并将它们分组，以确定每个 `Document` 对象中基于每个 `Document` 的前3个 `Passage` 对象中最相关的3个 `Document` 对象。
 
-This functionality offers the advantage of maintaining granular search results by searching through detailed or segmented objects (e.g., `Passage`), while also enabling you to step back and view the broader context of the objects (e.g., `Document`).
+这个功能的优势在于通过搜索详细或分段的对象（例如 `Passage`）来维护细粒度的搜索结果，同时也能够回溯并查看对象的更广泛的上下文（例如 `Document`）。
 
 <details>
-  <summary>An example GraphQL query is shown below:</summary>
+  <summary>下面是一个示例GraphQL查询：</summary>
 
 ```graphql
 {
@@ -90,7 +95,7 @@ This functionality offers the advantage of maintaining granular search results b
 </details>
 
 <details>
-  <summary>And a corresponding example response is also shown below:</summary>
+  <summary>下面还展示了相应的示例响应：</summary>
 
 ```graphql
 {
@@ -164,25 +169,25 @@ This functionality offers the advantage of maintaining granular search results b
 Keep in mind that specifying a `path` value that requires resolving a large number of objects may be computationally expensive. For instance, setting the `path` above to `["ofDocument", "Document", "title"]` would require resolving all documents and may take considerably longer.
 :::
 
-## New (or improved) Data Types
+## 新增（或改进）的数据类型
 
-![new or improved data types](./img/datatypes.png)
+![新增或改进的数据类型](./img/datatypes.png)
 
-We've made several enhancements to the way we handle data, including upgrades to the `text` property and the introduction of dedicated `uuid` data types.
+我们对数据处理方式进行了多项改进，包括对`text`属性的升级以及引入了专用的`uuid`数据类型。
 
-### Text / String changes
-We have upgraded the `text` property to offer more flexibility in tokenizing textual data for indexing. You can now choose from `word`, `whitespace`, `lowercase`, and `field` tokenization options. To simplify matters, we have deprecated the `string` data type.
+### 文本 / 字符串变更
+我们已经升级了`text`属性，以提供更多的灵活性来对文本数据进行标记化以进行索引。现在，您可以从`word`、`whitespace`、`lowercase`和`field`标记化选项中进行选择。为了简化问题，我们已经弃用了`string`数据类型。
 
-The available tokenization options for `text` are:
+`text`的可用标记化选项包括：
 
--   `word` (default): Keep alpha-numeric characters, lowercase them, and split by whitespace. _(Same as the current `text` behavior.)_
--   `whitespace`: Split the text on whitespace. _(Same as `word` on `string` right now.)_
--   `lowercase`: Lowercase the text and split on whitespace. _(New)_
--   `field`: Index the whole field after trimming whitespace characters. _(Same as the current `string` behavior.)_
+-   `word`（默认）：保留字母数字字符，将它们转换为小写，并按空格拆分。_（与当前的`text`行为相同。）_
+- `whitespace`: 按照空格分割文本。 _(与当前的 `string` 类型的 `word` 相同。)_
+- `lowercase`: 将文本转换为小写并按照空格分割。 _(新增)_
+- `field`: 在修剪空格字符后对整个字段进行索引。 _(与当前的 `string` 类型相同。)_
 
-#### Faster filtering & index changes
+#### 更快的过滤和索引更改
 
-We have introduced a roaring bitmap index for `text` properties, which brings the fast filtering capabilities introduced in version `1.18` to text data. Internally, this is implemented using two separate (`filterable` & `searchable`) indexes, which replaces the existing index. You can configure the new `indexFilterable` and `indexSearchable` parameters to determine whether to create the roaring set index and the BM25-suitable Map index, respectively. (Both are enabled by default.)
+我们为`text`属性引入了一个咆哮位图索引，这将快速过滤功能引入到文本数据中，该功能在版本`1.18`中引入。在内部，这是使用两个单独的（`filterable`和`searchable`）索引实现的，取代了现有的索引。您可以配置新的`indexFilterable`和`indexSearchable`参数来确定是否创建咆哮位集索引和适用于BM25的Map索引（默认情况下均启用）。
 
 :::note What happens if indexFilterable is disabled?
 The searchable index works also as fallback for text filtering, so filtering is still possible even if indexFilterable will be disabled. The downside, in this scenario is if you turn off the bitmap indexing, filtering by the text property will be slower.
@@ -190,49 +195,49 @@ The searchable index works also as fallback for text filtering, so filtering is 
 
 
 <details>
-  <summary>How will upgrades work?</summary>
+  <summary>升级将如何工作？</summary>
 
-After upgrading a pre-`v1.19` Weaviate to `v1.19`, `indexFilterable` + `indexSearchable` will be set based on the value of `indexInverted`, meaning `true` -> `true`+`true`, `false` -> `false`+`false`, `null` -> `null`+`null`. (A `null` will use the default, which is to turn it on.)
-`indexFilterable` and `indexSearchable` are available for all types of data, although searchable is only relevant for `text`/`text[]`, and in other cases it will be simply ignored.
+将预先`v1.19`的Weaviate升级到`v1.19`后，`indexFilterable` + `indexSearchable`将根据`indexInverted`的值进行设置，即`true` -> `true`+`true`，`false` -> `false`+`false`，`null` -> `null`+`null`。（`null`将使用默认值，即打开它。）
+`indexFilterable`和`indexSearchable`适用于所有类型的数据，虽然`searchable`只适用于`text`/`text[]`，在其他情况下将被忽略。
 
-Since filterable & searchable are separate indexes, filterable does not exist in Weaviate instances upgraded from pre-`v1.19` to `v1.19`. The missing `filterable` index can be created though on startup for all `text/text[]` properties if env variable INDEX_MISSING_TEXT_FILTERABLE_AT_STARTUP is set (to `true`).
+由于可过滤和可搜索是独立的索引，在从`v1.19`之前的版本升级到`v1.19`的Weaviate实例中，不存在可过滤索引。然而，在启动时，可以为所有的`text/text[]`属性创建缺失的`filterable`索引，只需设置环境变量`INDEX_MISSING_TEXT_FILTERABLE_AT_STARTUP`为`true`即可。
 
-While building the `filterable` index, Weaviate will work in readonly mode (similarly to reindexing sets to roaring sets on pre-`v1.18` to `v1.18` migration).
+在构建可过滤的索引时，Weaviate将以只读模式工作（类似于在从`v1.18`之前的版本迁移到`v1.18`时将重建集合为Roaring集合的方式）。
 
 </details>
 
-#### Deprecation of `string`
+#### `string`的弃用
 
-Existing `string` classes can be migrated according to the tokenization rules above during the first startup. If a user specifies `string` for a new class, it will be stored as `text` with `field` tokenization, and a deprecation warning will be shown.
+现有的`string`类可以在第一次启动时根据上述标记化规则进行迁移。如果用户为新类指定了`string`，它将以`text`和`field`标记化的形式存储，并显示一个弃用警告。
 
-### Dedicated UUID Data Types
+### 专用的UUID数据类型
 
-We have introduced dedicated `uuid` and `uuid[]` data types, reducing the storage space required by more than half.
+我们引入了专用的`uuid`和`uuid[]`数据类型，减少了超过一半所需的存储空间。
 
-`uuid` details:
+`uuid`详细信息:
 
--   Each `uuid` is a 128-bit (16-byte) number.
--   The filterable index uses roaring bitmaps.
--   Please note that it is currently not possible to aggregate or sort by `uuid` or `uuid[]` types.
+-   每个`uuid`是一个128位（16字节）的数字。
+-   可过滤的索引使用了Roaring位图。
+-   请注意，目前无法按`uuid`或`uuid[]`类型进行聚合或排序。
 
-## Generative Cohere Module
+## 生成Cohere模块
 
-![generative cohere module](./img/gencohere.png)
+![生成Cohere模块](./img/gencohere.png)
 
-With Weaviate `1.19.0` we are very excited to announce that the `generative-cohere` module is now available for use! This module, similar to our previous generative module, enables you to leverage the power of Large Language Models on your own customized datasets and for specific use cases.
+在 Weaviate `1.19.0` 版本中，我们非常激动地宣布 `generative-cohere` 模块现已可供使用！这个模块与我们之前的生成模块类似，可以让您在自定义数据集和特定用例中利用大型语言模型的强大功能。
 
-The `generative-cohere` module combines the best of Weaviate, retrieving and searching relevant documents with the generative capabilities of the models that Cohere is cooking up! By integrating a general-purpose LLM with a vector database like Weaviate, you can utilize the model's power to carry out tasks in the context of your own data housed in Weaviate!
+`generative-cohere`模块将Weaviate的最佳特性与Cohere正在开发的生成能力相结合！通过将通用的LLM与像Weaviate这样的向量数据库集成，您可以利用模型的能力在Weaviate中处理自己数据的上下文中执行任务！
 
-The `generative-cohere` module can be used to get Cohere’s [`command-xlarge-nightly` model](https://docs.cohere.com/docs/command-beta) to answer prompts grounded in the context of knowledge provided by Weaviate search results.
+`generative-cohere` 模块可以用于获取 Cohere 的 [`command-xlarge-nightly` 模型](https://docs.cohere.com/docs/command-beta)，以在 Weaviate 搜索结果所提供的知识背景中回答问题。
 
-The process consists of two steps: first, we query Weaviate to extract context by filtering a subset of your data that has knowledge relevant to a specific prompt. Secondly, we send the prompt as well as the filtered subset of documents from step one directly to the LLM model using Cohere’s API to accomplish the task specified in the prompt.
+该过程包括两个步骤：首先，我们通过查询Weaviate来提取上下文，通过筛选与特定提示相关的数据子集。其次，我们使用Cohere的API将提示以及第一步筛选的文档子集直接发送到LLM模型，以完成提示中指定的任务。
 
-To get started with the module you simply need to include it when specifying the config for the Weaviate instance and provide you Cohere API key prior to querying. Other models that can be used with the module include `command-xlarge-beta` and `command-xlarge`. The module can be used to generate responses from the LLM for each returned document from Weaviate, using `singleResult`, or a grouped response that uses all returned documents together as context, using `groupedResult`.
+要开始使用该模块，您只需要在指定Weaviate实例的配置时包含它，并在查询之前提供您的Cohere API密钥。该模块还可以与`command-xlarge-beta`和`command-xlarge`等其他模型一起使用。该模块可以用于为从Weaviate返回的每个文档生成LLM的响应，使用`singleResult`，或者使用所有返回的文档作为上下文生成分组响应，使用`groupedResult`。
 
-See below for an example of how you can use the module. For more information on how to set up and use the module please refer to the [documentation](/developers/weaviate/modules/reader-generator-modules/generative-cohere).
+请参考下面的示例，了解如何使用该模块。有关如何设置和使用该模块的更多信息，请参阅[文档](/developers/weaviate/modules/reader-generator-modules/generative-cohere)。
 
 <details>
-  <summary>Example Query:</summary>
+  <summary>示例查询：</summary>
 
 ```graphql
 {
@@ -264,7 +269,7 @@ See below for an example of how you can use the module. For more information on 
 </details>
 
 <details>
-  <summary>Corresponding Response:</summary>
+  <summary>对应的响应:</summary>
 
 ```
 {
@@ -288,61 +293,61 @@ See below for an example of how you can use the module. For more information on 
 ```
 </details>
 
-## Tunable Consistency for Vector Search and GraphQL Get Requests
+## 可调整的向量搜索和 GraphQL 获取请求的一致性
 
-![tunable consistency](./img/tunableconsistency.png)
+![可调整的一致性](./img/tunableconsistency.png)
 
-To help you optimize Weaviate according to your consistency and speed requirements, we provide the following consistency settings:
+为了帮助您根据一致性和速度要求优化 Weaviate，我们提供了以下一致性设置：
 
-* `ONE` - reads/writes return the result from the first node that responds
-* `QUORUM` - reads/writes succeed after a majority of nodes (`replication_factor/2 + 1`) respond
-* `ALL` - all replicas must respond
+* `ONE` - 读取/写入返回第一个响应的节点的结果
+* `QUORUM` - 在大多数节点（`副本因子/2 + 1`）响应后，读取/写入成功
+* `ALL` - 所有副本都必须响应
 
-We initially introduced this consistency tuning feature in the [`1.17` release] (TODO - LINK TO 1.17 blog) and later expanded it to support all read and write REST operations in the [`1.18` release] (TODO - LINK TO 1.18 blog).
+我们最初在[`1.17`发布版本] (TODO - 链接到1.17博客) 中引入了这个一致性调优功能，并在后来的[`1.18`发布版本] (TODO - 链接到1.18博客) 中扩展支持所有读写REST操作。
 
-In the `1.19` release, we further extend tunable consistency support to include vector search and GraphQL Get requests.
+在`1.19`发布版本中，我们进一步扩展了可调整一致性支持，包括向量搜索和GraphQL Get请求。
 
-## gRPC API support (experimental)
+## gRPC API支持（实验性）
 
 ![grpc](./img/grpc.png)
 
-We're excited to share an under-the-hood improvement that could make your experience even better.
+我们很高兴地分享一个在幕后的改进，这可能会让您的体验更好。
 
-Starting with version `1.19`, Weaviate is introducing support for the gRPC (gRPC Remote Procedure Calls) API. While there won't be any user-facing API changes, you may notice that your queries are executed even faster than before.
+从版本 `1.19` 开始，Weaviate 引入了对 gRPC（gRPC 远程过程调用）API 的支持。虽然不会有任何用户可见的 API 更改，但您可能会注意到您的查询执行速度比以前更快。
 
-Without diving too deep into technicalities, the sources of speedup include: reduced encoding/decoding compute requirements at the protocol level, improved parsing efficiency, and specific optimizations in certain Python implementations.
+在不深入技术细节的情况下，速度提升的来源包括：协议级别的编码/解码计算需求减少、解析效率提高以及某些Python实现中的特定优化。
 
-Our internal tests indicate an approximate 2-3x speedup in queries where gRPC is implemented. We plan to gradually expand gRPC support, so if you notice your queries are running faster in the future, you'll know why. 😉
+我们的内部测试表明，在实施gRPC的查询中，大约有2-3倍的速度提升。我们计划逐步扩展gRPC支持，因此如果您在将来发现查询速度更快，您将知道原因。😉
 
 :::note Client support currently (4 May 2023) limited to Python
 But we will be adding support to all clients going forward, as well as to additional endpoints.
 :::
 
-## Other Improvements and Bug Fixes
+## 其他改进和错误修复
 
-![improvements and bug fixes](./img/improv.png)
+![改进和错误修复](./img/improv.png)
 
-Since Weaviate `1.18`, we have released four patches that include various changes and bug fixes.
+自Weaviate `1.18`版本以来，我们已经发布了四个补丁，其中包括各种变更和错误修复。
 
-### Node Allocation
-We’ve introduced a new feature in Weaviate that offers a more efficient approach to node allocation. Rather than randomly selecting a node, Weaviate will now try to select the node with the most available resources. This only applies when creating a new class, rather than when adding more data to an existing single class. The current implementation only considers the disk space. In the future, we can add more data points like memory consumption and others.
+### 节点分配
+我们在Weaviate中引入了一项新功能，它提供了一种更高效的节点分配方法。不再随机选择节点，而是尝试选择具有最多可用资源的节点。这仅适用于创建新类，而不适用于向现有单个类添加更多数据。当前的实现仅考虑磁盘空间。将来，我们可以添加更多的数据点，如内存消耗等。
 
-This improvement was part of the `1.18.1` release.
+该改进是`1.18.1`版本的一部分。
 
-### Improved Multi-Class Support
-Previously, Weaviate would struggle when adding many “1,000s of” classes. We identified and fixed various issues to fix this. Issues related to many-class can generally be grouped into three distinct areas of concern: 1. Higher than expected memory usage, 2. Cycle spam, 3. Lagging schema deletes. The overview of each section can be found [here](https://github.com/weaviate/weaviate/issues/2785).
+### 改进的多类别支持
+在之前的版本中，当添加许多"1,000s of"类别时，Weaviate可能会出现困难。我们已经识别并修复了与此相关的各种问题。与多类别相关的问题通常可以分为三个不同的关注领域：1. 高于预期的内存使用量，2. 循环垃圾邮件，3. 延迟的模式删除。每个部分的概述可以在[此处](https://github.com/weaviate/weaviate/issues/2785)找到。
 
-### Fixes for BM25
-As an ongoing effort to improve BM25, we realized there was an error when calculating the average length of a property. Two issues were found: 1. The component would encounter errors if too many properties were present, 2. It could produce incorrect mean values if properties had a zero-length. To fix this, the property length tracker has been completely replaced. This is a non-breaking change and will seamlessly migrate at startup. This will result in a more accurate BM25 search.
+### BM25的修复方法
+作为改进BM25算法的持续努力，我们意识到在计算属性的平均长度时存在一个错误。发现了两个问题：1.如果存在太多属性，组件会遇到错误；2.如果属性长度为零，它可能会产生错误的均值。为了解决这个问题，属性长度跟踪器已经完全替换。这是一个非破坏性的改变，在启动时会无缝迁移。这将导致更准确的BM25搜索。
 
-This was part of the [`1.18.1` patch](https://github.com/weaviate/weaviate/releases/tag/v1.18.1) release.
+这是 [`1.18.1` patch](https://github.com/weaviate/weaviate/releases/tag/v1.18.1) 版本的一部分。
 
-### Release Notes for all Patches
-The above features highlighted a few changes that were included in the patch releases. For more details on each release, you can check out the release notes:
-* [Release v1.18.1](https://github.com/weaviate/weaviate/releases/tag/v1.18.1)
-* [Release v1.18.2](https://github.com/weaviate/weaviate/releases/tag/v1.18.2)
-* [Release v1.18.3](https://github.com/weaviate/weaviate/releases/tag/v1.18.2)
-* [Release v1.18.4](https://github.com/weaviate/weaviate/releases/tag/v1.18.4)
+### 所有 Patch 的发布说明
+上述功能亮点是包含在 patch 版本中的一些更改。要获取每个版本的更多详细信息，请查看发布说明：
+* [发布版本 v1.18.1](https://github.com/weaviate/weaviate/releases/tag/v1.18.1)
+* [发布版本 v1.18.2](https://github.com/weaviate/weaviate/releases/tag/v1.18.2)
+* [发布版本v1.18.3](https://github.com/weaviate/weaviate/releases/tag/v1.18.2)
+* [发布版本v1.18.4](https://github.com/weaviate/weaviate/releases/tag/v1.18.4)
 
 import WhatNext from '/_includes/what-next.mdx'
 

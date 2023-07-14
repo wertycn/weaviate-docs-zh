@@ -1,73 +1,76 @@
 ---
-title: What to expect from Weaviate in 2023
-slug: what-to-expect-from-weaviate-in-2023
-authors: [etienne]
+authors:
+- etienne
 date: 2023-02-14
-tags: ['engineering']
+description: Learn about the six pillars outlining how Weaviate will evolve in 2023.
 image: ./img/hero.png
-description: "Learn about the six pillars outlining how Weaviate will evolve in 2023."
+slug: what-to-expect-from-weaviate-in-2023
+tags:
+- engineering
+title: What to expect from Weaviate in 2023
 ---
-![What to expect from Weaviate in 2023](./img/hero.png)
 
-Without a doubt, 2022 has been the most exciting year for Weaviate so far. The company and the product have grown tremendously, and we are incredibly excited about 2023. Weaviate’s usage numbers are through the roof, and so are your feedback and requests for what you’re still missing from Weaviate.
+![2023年Weaviate的期望](./img/hero.png)
 
-<!-- truncate -->
+毫无疑问，2022年是Weaviate迄今为止最令人兴奋的一年。公司和产品都取得了巨大的发展，我们对2023年感到非常兴奋。Weaviate的使用量和您对Weaviate所缺失的功能的反馈和需求都非常高。
 
-In this blog post, I will introduce you to the six pillars outlining how Weaviate will get even better in 2023. Weaviate development is highly dynamic – we don’t waterfall-plan for the entire year – but nevertheless, we want to give you the best possible overview of what to expect in the coming year.
+<!-- 截断 -->
 
-## The Six Pillars for 2023
+在这篇博文中，我将向您介绍Weaviate在2023年将如何进一步改进的六大支柱。Weaviate的开发非常动态，我们不会为整年进行瀑布计划，但我们仍然希望为您提供尽可能全面的未来展望。
 
-### Ingestion and Search Pipelines
-![Ingestion and Search Pipelines](./img/search-pipeline.png)
-Weaviate’s strong and growing module ecosystem gives you plenty of flexibility. Whether you use Weaviate as a pure vector search engine or with the addition of vectorizer, reader, and generator modules, you can always configure it to your liking. In early 2023 we even saw the addition of the [`generative-openai`](/developers/weaviate/modules/reader-generator-modules/generative-openai) module (with other generative modules to come).
+## 2023年的六大支柱
 
-We want to give you even more flexibility in combining these steps this year. You can control arbitrary querying steps through the [proposed Pipe API](https://github.com/weaviate/weaviate/issues/2560), such as reading, re-ranking, summarizing, generating, and others. Similarly, we want to give you more flexibility during ingestion time: how about [extracting PDFs](https://github.com/weaviate/weaviate/issues/2509) or applying [stemming](https://github.com/weaviate/weaviate/issues/2439) to your BM25 and hybrid search?
+### 数据摄取和搜索流程
+![数据摄取和搜索流程](./img/search-pipeline.png)
+Weaviate强大且不断增长的模块生态系统为您提供了很大的灵活性。无论您是将Weaviate用作纯向量搜索引擎，还是添加了向量化器、阅读器和生成器模块，都可以根据自己的喜好进行配置。在2023年初，我们甚至看到了[`generative-openai`](/developers/weaviate/modules/reader-generator-modules/generative-openai)模块的添加（其他生成模块也将推出）。
+
+今年，我们希望为您在组合这些步骤时提供更大的灵活性。您可以通过[提议的Pipe API](https://github.com/weaviate/weaviate/issues/2560)来控制任意的查询步骤，例如读取、重新排序、汇总、生成等。同样，在数据摄取时，我们也希望为您提供更多的灵活性：例如[提取PDF文件](https://github.com/weaviate/weaviate/issues/2509)或在BM25和混合搜索中应用[词干提取](https://github.com/weaviate/weaviate/issues/2439)。
 
 <br></br>
 
-### Beyond Billion Scale: Large-Scale Performance
+### 超过十亿规模：大规模性能
 ![Billion Scale](./img/billion-scale.png)
 
-In 2022, we published the [Sphere Demo Dataset for Weaviate](/blog/sphere-dataset-in-weaviate). This marked the first time (to our knowledge) that more than a billion objects and vectors were imported into Weaviate. Dealing with ever-growing datasets is not only about being able to handle their size. Our users run complex queries in production and often have strict latency requirements. This pillar is all about performance. The first big step will be the move towards a [Native Roaring Bitmap Index](https://github.com/weaviate/weaviate/issues/2511). In the most extreme case, this new index time can speed up filtered vector search [by a factor of 1000](https://twitter.com/etiennedi/status/1621180981519458305).  But it doesn’t stop there; we are already thinking about the next steps. Whether you want faster aggregations or new types of specialized indexes, we will ensure you can hit all your p99 latency targets with Weaviate.
+在2022年，我们发布了[Weaviate的Sphere演示数据集](/blog/sphere-dataset-in-weaviate)。据我们所知，这是第一次导入超过10亿个对象和向量到Weaviate中。处理不断增长的数据集不仅仅是能够处理它们的大小。我们的用户在生产环境中运行复杂的查询，并且通常有严格的延迟要求。这个支柱关注的是性能。第一个重要的步骤将是向[本地Roaring Bitmap索引](https://github.com/weaviate/weaviate/issues/2511)迈进。在最极端的情况下，这种新索引时间可以将过滤向量搜索加速[1000倍](https://twitter.com/etiennedi/status/1621180981519458305)。但事情并没有止步于此；我们已经在考虑下一步。无论您想要更快的聚合还是新类型的专用索引，我们将确保您可以满足Weaviate的所有p99延迟目标。
 
 <br></br>
 
-### Cloud Operations & Scaling
-![cloud operations scaling](./img/cloud-operations-scaling.png)
+### 云操作和扩展
+![云操作扩展](./img/cloud-operations-scaling.png)
 
-When we introduced [Replication](/developers/weaviate/concepts/replication-architecture) to Weaviate in late 2022, we celebrated a significant milestone. It’s never been easier to achieve a highly available setup, and you can even dynamically scale your setup to increase throughput. 2023 is all about improving your cloud and operations experience. We will give you more control over [how to structure your workloads](https://github.com/weaviate/weaviate/issues/2586) in a distributed setup and more [flexibility to adapt to your ever-changing needs](https://github.com/weaviate/weaviate/issues/2228). And, of course, we’re constantly working on making your distributed cluster [even more resilient](https://github.com/weaviate/weaviate/issues/2405).
+当我们在2022年末将[复制](/developers/weaviate/concepts/replication-architecture)引入Weaviate时，我们庆祝了一个重要的里程碑。现在，实现高可用性的设置变得更加容易，您甚至可以动态地扩展设置以增加吞吐量。2023年我们将专注于改进您的云和运维体验。我们将为您提供更多关于在分布式设置中[如何组织工作负载](https://github.com/weaviate/weaviate/issues/2586)的控制权，以及更多[适应您不断变化的需求的灵活性](https://github.com/weaviate/weaviate/issues/2228)。当然，我们还在不断努力使您的分布式集群[更加弹性](https://github.com/weaviate/weaviate/issues/2405)。
 
-Speaking of Cloud, arguably the easiest way to spin up a new use case with Weaviate is through the [Weaviate Cloud Services](/pricing).
-
-<br></br>
-
-### New Vector Indexes
-![vector indexes](./img/vector-indexes.png)
-
-Last year we gave you a sneak peek into our [Vector Indexing Research](/blog/ann-algorithms-vamana-vs-hnsw), and this year you will be able to try out new vector indexes for yourself. Since the beginning, Weaviate has supported vector indexing with [HNSW](/developers/weaviate/concepts/vector-index), which leads to [best-in-class query times](/developers/weaviate/benchmarks/ann). But not every use case requires single-digit millisecond latencies. Instead, some prefer cost-effectiveness. Due to its relatively high memory footprint, HNSW is only cost-efficient in high-throughput scenarios. However, HNSW is inherently optimized for in-memory access. Simply storing the index or vectors on disk or memory-mapping the index kills performance.
-
-This is why we will offer you not just one but two memory-saving options to index your vectors without sacrificing latency and throughput. In early 2023, you will be able to use Product Quantization, a vector compression algorithm, in Weaviate for the first time. We are already working on a fully disk-based solution which we will release in late 2023.
+说到云，使用[Weaviate云服务](/pricing)可能是使用Weaviate快速启动新用例的最简单方法。
 
 <br></br>
 
-### Improving our Client and Module Ecosystem
-![client modules](./img/client-modules.png)
+### 新的向量索引
+![向量索引](./img/vector-indexes.png)
 
-So far, we have only discussed features related to Weaviate Core, the server in your setup. But the Weaviate experience is more than that. Modules allow you to integrate seamlessly with various embedding providers, and our language clients make Weaviate accessible right from your application. This year, we will further improve both. This includes [improved APIs](https://github.com/weaviate/weaviate-python-client/issues/205) on the client side, new modules, for example, for [generative search](/developers/weaviate/modules/reader-generator-modules/generative-openai), and improvements to our existing modules.
+去年，我们给你们一个对我们的[向量索引研究](/blog/ann-algorithms-vamana-vs-hnsw)的预览，而今年你们将能够亲自尝试新的向量索引。从一开始，Weaviate就支持使用[HNSW](/developers/weaviate/concepts/vector-index)进行向量索引，这导致了[最佳的查询时间](/developers/weaviate/benchmarks/ann)。但并不是每个使用案例都需要单位数毫秒的延迟。相反，有些人更看重成本效益。由于其相对较高的内存占用，HNSW只在高吞吐量的场景下才具有成本效益。然而，HNSW本质上是针对内存访问进行优化的。简单地将索引或向量存储在磁盘上或内存映射索引会降低性能。
+
+这就是为什么我们将为您提供不只一种，而是两种节省内存的选项，以在不牺牲延迟和吞吐量的情况下对您的向量进行索引。在2023年初，您将能够首次在Weaviate中使用产品量化，一种向量压缩算法。我们已经在致力于一个完全基于磁盘的解决方案，预计将在2023年底发布。
 
 <br></br>
 
-### Community
+### 改进我们的客户端和模块生态系统
+![客户端模块](./img/client-modules.png)
+
+到目前为止，我们只讨论了与您的设置中的Weaviate Core服务器相关的功能。但是Weaviate的体验不仅仅如此。模块允许您与各种嵌入式提供商无缝集成，并且我们的语言客户端使您可以直接从应用程序中访问Weaviate。今年，我们将进一步改进这两个方面。这包括在客户端端改进API，例如在[这里](https://github.com/weaviate/weaviate-python-client/issues/205)，添加新的模块，例如[生成式搜索](/developers/weaviate/modules/reader-generator-modules/generative-openai)，以及对现有模块的改进。
+
+<br></br>
+
+### 社区
 ![community](./img/community.png)
 
-The most important pillar is all of you – our community. This includes both free, open-source users that self-host their Weaviate setup, as well as paid enterprise users and anyone using our Weaviate-as-a-Service offerings. We value your feedback and love that you are part of shaping our future.
+最重要的支柱是您们所有人 - 我们的社区。这包括那些自己托管Weaviate设置的免费开源用户，以及付费企业用户和使用我们的Weaviate作为服务的任何人。我们重视您的反馈，并且很高兴您能参与塑造我们的未来。
 
-Last year we introduced our [dynamic roadmap page](/developers/weaviate/roadmap) that allows you to create and upvote your favorite feature requests. This way, you can make sure that your voice is heard, and we can see what all of you need the most.
+去年我们推出了我们的[动态路线图页面](/developers/weaviate/roadmap)，您可以在该页面上创建和投票您最喜欢的功能请求。通过这种方式，您可以确保您的声音被听到，我们也可以了解到您最需要的功能。
 
 <br></br>
 
-## Conclusion: Proud of how far we’ve come, excited about the future
-In the beginning, I mentioned that not just the product but also the company grew significantly last year. I am incredibly proud of what we have achieved – both overall and in the past year. This wouldn’t have been possible without an absolutely fantastic team. Everyone working on Weaviate – whether a full-time employee or open-source contributor – is doing a fantastic job. I am proud of you all and highly excited about the future. Thank you all, and let’s make 2023 the most exciting year for Weaviate users so far!
+## 结论：为我们已经取得的成就感到自豪，对未来充满期待
+一开始，我提到去年不仅产品，而且公司都取得了显著的增长。我对我们所取得的成就感到非常自豪 - 无论是整体上还是在过去的一年中。这离不开一个绝对棒的团队。所有在Weaviate上工作的人 - 无论是全职员工还是开源贡献者 - 都做得非常出色。我为你们感到自豪，并对未来充满期待。谢谢你们，让我们一起让2023年成为Weaviate用户迄今为止最令人兴奋的一年！
 
 <br></br>
 

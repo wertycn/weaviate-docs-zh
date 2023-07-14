@@ -1,26 +1,30 @@
 ---
-title: Combining LangChain and Weaviate
-slug: combining-langchain-and-weaviate
-authors: [erika]
+authors:
+- erika
 date: 2023-02-21
-tags: ['integrations']
+description: LangChain is one of the most exciting new tools in AI. It helps overcome
+  many limitations of LLMs, such as hallucination and limited input lengths.
 image: ./img/hero.png
-description: "LangChain is one of the most exciting new tools in AI. It helps overcome many limitations of LLMs, such as hallucination and limited input lengths."
+slug: combining-langchain-and-weaviate
+tags:
+- integrations
+title: Combining LangChain and Weaviate
 ---
-![Combining LangChain and Weaviate](./img/hero.png)
 
-Large Language Models (LLMs) have revolutionized the way we interact and communicate with computers. These machines can understand and generate human-like language on a massive scale. LLMs are a versatile tool that is seen in many applications like chatbots, content creation, and much more. Despite being a powerful tool, LLMs have the drawback of being too general. Fortunately, there are emerging technologies that help solve this limitation.
+![将LangChain和Weaviate结合起来](./img/hero.png)
 
-<!-- truncate -->
+大型语言模型（LLMs）已经彻底改变了我们与计算机互动和交流的方式。这些机器可以在大规模上理解和生成类似人类语言的文本。LLMs是一种多功能工具，在许多应用中都有应用，如聊天机器人、内容创作等等。尽管是一种强大的工具，但LLMs的缺点是过于泛化。幸运的是，有新兴的技术可以帮助解决这个限制。
 
-[LangChain](https://langchain.readthedocs.io/en/latest/) is one of the most exciting new tools in AI. LangChain helps overcome many limitations of LLMs such as hallucination and limited input lengths. Hallucination refers to where the LLM generates a response that is not supported by the input or context – meaning it will output text that is irrelevant, inconsistent, or misleading. As you can imagine, this is a huge problem in many applications. LLMs have a limited input length when referring to the scale of inputting a book or pages of search results. LangChain has various techniques implemented to solve this problem.
+<!-- 截断 -->
 
-This blog post will begin by explaining some of the key concepts introduced in LangChain and end with a demo. The demo will show you how to combine LangChain and Weaviate to build a custom LLM chatbot powered with semantic search!
+[LangChain](https://langchain.readthedocs.io/en/latest/) 是人工智能领域中最令人兴奋的新工具之一。LangChain有助于克服语言模型的许多限制，如幻觉和有限的输入长度。幻觉指的是语言模型生成的响应不受输入或上下文支持，这意味着它会输出与主题无关、不一致或具有误导性的文本。可以想象，这在许多应用中是一个巨大的问题。当输入书籍或搜索结果页数时，语言模型的输入长度是有限的。LangChain采用了各种技术来解决这个问题。
 
-## Sequential Chains
-[Chains](https://docs.langchain.com/docs/components/chains/) enable us to combine multiple LLM inferences together. As you can guess from the name, sequential chains execute their links in a sequential order. It takes one input/output and then uses the output for the next step.
+本博客文章将首先解释一些LangChain引入的关键概念，并以演示结束。演示将展示如何结合LangChain和Weaviate构建一个使用语义搜索驱动的自定义LLM聊天机器人！
 
-Let’s look at an example of sequential chains in a conversation between the bot and me. This visualization shows an example of a step-by-step reasoning to fact check an LLM tasked with question answering:
+## 顺序链
+[Chains](https://docs.langchain.com/docs/components/chains/)使我们能够将多个LLM推理组合在一起。从名称中可以猜到，顺序链将其链接按顺序执行。它接收一个输入/输出，然后将输出用于下一步。
+
+让我们来看一个关于顺序链的例子，这是一个机器人和我的对话。下面的可视化示例展示了一种逐步推理的方式，用于对一个负责回答问题的LLM进行事实检查：
 
 <img
     src={require('./img/sequential-chains.gif').default}
@@ -30,18 +34,18 @@ Let’s look at an example of sequential chains in a conversation between the bo
 
 <div style = {{textAlign: "center"}}>
 
-*All credit to [jagilley](https://github.com/jagilley/fact-checker) for creating this awesome example*
+*所有荣誉归功于[jagilley](https://github.com/jagilley/fact-checker)创建这个令人惊叹的示例*
 
 </div>
 
-When we ask an LLM, “What type of mammal lays the biggest eggs?”, it initially answers “The biggest eggs laid by any mammal belong to the elephant.” This is a clear example of hallucination, where the response is misleading and incorrect. By adding in a simple chain of asking the LLM to reason about its assumptions, we are able to fix the hallucination problem.
+当我们问一个LLM，“哪种哺乳动物下的蛋最大？”，它最初回答“任何哺乳动物下的最大蛋属于大象。”这是一个明显的幻觉例子，回答是误导和不正确的。通过添加一个简单的链条，要求LLM推理其假设，我们能够解决幻觉问题。
 
-## CombineDocuments
-LLMs have a limited token length due to various practical and technical constraints. One of the primary reasons is the computational cost associated with processing and storing longer sequences of tokens. The longer the sequence, the more memory and processing power required to operate on it, which can be a significant challenge for even the most powerful computing systems.
+## 合并文档
+由于各种实际和技术限制，LLMs具有有限的令牌长度。其中一个主要原因是处理和存储较长令牌序列所带来的计算成本。序列越长，操作所需的内存和处理能力就越多，这对于即使是最强大的计算系统来说都是一个重大挑战。
 
-The relatively long input window of LLMs is what drives the integration with semantic search. For example, we can use this entire blog post as input in addition to questions if we want the LLM to answer questions such as “What are LLM Chains?” However, when we want to give the LLM an entire book or pages of search results, we need more clever techniques to decompose this task. This is where the `CombineDocuments` chain comes to play! Note, that one method is not better than another, and the performance is dependent solely on your application.
+相对较长的输入窗口是LLM与语义搜索集成的驱动因素。例如，除了问题之外，我们可以使用整个博文作为输入，以便LLM回答诸如“LLM链是什么？”之类的问题。然而，当我们想要给LLM一个完整的书籍或搜索结果页面时，我们需要更聪明的技术来分解这个任务。这就是`CombineDocuments`链发挥作用的地方！请注意，一个方法并不比另一个更好，性能完全取决于您的应用程序。
 
-### Stuffing
+### 填充
 
 <img
     src={require('./img/stuffing.gif').default}
@@ -49,7 +53,7 @@ The relatively long input window of LLMs is what drives the integration with sem
     style={{ width: "100%" }}
 />
 
-Stuffing takes the related documents from the database and stuffs them into the prompt. The documents are passed in as context and go into the language model (the robot). This is the simplest method since it doesn’t require multiple calls to the LLM. This can be seen as a disadvantage if the documents are too long and surpass the context length.
+填充操作从数据库中获取相关文档，并将其填充到提示语中。这些文档作为上下文传递，并进入语言模型（机器人）。这是最简单的方法，因为它不需要多次调用LLM。但如果文档过长超过了上下文长度，这可能被视为一个劣势。
 
 
 ### Map Reduce
@@ -60,9 +64,9 @@ Stuffing takes the related documents from the database and stuffs them into the 
     style={{ width: "100%" }}
 />
 
-Map Reduce applies an initial prompt to each chunk of data. This is then passed through the language model to generate multiple responses. Another prompt is created to combine all of the initial outputs into one. This technique requires more than one call to the LLM.
+Map Reduce将初始提示应用于每个数据块。然后，它通过语言模型生成多个响应。另一个提示被创建用于将所有初始输出组合成一个。这种技术需要对LLM进行多次调用。
 
-### Refine
+### 优化
 
 <img
     src={require('./img/refine.gif').default}
@@ -70,9 +74,9 @@ Map Reduce applies an initial prompt to each chunk of data. This is then passed 
     style={{ width: "100%" }}
 />
 
-Refine is a unique technique because it has a local memory. An example of this is to ask the language model to summarize the documents one by one. It then takes the summaries generated so far to influence the next output. It repeats this process until all documents have been processed.
+Refine是一种独特的技术，因为它具有本地内存。一个例子是让语言模型逐个总结文档。然后它会利用已生成的摘要来影响下一个输出。它会重复这个过程，直到所有文档都被处理完。
 
-### Map Rerank
+### 地图重新排序
 
 <img
     src={require('./img/map-rerank.gif').default}
@@ -80,10 +84,10 @@ Refine is a unique technique because it has a local memory. An example of this i
     style={{ width: "100%" }}
 />
 
-Map Rerank involves running an initial prompt that asks the model to give a relevance score. It is then passed through the language model and assigns a score based on the certainty of the answer. The documents are then ranked and the top two are stuffed to the language model to output a single response.
+Map Rerank（地图重新排序）是指运行一个初始提示，要求模型给出一个相关性分数。然后通过语言模型进行处理，并根据答案的确定性给出一个分数。然后对文档进行排序，选取前两个文档传递给语言模型，输出一个单一的回答。
 
-## Tool Use
-The last building block we will cover is tool use. [Tool use](https://python.langchain.com/docs/modules/agents/tools/) is a way to augment language models to use tools. For example, we can hook up an LLM to vector databases, calculators, or even code executors. Of course we will dive into the vector databases next, but let’s start with an example of the code executor tool use.
+## 工具使用
+我们将介绍的最后一个构建模块是工具使用。[工具使用](https://python.langchain.com/docs/modules/agents/tools/)是一种增强语言模型使用工具的方法。例如，我们可以将LLM与向量数据库、计算器甚至代码执行器连接起来。当然，接下来我们会深入探讨向量数据库，但让我们先从代码执行器工具使用的示例开始。
 
 <img
     src={require('./img/tool-use.gif').default}
@@ -91,10 +95,10 @@ The last building block we will cover is tool use. [Tool use](https://python.lan
     style={{ width: "100%" }}
 />
 
-The task for the language model is to write python code for the bubble sort algorithm. The code is then passed through the Python REPL. Python REPL is a code executor implemented in LangChain. Once the code is executed, the output of the code is printed. The language model then sees this output and judges if the code is correct.
+语言模型的任务是为冒泡排序算法编写Python代码。然后将代码传递到Python REPL中。Python REPL是在LangChain中实现的代码执行器。一旦代码被执行，代码的输出将被打印出来。然后，语言模型会查看这个输出并判断代码是否正确。
 
 ## ChatVectorDB
-One of the most exciting features of LangChain is its collection of preconfigured chains. We will look at the [ChatVectorDB chain](https://github.com/hwchase17/langchain/tree/master/langchain/chains/chat_vector_db), it lets you build an LLM that stores chat history and retrieves context from Weaviate to help with generation. To begin, the chat history in this chain uses the `stuff` configuration of CombineDocuments. This means we take as much of the chat history as we can fit in our context window and use it for a query reformulation prompt. The prompt is as follows:
+LangChain最令人兴奋的功能之一就是其预配置链的集合。我们将查看[ChatVectorDB链](https://github.com/hwchase17/langchain/tree/master/langchain/chains/chat_vector_db)，它允许您构建一个LLM，用于存储聊天记录并从Weaviate中检索上下文以帮助生成。首先，该链中的聊天记录使用CombineDocuments的`stuff`配置。这意味着我们尽可能多地获取聊天历史，并在查询重构提示中使用它。提示如下：
 
 ```python
 _template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
@@ -105,7 +109,7 @@ Follow Up Input: {question}
 Standalone question:"""
 ```
 
-We put the chat_history and the latest user input in the curly bracket syntax. Then we take this new query and hit the Weaviate vector database to get context to answer the question. The ChatVectorDB chain we use has a default value of k = 4 search results, if we use longer search results we will need another CombineDocuments chain here as well! With the 4 search results, we answer the question with this final prompt:
+我们将聊天历史记录和最新的用户输入放在花括号语法中。然后，我们使用这个新的查询来访问Weaviate向量数据库，以获取回答问题所需的上下文。我们使用的ChatVectorDB链具有默认值k = 4的搜索结果，如果我们使用更长的搜索结果，那么在这里我们还需要另一个CombineDocuments链！通过这4个搜索结果，我们用最终的提示来回答问题：
 
 ```python
 Prompt_template = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -114,13 +118,13 @@ Question: {question}
 Helpful Answer:"""
 ```
 
-Hopefully this was a nice look under the hood of how the ChatVectorDB chain works. Let’s get into how we can use this with Weaviate!
+希望这次能够深入了解ChatVectorDB链的内部工作原理。现在让我们看看如何在Weaviate中使用它！
 
-### The Code
+### 代码
 
-If this is your first time using Weaviate, please check out the [Quickstart tutorial](/developers/weaviate/quickstart).
+如果您是第一次使用Weaviate，请查看[快速入门教程](/developers/weaviate/quickstart)。
 
-This demo is built off of Connor Shorten’s [Podcast Search](https://github.com/weaviate/weaviate-podcast-search) demo. We are connecting to our Weaviate instance and specifying what we want LangChain to see in the `vectorstore`. `PodClip` is our class and we want to use the `content` property, which contains the transcriptions of the podcasts. Next in `qa` we will specify the OpenAI model.
+此演示是基于Connor Shorten的[Podcast Search](https://github.com/weaviate/weaviate-podcast-search)演示构建的。我们正在连接到我们的Weaviate实例，并指定LangChain在`vectorstore`中要看到的内容。`PodClip`是我们的类，我们想要使用`content`属性，其中包含了播客的转录内容。接下来，在`qa`中，我们将指定OpenAI模型。
 
 ```python
 from langchain.vectorstores.weaviate import Weaviate
@@ -148,8 +152,7 @@ while True:
     print(result["answer"])
     chat_history = [(query, result["answer"])]
 ```
-And just like that, you have built an application using LangChain and Weaviate. I recommend checking out the GitHub repository to test this out yourself!
-
+像这样，您使用LangChain和Weaviate构建了一个应用程序。我建议您查看GitHub存储库来自己测试一下！
 
 import StayConnected from '/_includes/stay-connected.mdx'
 

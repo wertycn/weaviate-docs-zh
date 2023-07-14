@@ -1,96 +1,99 @@
 ---
-title: Support for Hugging Face Inference API in Weaviate
-slug: hugging-face-inference-api-in-weaviate
-authors: [sebastian]
+authors:
+- sebastian
 date: 2022-09-27
-tags: ['integrations']
+description: Running ML Model Inference in production is hard. You can use Weaviate
+  – a vector database – with Hugging Face Inference module to delegate the heavy lifting.
 image: ./img/hero.png
-description: "Running ML Model Inference in production is hard. You can use Weaviate – a vector database – with Hugging Face Inference module to delegate the heavy lifting."
+slug: hugging-face-inference-api-in-weaviate
+tags:
+- integrations
+title: Support for Hugging Face Inference API in Weaviate
 ---
-![Support for Hugging Face Inference API in Weaviate](./img/hero.png)
+
+![在 Weaviate 中支持 Hugging Face 推理 API](./img/hero.png)
 
 <!-- truncate -->
 
-Vector databases use Machine Learning models to offer incredible functionality to operate on your data. We are looking at anything from **summarizers** (that can summarize any text into a short) sentence), through **auto-labelers** (that can classify your data tokens), to **transformers** and **vectorizers** (that can convert any data – text, image, audio, etc. – into vectors and use that for context-based queries) and many more use cases.
+向量数据库使用机器学习模型为您的数据提供令人难以置信的功能。我们可以看到各种用例，从**摘要生成器**（可以将任何文本摘要成一句简短的句子），到**自动标记器**（可以对数据标记进行分类），再到**转换器**和**向量化器**（可以将任何数据 - 文本、图像、音频等 - 转换为向量，并用于基于上下文的查询）。
 
-All of these use cases require `Machine Learning model inference` – a process of running data through an ML model and calculating an output (e.g. take a paragraph, and summarize into to a short sentence) – which is a compute-heavy process.
+所有这些用例都需要进行`机器学习模型推理`- 通过一个ML模型运行数据并计算输出的过程（例如，将一个段落总结为一个简短的句子）- 这是一个计算密集型的过程。
 
-### The elephant in the room
-Running model inference in production is hard.
-* It requires expensive specialized hardware.
-* You need a lot more computing power during the initial data import.
-* Hardware tends to be underutilized once the bulk of the heavy work is done.
-* Sharing and prioritizing resources with other teams is hard.
+### 问题中的难题
+在生产环境中运行模型推理是困难的。
+* 需要昂贵的专用硬件。
+* 在初始数据导入过程中需要更多的计算能力。
+* 一旦大部分繁重的工作完成，硬件往往被低效利用。
+* 与其他团队共享和优先处理资源很困难。
 
-The good news is, there are companies – like Hugging Face, OpenAI, and Cohere – that offer running model inference as a service.
+好消息是，有一些公司，比如Hugging Face、OpenAI和Cohere，提供模型推理作为一项服务。
 
-> "Running model inference in production is hard,
-let them do it for you."
+> "在生产环境中运行模型推理是困难的，
+让他们为您完成吧。"
 
-## Support for Hugging Face Inference API in Weaviate
-Starting from Weaviate `v1.15`, Weaviate includes a Hugging Face module, which provides support for Hugging Face Inference straight from the vector database.
+## Weaviate对Hugging Face推理API的支持
+从Weaviate `v1.15`开始，Weaviate包含了一个Hugging Face模块，该模块可以直接从矢量数据库中提供对Hugging Face Inference的支持。
 
-The Hugging Face module, allows you to use the [Hugging Face Inference service](https://huggingface.co/inference-api#pricing) with sentence similarity models, to vectorize and query your data, straight from Weaviate. No need to run the Inference API yourself.
+Hugging Face模块允许您使用[Hugging Face Inference服务](https://huggingface.co/inference-api#pricing)和句子相似性模型，直接从Weaviate对数据进行向量化和查询。无需自行运行Inference API。
 
-> You can choose between `text2vec-huggingface` (Hugging Face) and `text2vec-openai` (OpenAI) modules to delegate your model inference tasks.<br/>
-> Both modules are enabled by default in the [Weaviate Cloud Services](/pricing).
+> 您可以选择`text2vec-huggingface`（Hugging Face）和`text2vec-openai`（OpenAI）模块来委托您的模型推理任务。<br/>
+> 这两个模块在[Weaviate云服务](/pricing)中都是默认启用的。
 
-## Overview
-![Overview](./img/hugging-face-module-overview.png)
+## 概述
+![概述](./img/hugging-face-module-overview.png)
 
-The Hugging Face module is quite incredible, for many reasons.
+Hugging Face模块非常令人难以置信，有很多原因。
 
-### Public models
-You get access to over 1600 pre-trained [sentence similarity models](https://huggingface.co/models?pipeline_tag=sentence-similarity). No need to train your own models, if there is already one that works well for your use case.
+### 公共模型
+您可以访问超过1600个预训练的[句子相似性模型](https://huggingface.co/models?pipeline_tag=sentence-similarity)。如果已经有一个适用于您的用例的模型，就不需要训练自己的模型。
 
-In case you struggle with picking the right model, see our blog post on [choosing a sentence transformer from Hugging Face](/blog/how-to-choose-a-sentence-transformer-from-hugging-face).
+如果您在选择合适的模型方面遇到困难，可以查看我们的博客文章[如何从Hugging Face选择句子转换器](/blog/how-to-choose-a-sentence-transformer-from-hugging-face)。
 
-### Private models
-If you have your own models, trained specially for your data, then you can upload them to Hugging Face (as private modules), and use them in Weaviate.
+### 私有模型
+如果您有自己的模型，专门为您的数据进行训练，那么您可以将它们上传到Hugging Face（作为私有模块），并在Weaviate中使用它们。
 
-<!-- TODO: update with a link to the article once it is ready -->
-*We are working on an article that will guide you on how to create your own model and upload it to Hugging Face.*
+<!-- TODO: 更新文章链接一旦准备好 -->
+*我们正在编写一篇文章，将指导您如何创建自己的模型并将其上传到Hugging Face。*
 
-### Fully automated and optimized
-Weaviate manages the whole process for you. From the perspective of writing your code – once you have your schema configuration – you can almost forget that Hugging Face is involved at all.
+### 全自动化和优化
+Weaviate会为您管理整个过程。从编写代码的角度来看，一旦您有了模式配置，几乎可以忘记Hugging Face的存在。
 
-For example, when you import data into Weaviate, Weaviate will automatically extract the relevant text fields, send them Hugging Face to vectorize, and store the data with the new vectors in the database.
+例如，当您将数据导入到Weaviate时，Weaviate会自动提取相关的文本字段，将它们发送给Hugging Face进行向量化，并将数据与新的向量一起存储在数据库中。
 
-### Ready to use with a minimum of fuss
-Every new Weaviate instance created with the [Weaviate Cloud Services](/pricing) has the Hugging Face module enabled out of the box. You don't need to update any configs or anything, it is there ready and waiting.
+### 最简单易用的准备就绪
+每个使用[Weaviate Cloud Services](/pricing)创建的新Weaviate实例都默认启用了Hugging Face模块。您无需更新任何配置文件或其他内容，它已经准备就绪。
 
-On the other hand, to use the Hugging Face module in Weaviate open source (`v1.15` or newer), you only need to set `text2vec-huggingface` as the default vectorizer. Like this:
+另外，要在Weaviate开源版（`v1.15`或更新版本）中使用Hugging Face模块，您只需将`text2vec-huggingface`设置为默认的向量化器。如下所示：
 
 ```yaml
 DEFAULT_VECTORIZER_MODULE: text2vec-huggingface
 ENABLE_MODULES: text2vec-huggingface
 ```
 
-## How to get started
+## 如何入门
 
 :::note
 This article is not meant as a hands-on tutorial.
 For more detailed instructions please check the [documentation](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-huggingface).
 :::
 
-The overall process to use a Hugging Face module with Weaviate is fairly straightforward.
+使用Hugging Face模型与Weaviate的整体过程非常简单。
 
-![Recipe for using the Hugging Face module](./img/how-to-get-started-recipe.png)
-If this was a cooking class and you were following a recipe.
+![使用Hugging Face模型的步骤](./img/how-to-get-started-recipe.png)
+如果这是一堂烹饪课，您正在按照食谱操作。
 
-You would need the following ingredients:
-* Raw Data
-* Hugging Face API token – which you can request from [their website](https://huggingface.co/settings/tokens)
-* A working Weaviate instance with the `text2vec-huggingface` enabled
+您需要准备以下材料：
+* 原始数据
+* Hugging Face API令牌 - 您可以从[官方网站](https://huggingface.co/settings/tokens)上申请
+* 已启用“text2vec-huggingface”的可工作的Weaviate实例
 
-Then you would follow these steps.
+然后您将按照以下步骤进行操作。
 
-### Step 1 – initial preparation – create schema and select the hf models
-Once you have a Weaviate instance up and running.
-Define your schema (standard stuff – pick a class name, select properties, and data types). As a part of the schema definition, you also need to provide, which Hugging Face model you want to use for each schema class.
+### 第1步 - 初始准备 - 创建模式和选择hf模型
+一旦您启动并运行了Weaviate实例。
+定义您的模式（标准的操作 - 选择类名、属性和数据类型）。作为模式定义的一部分，您还需要提供每个模式类别所要使用的Hugging Face模型。
 
-
-This is done by adding a `moduleConfig` property with the `model` name, to the schema definition, like this:
+通过向模式定义中添加一个`moduleConfig`属性和`model`名称来完成此操作，如下所示：
 ```javascript
 {
     "class": "Notes",
@@ -105,14 +108,14 @@ This is done by adding a `moduleConfig` property with the `model` name, to the s
 }
 ```
 
-*If you are wondering, yes, you can use a different model for each class.*
+*如果你想知道的话，是的，你可以为每个类别使用不同的模型。*
 
-### Step 2 – cook for some time – import data
-Start importing data into Weaviate.
+### 第二步 - 煮一段时间 - 导入数据
+开始将数据导入到Weaviate中。
 
-For this, you need your Hugging Face API token, which is used to authorize all calls with 🤗.
+为此，您需要您的Hugging Face API令牌，该令牌用于授权所有与🤗的调用。
 
-Add your token, to a Weaviate client configuration. For example in Python, you do it like this:
+将您的令牌添加到Weaviate客户端配置中。例如，在Python中，您可以像这样做：
 
 ```javascript
 client = weaviate.Client(
@@ -122,16 +125,16 @@ client = weaviate.Client(
     }
 )
 ```
-Then import the data the same way as always. And Weaviate will handle all the communication with Hugging Face.
+然后按照以往的方式导入数据。Weaviate将处理与Hugging Face的所有通信。
 
-### Step 3 – serving portions – querying data
-Once, you imported some or all of the data, you can start running queries.
-(yes, you can start querying your database even during the import).
+### 第3步 - 服务部分 - 查询数据
+一旦导入了部分或全部数据，您就可以开始运行查询。
+（是的，在导入过程中，您甚至可以开始查询您的数据库）。
 
-Running queries also requires the same token.
-But you can reuse the same client, so you are good to go.
+运行查询也需要相同的令牌。
+但是您可以重用同一个客户端，所以您可以开始了。
 
-Then, you just run the queries, as per usual:
+然后，您只需按照通常的方式运行查询：
 ```javascript
 nearText = {
     "concepts": ["How to use Hugging Face modules with Weaviate?"],
@@ -149,21 +152,21 @@ result = (
 )
 ```
 
-## Summary
-> Now you can use [Hugging Face](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-huggingface) or [OpenAI](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-openai) modules in Weaviate to delegate model inference out.
+## 摘要
+> 现在您可以在Weaviate中使用[Hugging Face](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-huggingface)或[OpenAI](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-openai)模块来委托模型推理。
 
-Just pick the model, provide your API key and start working with your data.
+只需选择模型，提供您的API密钥，即可开始处理您的数据。
 
-Weaviate optimizes the communication process with the Inference API for you, so that you can focus on the challenges and requirements of your applications. No need to run the Inference API yourself.
+Weaviate为您优化了与推理API的通信过程，这样您就可以专注于应用程序的挑战和需求。无需自己运行推理API。
 
-## What next
-Check out the [text2vec-huggingface](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-huggingface) documentation to learn more about the new module.
+## 接下来做什么
+查看[text2vec-huggingface](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-huggingface)文档，了解更多关于新模块的信息。
 
-If you are new to Weaviate, check out the [getting started guide](/developers/weaviate/quickstart).
+如果您是Weaviate的新手，请查看[入门指南](/developers/weaviate/quickstart)。
 
-Let us know if you found this article interesting or useful. We are always happy to receive constructive feedback. 😀
+如果您觉得这篇文章有趣或有用，请告诉我们。我们非常乐意接收建设性的反馈意见。😀
 
-We are always working on new articles and are looking for new topics. Let us know if there is anything that you would like us to write about. 🤗
+我们一直在撰写新的文章，并且正在寻找新的主题。如果有任何您希望我们写的内容，请告诉我们。🤗
 
 import ShareFeedback from '/_includes/share-feedback.md';
 

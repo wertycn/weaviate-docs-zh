@@ -1,46 +1,54 @@
 ---
-title: Weaviate 1.16 release
-slug: weaviate-1-16-release
-authors: [connor, jp, erika, sebastian, zain]
+authors:
+- connor
+- jp
+- erika
+- sebastian
+- zain
 date: 2022-11-01
-tags: ['release']
+description: Weaviate 1.16 introduces New Filter Operators, Distributed Backups, Centroid
+  Module, Node Status API, Azure-based OIDC, and more. Lear all about it.
 image: ./img/hero.png
-description: "Weaviate 1.16 introduces New Filter Operators, Distributed Backups, Centroid Module, Node Status API, Azure-based OIDC, and more. Lear all about it."
+slug: weaviate-1-16-release
+tags:
+- release
+title: Weaviate 1.16 release
 ---
-![Weaviate 1.16 release](./img/hero.png)
+
+![Weaviate 1.16发布](./img/hero.png)
 
 <!-- truncate -->
 
-We are happy to announce the release of Weaviate `1.16`, which brings a set of great features, performance and UX improvements, and fixes.
+我们很高兴地宣布Weaviate `1.16`版本的发布，该版本带来了一系列优秀的功能、性能和用户体验改进以及修复。
 
-## The brief
-If you like your content brief and to the point, here is the TL;DR of this release:
-1. [New Filter Operators](#new-filter-operators) – that allow you to filter data based on null values or array lengths
-1. [Distributed Backups](#distributed-backups) – an upgrade to the backup functionality, which allows you to backup data distributed across clusters
-1. [Ref2Vec Centroid Module](#ref2vec-centroid-module) – a new module that calculates a mean vector of referenced objects
-1. [Node Status API](#node-status-api) – to quickly check on the health of your running clusters
-1. [Support for Azure-issued OIDC tokens](#azure-based-oidc) – now you can authenticate with Azure, Keycloak, or Dex OIDC tokens
-1. [Patch releases – ready sooner](#patch-releases-ready-sooner) – starting with Weaviate `1.15`, we publish new patch releases as soon as new important fixes are available, so that you get access to all updates as soon as possible
+## 简介
+如果你喜欢简洁明了的内容，这里是本次发布的TL;DR：
+1. [新的过滤器操作符](#new-filter-operators) - 允许您根据空值或数组长度对数据进行过滤
+1. [分布式备份](#distributed-backups) - 升级备份功能，允许您备份分布在集群中的数据
+1. [Ref2Vec质心模块](#ref2vec-centroid-module) - 计算引用对象的平均向量的新模块
+1. [节点状态API](#node-status-api) - 快速检查运行集群的健康状态
+1. [支持Azure发行的OIDC令牌](#azure-based-oidc) - 现在您可以使用Azure、Keycloak或Dex OIDC令牌进行身份验证
+1. [补丁发布 - 更快地准备](#patch-releases-ready-sooner) - 从Weaviate `1.15`开始，我们会尽快发布新的补丁发布，以便在有新的重要修复可用时，您能尽快获得所有更新
 
-Read below to learn more about each of these points in more detail.
+请继续阅读以下更详细的内容，了解每个要点的更多信息。
 
-## New Filter Operators
-![New Filter Operators](./img/filters.png)
+## 新的筛选器运算符
+![新的筛选器运算符](./img/filters.png)
 
-One of the core functionalities of databases are the index structures that allow us to find data objects quickly. The ability to seamlessly combine an inverted index with a vector index is part of what makes Weaviate so powerful. An inverted index maps the property value to the objects that it appears in. This is important when filtering through your database to find specific data objects.
+数据库的核心功能之一是索引结构，它们允许我们快速查找数据对象。无缝地将倒排索引与向量索引组合起来是Weaviate强大的一部分。倒排索引将属性值映射到出现在其中的对象。当通过数据库进行筛选以查找特定数据对象时，这一点非常重要。
 
-### Filtering Null Values
-When dealing with large datasets, it is very common to have objects with missing or null properties. Naturally, you might want to find the objects with missing properties and do a bit of cleaning up. With `Weaviate 1.16` we introduced the possibility to query the `null` state. This applies to both scenarios where a property is set to null, or the property is completely missing.
+### 筛选空值
+在处理大型数据集时，经常会遇到具有缺失或空属性的对象。自然而然，您可能希望找到具有缺失属性的对象并进行一些清理工作。我们在 `Weaviate 1.16` 中引入了查询 `null` 状态的功能。这适用于属性设置为 null 或者属性完全缺失的情况。
 
-This new feature introduces changes at three different stages of working with data in Weaviate.
+这个新功能在使用 Weaviate 处理数据的三个不同阶段引入了变化。
 
-#### Stage 1: Importing Null Value
+#### 阶段1: 导入空值
 
-When you import data into Weaviate, either with missing properties or with properties set to null - in both cases, Weaviate will do two things:
-Import the objects and skip the missing/null properties.
-Set the index (for the missing/null properties) values to null.
+当您将数据导入Weaviate时，无论是存在缺失属性还是属性被设置为null - 在这两种情况下，Weaviate将执行两个操作:
+导入对象并跳过缺失/空值属性。
+将索引（对于缺失/空值属性）的值设置为null。
 
-For example, imagine you have a dataset containing information about a group of people who might have food allergies. Both Noah and Emma don't have food allergies.
+例如，假设您有一个包含关于一群可能有食物过敏的人的信息的数据集。Noah和Emma都没有食物过敏。
 
 ```json
 [{
@@ -54,12 +62,12 @@ For example, imagine you have a dataset containing information about a group of 
 }]
 ```
 
-Although Noah is missing the allergy property, it will still be imported as if it was set to `null` (similar to Emma's).
+尽管Noah缺少过敏属性，但它仍将被导入，就像设置为`null`一样（类似于Emma）。
 
-#### Stage 2: Indexing Null Values
-Indexing null values is an optional feature since not everyone needs it, and it might add to import costs and space.
+#### 第二阶段：索引空值
+索引空值是一个可选功能，因为不是每个人都需要它，并且可能会增加导入成本和空间。
 
-To filter by the null state, you need to first configure your schema to handle this. The target class needs the capability to track if a property within a class is null or not. This is done by setting the `indexNullState` field to True in the `invertedIndexConfig` object.
+要按照空状态进行筛选，您需要首先配置模式以处理此操作。目标类需要具有跟踪类中属性是否为空的能力。这可以通过在`invertedIndexConfig`对象中将`indexNullState`字段设置为True来实现。
 
 ```javascript
 class_obj = {
@@ -72,13 +80,13 @@ class_obj = {
 }
 ```
 
-#### Stage 3: Filtering for Specific Property State
-We've added `IsNull`, a new operator that checks if a given property is set to `null` or not. The `IsNull` operator allows you to perform queries that are filtered by the null state.
-With `IsNull`, you can run queries that filter the results based on the null state.
+#### 阶段 3：筛选特定属性状态
+我们添加了 `IsNull`，这是一个新的运算符，用于检查给定属性是否设置为 `null`。`IsNull` 运算符允许您执行以 null 状态为过滤条件的查询。
+借助 `IsNull`，您可以运行基于 null 状态进行结果筛选的查询。
 
-In other words, you can use `IsNull` to find all objects that miss a specific property or find only those that have the property populated.
+换句话说，您可以使用 `IsNull` 查找所有缺少特定属性的对象，或者仅查找那些具有填充属性的对象。
 
-Returning to our example, we can use the below `where` filter to find all people with information on their allergies.
+回到我们的例子，我们可以使用下面的`where`筛选器来查找所有有关过敏反应信息的人。
 
 ```GraphQL
 # matching all non-null values
@@ -89,7 +97,7 @@ where: {
 }
 ```
 
-Or we could find a list of people missing the information on their allergies.
+或者我们可以找到一份缺少过敏信息的人员名单。
 
 ```GraphQL
 # matching all null values
@@ -100,16 +108,16 @@ where: {
 }
 ```
 
-For more information on how to use the `IsNull` filter, check out the [documentation](/developers/weaviate/api/graphql/filters#filter-by-null-state).
+要了解如何使用`IsNull`筛选器的更多信息，请查看[文档](/developers/weaviate/api/graphql/filters#filter-by-null-state)。
 
-### Filtering by Array Length
-While designing the solution for filtering null values, we realized that we also needed an elegant solution to filter by array length. <br/>
-The idea is to allow you to find objects based on the number of items in an array while also handling scenarios where the property is missing, which should count as 0 items.
+### 按数组长度进行筛选
+在设计用于筛选null值的解决方案时，我们意识到还需要一种优雅的方式来按数组长度进行筛选。<br/>
+我们的想法是允许您根据数组中的项目数量来查找对象，同时处理属性缺失的情况，缺失的属性应该被视为0个项目。
 
-*Note. A zero-length array is equivalent to a `null` value.*
+*注意：零长度的数组等同于`null`值。*
 
-#### Schema configuration
-To filter by the length of an array, you need to configure your schema – with `invertedIndexConfig` – to handle this.
+#### 模式配置
+要按数组长度进行过滤，您需要配置模式 - 使用`invertedIndexConfig`来处理此功能。
 
 ```json
 "invertedIndexConfig": {
@@ -119,9 +127,9 @@ To filter by the length of an array, you need to configure your schema – with 
 
 #### len(property)
 
-We've added a new syntax - `len(property)` – to measure the length of the property.
+我们增加了一种新的语法 - `len(property)` - 用于测量属性的长度。
 
-Let's look at our example again and find people based on the number of allergies they have. George and Victoria both have more than one allergy.
+让我们再次看看我们的例子，并根据过敏反应的数量找到人。乔治和维多利亚都有超过一个过敏反应。
 
 ```json
 {
@@ -136,7 +144,7 @@ Let's look at our example again and find people based on the number of allergies
 },
 ```
 
-You can find all people who have more than one allergy, with the following `where` filter:
+您可以使用以下 `where` 过滤器找到所有有多个过敏症的人：
 
 ```json
 where: {
@@ -146,45 +154,45 @@ where: {
 }
 ```
 
-For more information on how to filter by the property length, check out the [documentation](/developers/weaviate/api/graphql/filters#filter-by-property-length).
+有关如何按属性长度进行过滤的更多信息，请查阅[文档](/developers/weaviate/api/graphql/filters#filter-by-property-length)。
 
-## Distributed Backups
-![Distributed Backups](./img/distributed-backups.png)
+## 分布式备份
+![分布式备份](./img/distributed-backups.png)
 
-In Weaviate `1.15`, we introduced backup functionality, which allows you to back up and restore your Weaviate schema and data (to local storage or a cloud provider, like GCS or AWS S3) with a single command.
+在Weaviate `1.15`版本中，我们引入了备份功能，可以通过一个简单的命令将Weaviate的模式和数据备份并恢复（到本地存储或云提供商，如GCS或AWS S3）。
 
-This had one limitation though, you couldn't backup objects stored in multi-shard configuration across multiple nodes. This meant that if you wanted to back up your data, you were forced to keep all shards for a class in a single node.
+然而，这种方法有一个限制，即无法备份存储在多分片配置中的对象跨多个节点。这意味着如果您想要备份数据，您被迫将一个类的所有分片保留在一个节点中。
 
-### Multi-sharded backups:
-Weaviate `1.16` brings a major flagship change that now allows multi-sharded classes stored in a Weaviate cluster to be completely backed up! This is a significant improvement that now allows you to distribute your data across the cluster while ensuring a robust and safe way to restore objects when required.
+### 多分片备份：
+Weaviate `1.16` 带来了一个重大的标志性变化，现在允许在 Weaviate 集群中存储的多个分片类完全备份！这是一个重大的改进，现在您可以将数据分布在集群中，同时确保在需要时以稳健和安全的方式恢复对象。
 
-Where previously, you had to decide between efficiently storing their data vs. being able to restore it. Now you have the flexibility to configure your data in a much more efficient and distributed manner while still maintaining the safety of a robust backup and restore solution.
+以前，您需要在高效存储数据和能够恢复数据之间做出决策。现在，您可以在更高效和分布式的方式下配置数据，同时仍然保持强大的备份和恢复解决方案的安全性。
 
-### Backward compatible
-Before we give you a peek under the hood of how the new distributed backup and restore feature works, it's important to note that the APIs haven't changed at all, and thus you can keep using the platform exactly as before. To make it even better, the new backup feature is backward compatible, which means you can recover backups from v1.15 into a v1.16 setup.
+### 向后兼容
+在我们向您展示新的分布式备份和恢复功能的内部工作原理之前，重要的是要注意API没有发生任何变化，因此您可以像以前一样继续使用平台。更好的是，新的备份功能是向后兼容的，这意味着您可以将v1.15的备份恢复到v1.16的环境中。
 
-> We believe that this seamless user experience is one of the greatest value generators.
+> 我们相信这种无缝的用户体验是最大的价值创造者之一。
 
-### A peek under the hood - The delicate dance of distributed backup and restore:
-![The dance of distributed backup and restore](./img/backup-dance.png)
+### 走进内部 - 分布式备份和恢复的微妙舞蹈：
+![分布式备份和恢复的舞蹈](./img/backup-dance.png)
 
-Every node in Weaviate takes part in the delicate dance that allows for the backup and restore operations to take place across this distributed system.
+Weaviate中的每个节点都参与了这个微妙舞蹈，使得备份和恢复操作在这个分布式系统中进行。
 
-Individual nodes are responsible for carrying out their own backup and restore operations that allow their shards to be preserved. They are also responsible for maintaining and communicating information about this entire process in the case of failure.
+各个节点负责执行自己的备份和恢复操作，以确保其分片的完整性。它们还负责在出现故障时维护和传递有关整个过程的信息。
 
-Every great choreographed dance needs a conductor. And the conductor of this whole distributed backup and restore show is a node called the Coordinator - a servant leader that makes sure that all participating nodes and shards carry out their own individual backup and restore operations, and communicate back to it once these tasks are completed.
+每一场精心编排的舞蹈都需要指挥者。而这整个分布式备份和恢复的表演的指挥者是一个称为协调器的节点 - 一位仆人领导者，确保所有参与的节点和分片执行各自的备份和恢复操作，并在这些任务完成后向其通信。
 
-## ref2vec-centroid Module
-![ref2vec-centroid Module](./img/ref2vec-centroid.png)
+## ref2vec-centroid模块
+![ref2vec-centroid模块](./img/ref2vec-centroid.png)
 
-Weaviate `1.16` unveils the [ref2vec-centroid](/developers/weaviate/modules/retriever-vectorizer-modules/ref2vec-centroid) module! Ref2Vec is about representing a data object based on the objects it references. The `ref2vec-centroid` module uses the average, or centroid vector, of the cross-referenced vectors to represent the referencing object.
+Weaviate `1.16`发布了[ref2vec-centroid](/developers/weaviate/modules/retriever-vectorizer-modules/ref2vec-centroid)模块！Ref2Vec是基于对象引用的数据对象的表示方式。`ref2vec-centroid`模块使用交叉引用向量的平均值或质心向量来表示引用对象。
 
-Or in other words, if you have an object (i.e. a shopping basket) that contains a number of cross-references (i.e. *"shorts"*, *"shoes"*, and a *"t-shirt"*), Ref2Vec can provide you with a vector that is at the center (i.e. close to all other similar clothing items). This way you can use the references to find more relevant objects.
+换句话说，如果你有一个包含多个交叉引用（例如“短裤”、“鞋子”和“T恤衫”）的对象（例如购物篮），Ref2Vec可以为你提供一个位于中心位置（即靠近所有其他类似服装物品）的向量。这样，你可以使用这些引用来找到更相关的对象。
 
-### Applications
-This module has applications in recommendation, knowledge graph representation, and representing long or complex multimodal objects.
+### 应用
+该模块在推荐、知识图表示和表示长或复杂的多模态对象方面具有应用。
 
-### Demo
+### 演示
 
 import centroidVideo from './img/ref2vec-centroid-demo.mp4';
 
@@ -193,29 +201,29 @@ import centroidVideo from './img/ref2vec-centroid-demo.mp4';
 Your browser does not support the video tag.
 </video>
 
-The demo above illustrates `ref2vec-centroid` in action for sports apparel recommendation. You can see how the list of available items changes with every user's click. Ref2Vec aggregates the embeddings of the user's interactions and converts them into a vector to search through.
+上面的演示展示了`ref2vec-centroid`在运动服装推荐中的应用。您可以看到随着每个用户的点击，可用商品列表的变化。Ref2Vec会聚合用户交互的嵌入并将其转换为一个向量进行搜索。
 
-The images highlighted in green are those previously selected by the user. The number under each image is the **"Distance to Centroid"**.
+被标记为绿色的图像是用户先前选择的图像。每个图像下面的数字是**“到质心的距离”**。
 
-This example shows how a user may click on two watches or three backpacks and then have their search "personalized" to show more watches or backpacks. Further, we can see how clicking on two school-style backpacks helps clarify that the user isn't looking for a duffel bag, and similarly with digital LED-style watches.
+这个例子展示了用户可能会点击两个手表或三个背包，然后根据他们的选择来“个性化”搜索结果，显示更多手表或背包。此外，我们可以看到，点击两个学院风背包有助于澄清用户不是在寻找一个旅行袋，类似地，点击数字LED风格的手表也有同样的作用。
 
-### Graph representations in Weaviate
-Weaviate combines vector search with the ability to link classes to other classes through cross-references.
+### Weaviate中的图表表示
+Weaviate通过向量搜索与通过交叉引用将类与其他类关联起来的能力相结合。
 
-This is a big step for Weaviate to combine the power of content-based representations for individual objects with… context-based representations from relational graphs!
+对于Weaviate来说，这是一个重要的进展，它将个体对象的基于内容的表示能力与关系图的基于上下文的表示能力相结合！
 
-We are very excited about the roadmap to continue developing Ref2Vec for personalization and recommendation. We have begun with an average, or single centroid, to combine referenced vectors. In future iterations, we are looking at limiting the referenced vectors used in the calculator to a recent interaction window. We are also exploring how we can cluster the referenced vectors to represent users with multiple centroids to capture diverse interests. We are also developing query designs to leverage Collaborative Filtering in Weaviate through Ref2Vec.
+我们对继续开发Ref2Vec以实现个性化和推荐功能感到非常兴奋。我们已经开始使用平均值或单个质心来组合引用的向量。在未来的迭代中，我们将考虑将计算器中使用的引用向量限制在最近的交互窗口内。我们还在探索如何对引用向量进行聚类，以表示具有多个质心的用户，以捕捉多样化的兴趣。我们还在开发查询设计，通过Ref2Vec在Weaviate中利用协同过滤技术。
 
-As excited as we are about the applications in personalization and recommendation, we believe we are just scratching the surface of how we leverage semantic graphs in Weaviate for a better search experience.
+就个性化和推荐应用而言，我们对在Weaviate中利用语义图进行更好的搜索体验感到非常兴奋，但我们相信我们只是在表面上挖掘了语义图的潜力。
 
-### Learn more
+### 了解更多
 
-Check the [ref2vec-centroid](/developers/weaviate/modules/retriever-vectorizer-modules/ref2vec-centroid) documentation to learn how to work with Ref2Vec.
+请查看[ref2vec-centroid](/developers/weaviate/modules/retriever-vectorizer-modules/ref2vec-centroid)文档，了解如何使用Ref2Vec。
 
-## Node Status API
-![Node status API](./img/node-status-api.png)
+## 节点状态 API
+![节点状态 API](./img/node-status-api.png)
 
-The cluster doctor is in the house! Weaviate 1.16 introduces the node API endpoint, which allows you to check in on the health of your running clusters quickly. You can do this by sending a GET request to the node endpoint. As a response, you will receive a status check on all your nodes. Like this:
+集群医生现身！Weaviate 1.16引入了节点API端点，可以快速检查正在运行的集群的健康状态。您可以通过发送GET请求到节点端点来执行此操作。作为响应，您将收到有关所有节点的状态检查。就像这样：
 
 ```json
 {
@@ -256,62 +264,62 @@ The cluster doctor is in the house! Weaviate 1.16 introduces the node API endpoi
 }
 ```
 
-The node `status` can take one of the following values:
-* `healthy` – means all nodes are functional,
-* `disconnected` – means a node is in the process of going down,
-* `unhealthy` – means at least one of the nodes had encountered a problem and is now down.
+节点 `status` 可以取以下值之一：
+* `healthy` - 表示所有节点都正常工作，
+* `disconnected` - 表示一个节点正在关闭过程中，
+* `unhealthy` - 表示至少有一个节点遇到问题并且现在处于停机状态。
 
-### Next steps
+### 下一步
 
-While right now this API can only display the current state of your clusters, in the future you'll also be able to manipulate the cluster (e.g. drain a node prior to removing it).
+虽然目前此 API 只能显示集群的当前状态，但在将来，您还可以操作集群（例如，在删除节点之前排空节点）。
 
-### Learn more
+### 了解更多信息
 
-Check the [/v1/nodes](/developers/weaviate/api/rest/nodes) documentation to learn how to use the `Node Status API`.
+查看[/v1/nodes](/developers/weaviate/api/rest/nodes)文档，了解如何使用`Node Status API`。
 
-## More powerful OIDC Auth
-![More powerful OIDC Auth](./img/oidc.png)
+## 更强大的OIDC身份验证
+![更强大的OIDC身份验证](./img/oidc.png)
 
-Security is very, very important. And let's face it - nobody wants to deal with yet another password. That's why we support OpenID Connect (OIDC) [authentication](/developers/weaviate/configuration/authentication) in Weaviate, which users experience as a convenient and secure single sign-on.
+安全性非常重要。而且让我们面对现实吧 - 没有人想要处理另一个密码。这就是为什么我们在Weaviate中支持OpenID Connect (OIDC) [身份验证](/developers/weaviate/configuration/authentication)，用户可以体验到方便和安全的单点登录。
 
-### Azure-based OIDC
-OIDC implementations can vary across authentication servers, so we are steadily adding support for major providers. From this release onwards, Weaviate works with Microsoft Azure-based OIDC authentication in addition to other popular solutions such as Keycloak or dex. This will allow Weaviate to authenticate users based on their Azure Active Directory (AD) credentials. Support for `scopes`, and `group claims` have been added in this release, which also means that you can apply group-based authorizations.
+### 基于Azure的OIDC
+OIDC（OpenID Connect）的实现在不同的身份验证服务器之间可能存在差异，因此我们正在逐步添加对主要提供商的支持。从此版本开始，Weaviate除了支持其他流行的解决方案（如Keycloak或dex）外，还可以与基于Microsoft Azure的OIDC身份验证一起使用。这将允许Weaviate根据用户的Azure Active Directory（AD）凭据对其进行身份验证。此版本中添加了对`scopes`和`group claims`的支持，这也意味着您可以应用基于组的授权。
 
-OIDC adds resiliency to the authentication workflow, as it is robust to authentication server downtime outside of the short windows required for the client to obtain the ID token or for Weaviate to obtain the public key. While Weaviate runs without authentication by default, you can configure OIDC-based authentication schemes to provide differentiated access permissions. You can even configure Weaviate with multiple authentication schemes and allow tiered [authorizations](/developers/weaviate/configuration/authorization).
+OIDC 在身份验证工作流程中增加了弹性，因为它对于身份验证服务器的停机是健壮的，除了客户端获取 ID 令牌或 Weaviate 获取公钥所需的短窗口之外。虽然 Weaviate 默认情况下在没有身份验证的情况下运行，但您可以配置基于 OIDC 的身份验证方案以提供不同的访问权限。您甚至可以配置 Weaviate 以多个身份验证方案，并允许分层的[授权](/developers/weaviate/configuration/authorization)。
 
-For example, your Weaviate instance could be set up so that anonymous users can read some resources, all authenticated users can read all resources, and a subset of authenticated users can write or delete resources.
+例如，您的Weaviate实例可以设置为匿名用户可以读取一些资源，所有经过身份验证的用户可以读取所有资源，并且一部分经过身份验证的用户可以编写或删除资源。
 
-We are pleased to add Azure-based OIDC authentication support. It will make managing your authentication and authorization needs even easier, especially for organizations already using Azure.
+我们很高兴地添加了基于Azure的OIDC身份验证支持。这将使您更轻松地管理身份验证和授权需求，特别是对于已经使用Azure的组织。
 
-You can read more about each aspect below:
-* [Authentication](/developers/weaviate/configuration/authentication)
-* [Authorization](/developers/weaviate/configuration/authorization)
-* [Environment variables](/developers/weaviate/installation/docker-compose#environment-variables)
+您可以在下面详细了解每个方面：
+* [身份验证](/developers/weaviate/configuration/authentication)
+* [授权](/developers/weaviate/configuration/authorization)
+* [环境变量](/developers/weaviate/installation/docker-compose#environment-variables)
 
-## Patch releases ready sooner
+## 更快发布补丁版本
 
-In the past, whenever we were working on bug fixes between releases, we would wait until we had several bug fixes complete before cutting a patch release.
+过去，当我们在发布之间进行错误修复时，我们会等待多个错误修复完成后再发布补丁版本。
 
-This felt like the right thing to do at the time. However, we've realized that this had one major drawback. You and everyone who relies on Weaviate's stability had to wait longer to get access to the improvements and fixes ready to go. This had to change! 🤔
+这在当时似乎是正确的做法。然而，我们意识到这有一个主要的缺点。您和所有依赖于Weaviate稳定性的人必须等待更长的时间才能获得准备就绪的改进和修复。这必须改变！🤔
 
-### The new way
-Beginning with Weaviate `1.15`, we decided to take a different approach and give you access to the latest and greatest as soon as we had it ready.
+### 新的方式
+从Weaviate `1.15`开始，我们决定采取不同的方法，让您在我们准备好时立即获取到最新的和最好的内容。
 
-So, whenever we complete an important fix (or group of fixes) or introduce a significant feature improvement, we don't delay the release until other fixes are ready.
+因此，每当我们完成一个重要的修复（或一组修复）或引入一个重大的功能改进时，我们不会等到其他修复准备好再发布。
 
-During the lifetime of `v1.15`, we created **five stable releases**. So that you didn't have to wait a day longer than necessary to get access to the important improvements.
+在`v1.15`的生命周期内，我们创建了**五个稳定版本**。这样，您就不必等待比必要时间更长，才能获得重要的改进。
 
-![Fixes since v1.15](./img/fixes-since-1.15.png)
+![自`v1.15`以来的修复](./img/fixes-since-1.15.png)
 
-## Other improvements and bug fixes
-And, of course, many other improvements and bug fixes went into this release.
+## 其他改进和错误修复
+当然，此版本还包含了许多其他改进和错误修复。
 
-You can find the complete list and the relevant links in the [release notes](https://github.com/weaviate/weaviate/releases/tag/v1.16.0).
+您可以在[发布说明](https://github.com/weaviate/weaviate/releases/tag/v1.16.0)中找到完整的列表和相关链接。
 
-![Fixes in v1.16](./img/fixes-1.16.png)
+![v1.16中的修复](./img/fixes-1.16.png)
 
-## Enjoy
-We hope you enjoy all the new features, new operators, new modules, performance improvements, and bug fixes that made this the best Weaviate release yet!🔥
+## 尽情享受
+我们希望您享受所有新功能、新运算符、新模块、性能改进和错误修复，使这成为迄今为止最好的Weaviate发布版本！🔥
 
 import ShareFeedback from '/_includes/share-feedback.md';
 

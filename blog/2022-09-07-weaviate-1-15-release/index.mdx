@@ -1,87 +1,95 @@
 ---
-title: Weaviate 1.15 release
-slug: weaviate-1-15-release
-authors: [connor, erika, laura, sebastian]
+authors:
+- connor
+- erika
+- laura
+- sebastian
 date: 2022-09-07
-tags: ['release']
+description: Weaviate 1.15 introduces Cloud-native Backups, Memory Optimizations,
+  faster Filtered Aggregations and Ordered Imports, new Distance Metrics and new Weaviate
+  modules.
 image: ./img/hero.png
-description: "Weaviate 1.15 introduces Cloud-native Backups, Memory Optimizations, faster Filtered Aggregations and Ordered Imports, new Distance Metrics and new Weaviate modules."
+slug: weaviate-1-15-release
+tags:
+- release
+title: Weaviate 1.15 release
 ---
-![Weaviate 1.15 release](./img/hero.png)
 
-<!-- truncate -->
+![Weaviate 1.15发布](./img/hero.png)
 
-We are happy to announce the release of Weaviate 1.15, which is packed with great features, significant performance improvements, new distance metrics and modules, and many smaller improvements and fixes.
+<!-- 省略 -->
 
-## The brief
+我们很高兴地宣布Weaviate 1.15的发布，该版本具有很多出色的功能、显著的性能改进、新的距离度量和模块，以及许多较小的改进和修复。
 
-If you like your content brief and to the point, here is the TL;DR of this release:
-1. [☁️Cloud-native backups](#cloud-native-backups) - allows you to configure your environment to create backups - of selected classes or the whole database - straight into AWS S3, GCS or local filesystem
-1. [Reduced memory usage](#reduced-memory-usage) - we found new ways to optimize memory usage, reducing RAM usage by 10-30%.
-1. [Better control over Garbage Collector](#better-control-over-garbage-collector) - with the introduction of GOMEMLIMIT we gained more control over the garbage collector, which significantly reduced the chances of OOM kills for your Weaviate setups.
-1. [Faster imports for ordered data](#faster-imports-for-ordered-data) - by extending the Binary Search Tree structure with a self-balancing Red-black tree, we were able to speed up imports from O(n) to O(log n)
-1. [More efficient filtered aggregations](#more-efficient-filtered-aggregations) - thanks to optimization to a library reading binary data, filtered aggregations are now 10-20 faster and require a lot less memory.
-1. [Two new distance metrics](#new-distance-metrics) - with the addition of Hamming and Manhattan distance metrics, you can choose the metric (or a combination of) to best suit your data and use case.
-1. [Two new Weaviate modules](#new-weaviate-modules) - with the Summarization module, you can summarize any text on the fly, while with the HuggingFace module, you can use compatible transformers from the HuggingFace
-1. [Other improvements and bug fixes](#other-improvements-and-bug-fixes) - it goes without saying that with every Weaviate release, we strive to make Weaviate more stable - through bug fixes - and more efficient - through many optimizations.
+## 简介
 
-Read below to learn more about each of these points in more detail.
+如果您喜欢简洁明了的内容，下面是这个版本的TL;DR（总结）：
+1. [☁️云原生备份](#cloud-native-backups) - 允许您配置环境以创建备份 - 可选择的类别或整个数据库 - 直接存储到AWS S3、GCS或本地文件系统中
+2. [减少内存使用](#reduced-memory-usage) - 我们发现了优化内存使用的新方法，将RAM使用量降低了10-30%。
+1. [更好的垃圾回收控制](#better-control-over-garbage-collector) - 引入GOMEMLIMIT后，我们对垃圾回收器有了更好的控制，显著降低了Weaviate设置出现OOM终止的几率。
+2. [有序数据的更快导入](#faster-imports-for-ordered-data) - 通过扩展二叉搜索树结构，使用自平衡的红黑树，我们能够将导入速度从O(n)加快到O(log n)。
+1. [更高效的过滤聚合](#more-efficient-filtered-aggregations) - 由于对读取二进制数据的库进行了优化，过滤聚合现在速度提高了10-20倍，并且需要更少的内存。
+1. [两种新的距离度量](#new-distance-metrics) - 添加了汉明距离和曼哈顿距离度量，您可以选择最适合您的数据和用例的度量方法（或者组合使用）。
+1. [两个新的Weaviate模块](#new-weaviate-modules) - 使用Summarization模块，您可以即时对任何文本进行摘要，而使用HuggingFace模块，您可以使用来自HuggingFace的兼容的transformers
+1. [其他改进和错误修复](#other-improvements-and-bug-fixes) - 每次Weaviate发布都会努力使Weaviate更加稳定 - 通过错误修复 - 并通过许多优化使其更加高效。
 
-### Patch 1.15.1 note
-We have published a patch release v1.15.1.<br/>
-To learn more check the [Weaviate 1.15.1 patch release](/blog/weaviate-1-15-1-release) blog.
+阅读下面的内容，了解更多关于这些要点的详细信息。
 
-### Community effort
-![New Contributors](./img/new-contributors.jpg)
+### 补丁 1.15.1 说明
+我们发布了一个补丁版本 v1.15.1。<br/>
+要了解更多信息，请查看[Weaviate 1.15.1 补丁发布](/blog/weaviate-1-15-1-release)博客。
 
-😀We are extremely happy about this release, as it includes two big community contributions from [Aakash Thatte](https://github.com/sky-2002) and [Dasith Edirisinghe](https://github.com/DasithEdirisinghe). Over the last few weeks, they collaborated with our engineers to make their contributions.
+### 社区的努力
+![新贡献者](./img/new-contributors.jpg)
 
-🚀**Aakash** implemented the two **new distance metrics**, while **Dasith** contributed by implementing the two **new Weaviate modules**.
+😀我们对这个版本非常高兴，因为它包含了来自[Aakash Thatte](https://github.com/sky-2002)和[Dasith Edirisinghe](https://github.com/DasithEdirisinghe)两位社区贡献者的两个重要贡献。在过去的几周里，他们与我们的工程师合作，为项目做出了贡献。
 
-  👕I guess we will should send some Weaviate t-shirts to Aakash and Dasith soon.
+🚀**Aakash**实现了两个**新的距离度量标准**，而**Dasith**贡献了两个**新的Weaviate模块**的实现。
 
-🤗We hope to see many more big and small contributions in the coming months and years. **#CommunityRocks**
+  👕我猜我们应该尽快给Aakash和Dasith寄送一些Weaviate的T恤衫。
 
-## Cloud-native backups
+🤗我们希望在未来的几个月和几年里能看到更多的大大小小的贡献。**#社区牛逼**
 
-![Cloud-native backups](./img/cloud-native-backup.png)
+## 云原生备份
 
-Creating and restoring database backups in Weaviate was one of the most requested features from the Weaviate community and customers.
+![云原生备份](./img/cloud-native-backup.png)
 
-And, of course, database backups are not just about disaster recovery. Sometimes we need to migrate our data to a different environment. Maybe because our database grew and now we need more resources, or perhaps we need to set up a new developer environment.
+在Weaviate中创建和恢复数据库备份是Weaviate社区和客户最常要求的功能之一。
 
-We listened to your feedback, suggestions and use cases! So we made it our mission for the `1.15` release to design and implement an **elegant solution** with a great **Developer Experience (DX)**, which you will love 😍 to use for years to come.
+当然，数据库备份不仅仅是为了灾难恢复。有时我们需要将数据迁移到不同的环境中。可能是因为我们的数据库增长了，现在需要更多的资源，或者我们需要设置一个新的开发环境。
 
-### Announcement
-Introducing **Weaviate Cloud-native backups**. 🎉
+我们听取了您的反馈、建议和使用案例！因此，我们在`1.15`版本中将设计和实现一个优雅的解决方案，提供出色的开发者体验（DX），您将喜欢使用多年。
 
-It allows you to make full database backups (or selected classes) straight to **S3**, **GCS** or the **local filesystem** with a single API call 🤩; and restore the data to a Weaviate instance of your choice with another API call.
+### 公告
+隆重推出**Weaviate云原生备份**。🎉
 
-What is really great about this implementation is that you can create a backup without downtime on a running instance. The database stays fully operational (including receiving writes) while the backup is transferred to the remote storage.
+它允许您通过单个API调用将完整的数据库备份（或选定的类别）直接备份到 **S3**、**GCS** 或 **本地文件系统**，并通过另一个API调用将数据恢复到您选择的Weaviate实例。
 
-The database backups include data objects, plus their vectors and indexes. This way, restoring a backup is a straight copy of all the required elements without the need to re-create vectors or rebuild the indexes. (Read, this is going to be fast)
+这个实现的真正优秀之处在于，您可以在运行中的实例上无需停机就能创建备份。备份传输到远程存储时，数据库保持完全可操作状态（包括接收写入操作）。
 
-### Backup modules
-Cloud-native backups in Weaviate are handled with the addition of the new **backup modules**:
+数据库备份包括数据对象以及它们的向量和索引。因此，恢复备份只需要直接复制所有所需的元素，而无需重新创建向量或重新构建索引。（这意味着恢复速度很快）
 
-* `backup-s3` - for S3
-* `backup-gcs` - for GCS
-* `backup-fs` - for local filesystem
+### 备份模块
+Weaviate中的云原生备份通过添加新的**备份模块**来处理：
 
-Without getting into too many details (see the [docs for more precise instructions](/developers/weaviate/configuration/backups)), each module requires a different set of settings.
+* `backup-s3` - 用于S3
+* `backup-gcs` - 用于GCS
+* `backup-fs` - 用于本地文件系统
 
-For S3 and GCS, you need your cloud bucket name, authentication details and some extra details like a project name or the cloud region.
+不过多介绍细节（详细的指令请参阅[文档](/developers/weaviate/configuration/backups)），每个模块都需要不同的设置。
 
-> For S3 authentication you can use access keys or IAM with role ARN's.
+对于S3和GCS，您需要提供云存储桶的名称、身份验证信息以及一些额外的细节，例如项目名称或云区域。
+
+> 对于S3身份验证，您可以使用访问密钥或IAM与角色ARN进行身份验证。
 >
-> For GCS you can use a Google Application Credentials json file.
+> 对于GCS，您可以使用Google应用凭据的JSON文件。
 
-Alternatively, you can configure backups with the **local filesystem**. All you need here is to provide the path to the backup folder.
+或者，您可以使用**本地文件系统**配置备份。您只需要提供备份文件夹的路径即可。
 
-> Note, you can have multiple storage configurations - one for each S3, GCS and the local filesystem.
+> 注意，您可以有多个存储配置 - 分别用于S3、GCS和本地文件系统。
 
-### Creating backups - API
-Once you have the backup module up and running, you can create backups with a single `POST` command:
+### 创建备份 - API
+一旦您配置好备份模块，您只需使用单个`POST`命令即可创建备份。
 
 ```js
 POST /v1/backups/{storage}/
@@ -90,9 +98,9 @@ POST /v1/backups/{storage}/
 }
 ```
 
-The `storage` values are `s3`, `gcs`, and `filesystem`.
+`storage` 的值可以是 `s3`、`gcs` 和 `filesystem`。
 
-For example, you can create a backup called **first_backup** and push it to **GCS**, like this:
+例如，您可以创建一个名为 **first_backup** 的备份，并将其推送到 **GCS**，如下所示：
 
 ```js
 POST /v1/backups/gcs/
@@ -101,40 +109,40 @@ POST /v1/backups/gcs/
 }
 ```
 
-Then, you can check the backup status by calling:
+然后，您可以通过调用来检查备份状态:
 
 ```js
 GET /v1/backups/gcs/first_backup
 ```
 
-### Restore
-To restore a backup, you can call:
+### 恢复备份
+要恢复备份，您可以调用以下命令：
 
 ```js
 POST /v1/backups/{store}/{backup_id}/restore
 ```
 
-So, using our previous example, you can restore the **first_backup**, like this:
+因此，使用我们之前的示例，您可以像这样恢复**first_backup**：
 
 ```js
 POST /v1/backups/gcs/first_backup/restore
 ```
 
-You can also, check the status of an ongoing restoration by calling:
+您还可以通过调用以下方法来检查正在进行的恢复状态：
 
 ```js
 GET /v1/backups/gcs/first_backup/restore
 ```
 
-### Cross-cloud
-Here is one interesting thing that you might not have noticed. You can use this setup to run Weaviate with one cloud provider but then store and restore backups to/from another cloud provider. So, for example, you can run Weaviate on AWS and use GCS for your backup needs. How cool is that?
+### 跨云
+这里有一件有趣的事情，你可能没有注意到。你可以使用这个设置在一个云提供商上运行Weaviate，然后将备份存储和恢复到另一个云提供商。所以，例如，你可以在AWS上运行Weaviate，并使用GCS来满足你的备份需求。多酷啊！
 
-### Class backups
-You can also create backups for specific classes or select which classes you want to restore. Just add one of the following properties to the `POST payload`:
-* `include` - an array class names we want to backup or restore
-* `exclude` - an array class names we don't want to backup or restore
+### 类备份
+你还可以为特定的类创建备份，或者选择要恢复的哪些类。只需将以下属性之一添加到`POST payload`中：
+* `include` - 我们想要备份或还原的类名数组
+* `exclude` - 我们不想要备份或还原的类名数组
 
-For example, you can create a backup that includes Cats, Dogs and Meerkats.
+例如，您可以创建一个包含猫、狗和猫鼬的备份。
 
 ```js
 POST /v1/backups/gcs
@@ -144,7 +152,7 @@ POST /v1/backups/gcs
 }
 ```
 
-Then restore all classes, excluding Cats:
+然后恢复所有的类，排除Cats类：
 
 ```js
 POST /v1/backups/gcs/first_backup/restore
@@ -153,205 +161,204 @@ POST /v1/backups/gcs/first_backup/restore
 }
 ```
 
-### Other use cases
-It might not be immediately obvious, but you can use the above workflow to migrate your data to other environments.
+### 其他用例
+可能并不立即明显，但您可以使用上述工作流将数据迁移到其他环境。
 
-So, if one day you find yourself with an environment that is not set up for what you need (i.e. not enough resources). Then create a backup, and restore it in the new environment. 😉
+因此，如果有一天您发现当前环境无法满足您的需求（例如资源不足），那么请创建一个备份，并在新环境中进行恢复。 😉
 
-### Follow up
-Are you ready to set up backups for your environment?
-Head to the [documentation](/developers/weaviate/configuration/backups) for a more in-depth overview and instructions.
+### 后续操作
+您准备好为您的环境设置备份了吗？
+请前往[文档](/developers/weaviate/configuration/backups)获取更详细的概述和说明。
 
-## Reduced memory usage
+## 减少内存使用
 
-![Reduced memory usage](./img/reduced-memory-usage.jpg)
+![减少内存使用](./img/reduced-memory-usage.jpg)
 
-As part of the continuous effort to make Weaviate faster, leaner and more powerful, we introduced new optimizations to use less RAM without sacrificing performance.
+作为持续努力使Weaviate更快、更精简和更强大的一部分，我们引入了新的优化措施，以在不影响性能的情况下减少内存使用。
 
-### Thread pooling optimization
+### 线程池优化
 
-First, we set our sights on parallel imports, where we introduced thread pooling to reduce memory spikes while importing data.
+首先，我们将目光聚焦于并行导入，在这里我们引入了线程池来降低导入数据时的内存峰值。
 
-Previously if you had, e.g., 8 CPUs and would import from 4 client threads, each client request would run with a parallelization factor of 8 (one per CPU core). So, in the worst case, you could end up with 32 parallel imports (on a machine with "only" 8 CPUs). There is no performance gain if we have more parallelization than the available CPUs. However, each thread needs additional memory). So with 32 parallel imports, we had the worst of both worlds: High memory usage and no performance gains beyond 8.
+以前，如果您有8个CPU，并且从4个客户端线程导入，每个客户端请求将以并行化因子8（每个CPU核心一个）运行。因此，在最坏的情况下，您可能会得到32个并行导入（在一台“只有”8个CPU的机器上）。如果我们的并行化超过了可用的CPU数量，就不会有性能提升。然而，每个线程需要额外的内存。因此，使用32个并行导入，我们既有了高内存使用率，又没有超过8个的性能提升。
 
-With the fix, even if you import from multiple clients, Weaviate automatically handles the parallelization to ensure that it does not exceed the number of CPU cores. As a result, you get the maximum performance without "unnecessary" memory usage.
+通过修复，即使从多个客户端导入，Weaviate会自动处理并行化，以确保不超过CPU核心数。因此，您可以获得最大的性能而不会出现"不必要"的内存使用。
 
-### HNSW optimization
+### HNSW优化
 
-Next, we optimized memory allocations for the HNSW (vector) index.
+接下来，我们对HNSW（向量）索引进行了内存分配的优化。
 
-We found that the data structures relied on dynamic allocations. So, even if we knew that an array would never be longer than 64 elements, the Go runtime could still decide to allocate an array[100] in the background when the array reaches 51 elements.
+我们发现数据结构依赖于动态分配。因此，即使我们知道数组的长度永远不会超过64个元素，当数组达到51个元素时，Go运行时仍然可以决定在后台分配一个数组[100]。
 
-To fix that, we switched to static allocations, and Weaviate instructs the Go runtime to allocate the exact number of elements. This reduced **static** memory usage even when idle.
+为了解决这个问题，我们切换到静态分配，并且Weaviate指示Go运行时分配确切数量的元素。即使在空闲时，这减少了**静态**内存使用。
 
-### Results
+### 结果
 
-🎉 Between these two major updates, plus some smaller ones, we saw a **significant reduction in memory usage of 10-30%**🚀.
+🎉 在这两个重要更新之间，加上一些较小的更新，我们看到了**内存使用量显著减少10-30%**🚀。
 
-🤔 With this, you can get more out of your existing setups and push your Weaviate instances to do more, or you could save on the resources.
+🤔 有了这个功能，您可以更好地利用现有的设置，让您的Weaviate实例执行更多操作，或者节省资源。
 
-## Better control over Garbage Collector
+## 更好地控制垃圾回收器
 
 ![GOMEMLIMIT](./img/gomemlimit.jpg)
 
-Weaviate is built from the ground up in Go, which allows for building very performant and memory-safe applications. Go is a garbage-collected language.
+Weaviate是用Go从头开始构建的，这使得构建高性能和内存安全的应用程序成为可能。Go是一种具有垃圾回收机制的语言。
 
-> *A quick refresher:*<br/>
-> In a garbage-collected language, such as Go, C#, or Java, the programmer doesn't have to deallocate objects manually after using them. Instead, a GC cycle runs periodically to collect memory no longer needed and ensure it can be assigned again.
+> *快速回顾:*<br/>
+> 在像Go、C#或Java这样的垃圾回收语言中，程序员在使用完对象后不需要手动释放它们。相反，垃圾回收周期性地运行，收集不再需要的内存，并确保可以再次分配。
 
-### The problem
+### 问题
 
-Working with a garbage collector is very safe, and the resource cost of running GC cycles is a fairly small tradeoff. We just need to ensure that we have the right balance of frequency of GC cycles and the buffer of available memory (on top of what we have estimated for our application setup).
+与垃圾回收器一起工作非常安全，运行GC周期的资源成本是一个相对较小的权衡。我们只需要确保在应用程序设置中估计的可用内存缓冲区的频率和大小之间保持适当的平衡。
 
-Now, increasing each of those comes with a price:
-* Increasing the frequency of GC cycles will use more CPU, which we could make better use of elsewhere.
-* Increasing RAM costs money - and for memory demanding setups, that can be a big 💰sum.
+现在，增加每个方面都会付出一定的代价：
+* 增加GC周期的频率会使用更多的CPU资源，我们可以在其他地方更好地利用。
+* 增加RAM的成本是要花钱的，对于对内存要求较高的设置来说，这可能是一笔不小的费用。
 
-And if we get that balance wrong, we might end up with an Out Of Memory crash.
+如果我们在这方面的平衡出现问题，我们可能会遇到内存溢出崩溃的情况。
 
-### The solution
+### 解决方案
 
-At the beginning of August, the Go team released `Go 1.19`, which introduced `GOMEMLIMIT`. `GOMEMLIMIT` turned out to be a **game changer for high-memory applications**.
+在八月初，Go团队发布了`Go 1.19`，引入了`GOMEMLIMIT`。`GOMEMLIMIT`被证明对于高内存应用程序来说是一个**革命性的变化**。
 
-With GOMEMLIMIT we can provide a soft memory cap, which tells Go how much memory we expect the application to need. This makes the GC more relaxed when RAM is plentiful and more aggressive when memory is scarce.
+通过使用GOMEMLIMIT，我们可以提供一个软内存上限，告诉Go我们预计应用程序需要多少内存。当RAM充足时，这使得垃圾回收更加放松，而在内存不足时更加积极。
 
-To learn more about memory management, GC and GOMEMLIMIT, check out [this article](/blog/gomemlimit-a-game-changer-for-high-memory-applications), which explains it all in more depth.
+要了解更多关于内存管理、GC和GOMEMLIMIT的信息，请查看[这篇文章](/blog/gomemlimit-a-game-changer-for-high-memory-applications)，它更详细地解释了所有内容。
 
-### Announcement
+### 公告
 
-🎉We are happy to share that all Weaviate `v1.15` binaries and distributions have been **compiled with Go 1.19** which comes with **GOMEMLIMIT**.
+🎉我们很高兴地宣布，所有Weaviate `v1.15`的二进制文件和分发包都是使用Go 1.19编译的，其中包含**GOMEMLIMIT**功能。
 
-Now, you can set your **soft memory cap** by setting the `GOMEMLIMIT` environment variable like this:
+现在，您可以通过设置`GOMEMLIMIT`环境变量来设置您的**软内存限制**，示例如下：
 
 ```
 GOMEMLIMIT=120GiB
 ```
 
-For more information, see the [Docker Compose environment variables](/developers/weaviate/installation/docker-compose#environment-variables) in the docs.
+有关更多信息，请参阅文档中的[Docker Compose环境变量](/developers/weaviate/installation/docker-compose#environment-variables)部分。
 
-## Faster imports for ordered data
+## 有序数据的快速导入
 
-![Faster imports for ordered data](./img/ordered-imports.png)
+![有序数据的快速导入](./img/ordered-imports.png)
 
-Weaviate `v1.5` introduced an **LSM store** (Log-Structured Merge Trees) to increase write-throughput. The high-level idea is that writes are batched up in logs, sorted into a **Binary Search Tree** (BST) structure, and then these batched-up trees are merged into the tree on disk.
+Weaviate `v1.5`引入了**LSM存储**（Log-Structured Merge Trees）来增加写入吞吐量。高层次的想法是将写入操作批量记录在日志中，然后按照**二叉搜索树**（BST）的结构进行排序，最后将这些批量合并到磁盘上的树中。
 
-### The Problem
+### 问题
 
-When importing objects with an inherent order, such as timestamps or row numbers that increase monotonously, the BST becomes unbalanced: New objects are always inserted at the "greater than" pointer / right node of the BST. This collapses the binary tree into a linked list with `O(n)` insertion rather than the `O(log n)` promise of the BST.
+当导入具有固有顺序的对象（例如时间戳或单调递增的行号）时，BST会变得不平衡：新对象始终插入到BST的“大于”指针/右节点。这将二叉树崩溃为具有`O(n)`插入的链表，而不是BST的`O(log n)`承诺。
 
-### The Fix
+### 解决方法
 
-To address that in Weaviate `v1.15`, we've extended the BST with a **self-balancing Red-black tree**.
+为了解决这个问题，在Weaviate `v1.15`中，我们使用了**自平衡红黑树**来扩展BST。
 
-Through rotations of the tree at insert, [Red-black trees](https://www.programiz.com/dsa/red-black-tree) ensure that no path from the root to leaf is more than twice as long as any other path. This achieves O(log n) insert times for ordered inserts.
+通过在插入时旋转树，[红黑树](https://www.programiz.com/dsa/red-black-tree) 确保从根到叶子的路径长度不超过任何其他路径的两倍。这样可以在有序插入时实现 O(log n) 的插入时间。
 
-![Red-black tree demonstration](./img/red-black-tree.gif)
-*A visual representation of how the RBT works.*
+![红黑树演示](./img/red-black-tree.gif)
+*红黑树的可视化表示*
 
-You can try it yourself [here](https://www.cs.usfca.edu/~galles/visualization/RedBlack.html). Add any ordered input, for example, 1, 2, 3, 4 and see how the tree stays balanced.
+您可以在[这里](https://www.cs.usfca.edu/~galles/visualization/RedBlack.html)自行尝试。添加任何有序的输入，例如1、2、3、4，然后观察树如何保持平衡。
 
-### Results
-We've run a few local tests to paint a better picture of what you could expect.
+### 结果
+我们进行了一些本地测试，以更好地展示您可以期待的结果。
 
-First, we saw that the RB-Tree is a factor of 20 faster than the binary tree when adding objects with sequential keys (just the tree, without anything else).
+首先，我们发现当添加具有连续键的对象时，红黑树比二叉树快20倍（仅考虑树本身，不包括其他因素）。
 
-With a full import test, we saw a **3x performance improvement** 🚀.
+通过进行完整的导入测试，我们发现性能提升了**3倍** 🚀。
 
-* Weaviate `1.14.1` - import time **~38 minutes**
-* Weaviate `1.15.0` - import time **~13 minutes** 🔥
+* Weaviate `1.14.1` - 导入时间 **约38分钟**
+* Weaviate `1.15.0` - 导入时间 **约13分钟** 🔥
 
-## More efficient filtered aggregations
+## 更高效的过滤聚合
 
-![More efficient filtered aggregations](./img/filtered-aggregation.png)
+![更高效的过滤聚合](./img/filtered-aggregation.png)
 
-Recently we've been working with a customer who was running multiple filtered aggregations on a large dataset. Unfortunately, the queries were slow, resulting in Out Of Memory kills in some cases. This was not good enough for what we expected of Weaviate.
+最近我们与一位客户合作，该客户在大型数据集上运行多个过滤聚合操作。不幸的是，查询速度很慢，在某些情况下导致内存不足错误。这对于我们对Weaviate的期望来说是不够好的。
 
-### Investigation
+### 调查
 
-To investigate the issue, we've set up a database with 1M objects and a profiler to watch memory consumption.
+为了调查这个问题，我们设置了一个包含100万个对象的数据库，并且使用一个分析器来监视内存消耗。
 
-We used that setup to run ten parallel filtered aggregations. Upon reviewing the memory consumption, we noted that some of the filtered aggregations were taking up to **200GB** of RAM (note, this was not the total allocated memory on the heap, as a big part of it was waiting to be collected by GC).
+我们使用这个设置来运行十个并行的筛选聚合操作。在审查内存消耗时，我们注意到一些筛选聚合操作占用了**200GB**的内存（请注意，这不是堆上分配的总内存，因为其中的一部分正在等待被垃圾回收）。
 
-### The issue
-Fast forward, we identified two key issues. First, the Go library that we used for reading binary data (`binary.read`) isn't optimized for how we use it in Weaviate, as it makes many temporary memory allocations. Second, for every object in the aggregation, we would allocate new memory on the heap, process the read, and release the memory.
+### 这个问题
+快进到现在，我们确定了两个关键问题。首先，我们在Weaviate中使用的用于读取二进制数据的Go库（`binary.read`）并不针对我们的使用方式进行优化，因为它会进行许多临时内存分配。其次，在聚合中的每个对象上，我们都会在堆上分配新的内存，进行读取处理，然后释放内存。
 
-<!-- TODO: add a picture with cakes -->
-This is a bit like, if we want to eat a cake, we need to put it on a plate, eat the cake and then put the plate in the sink to wash. Now, if we want to eat a million cakes, we will be either very busy washing dishes or have a million plates in the sink (or even run out of plates).<br/>
-I am sure you would rather spend more time eating cakes than dealing with plates.
+<!-- TODO: 添加一张有蛋糕的图片 -->
+这有点像，如果我们想吃蛋糕，我们需要把它放在盘子上，吃完蛋糕后再把盘子放在水槽里洗。现在，如果我们想吃一百万个蛋糕，我们要么忙着洗碗，要么水槽里会有一百万个盘子（甚至盘子都不够用）。
 
-This is bad for three reasons:
-* Grabbing a new plate for each cake and then washing it takes time - **higher CPU use** with many GC cycles.
-* We would pile up many plates between each wash - **high memory consumption** between each GC cycle.
-* We might run out of clean plates - **OOM crash** if we **run out of RAM**.
+这种情况有三个问题：
+* 每次做蛋糕都需要拿一个新的盘子，然后清洗它，这需要时间 - 在许多GC循环中**CPU使用率更高**。
+* 每次清洗之间我们会堆积很多盘子 - 在每个GC循环之间**内存消耗很高**。
+* 如果我们**内存用完**了，我们可能会没有干净的盘子 - **OOM崩溃**。
 
-### The solution
-To solve the problem, we implemented two solutions:
-* We created our own library for reading binary data optimized for the Weaviate-specific needs. It makes fewer temporary memory allocations.
-* We made sure to reuse the same memory where possible.
+### 解决方案
+为了解决这个问题，我们实施了两个解决方案：
+* 我们为读取二进制数据创建了自己的库，针对Weaviate特定的需求进行了优化。它减少了临时内存分配。
+* 我们尽可能地重复使用相同的内存。
 
-In the world of cakes, we optimized our eating technique to consume more cakes, and we only need one plate to eat all the cakes.
+在蛋糕的世界里，我们优化了吃蛋糕的技巧，只需要一个盘子就能吃完所有的蛋糕。
 
-On top of that, we've introduced other minor optimizations. So if you are curious about that, drop us a message on Slack, and we can chat some more.
+除此之外，我们还引入了其他一些小的优化。如果你对此感兴趣，请在 Slack 上给我们留言，我们可以聊得更多。
 
-### Results
+### 结果
 
-As a result, the filtered aggregations are to **10-20x faster** and require less memory.
+因此，过滤聚合的速度提高了**10-20倍**，并且需要更少的内存。
 
-When we rerun the original test (with ten parallel aggregations), we saw the memory consumption drop to 30GB (vs 200GB).
+当我们重新运行原始测试（使用十个并行聚合）时，我们发现内存消耗降低到30GB（而不是200GB）。
 
 <!-- TODO: add a quote from Juraj
-But don't take our word for it, this was from a test run by one of our community members…
- -->
+但是，不要只听我们的话，这是我们社区成员之一进行的测试运行的结果...
+-->
 
-## New distance metrics
+## 新的距离度量
 
-![Hamming and Manhattan distance metrics](./img/distance-metrics.png)
+![Hamming和Manhattan距离度量](./img/distance-metrics.png)
 
-Thanks to the community contributions from [Aakash Thatte](https://github.com/sky-2002), Weaviate `v1.15` adds two new distance metrics: **Hamming** distance and **Manhattan** distance. In total, you can now choose between five various distance metrics to support your datasets.
+感谢[Aakash Thatte](https://github.com/sky-2002)的社区贡献，Weaviate `v1.15` 新增了两个新的距离度量方式：**汉明距离**和**曼哈顿距离**。总共，您现在可以在五种不同的距离度量方式中选择，以支持您的数据集。
 
-Check out the [metrics documentation page](/developers/weaviate/config-refs/distances#distance-implementations-and-optimizations) for a complete overview of all available metrics in Weaviate.
+请查看[度量文档页面](/developers/weaviate/config-refs/distances#distance-implementations-and-optimizations)，以获取Weaviate中所有可用度量方式的完整概述。
 
-### Hamming distance
-The Hamming distance is a metric for comparing two numerical vectors. <br/>
-It compares the vector values dimension by dimension and returns a total count of differing values. The fewer differences, the closer the vectors.
+### 汉明距离
+汉明距离是一种用于比较两个数值向量的度量标准。<br/>
+它逐个维度比较向量值，并返回不同值的总数。差异越少，向量越接近。
 
-For example, the Hamming distance for the below vectors is **2**, which is the count of differing values.
+例如，下面向量的汉明距离是**2**，即不同值的计数。
 * A `[1, 9, 3, 4, 5]`
 * B `[1, 2, 3, 9, 5]`
 
-### Manhattan distance
-The Manhattan distance (also known as L1 norm and Taxicab Distance) - calculates the distance between a pair of vectors, as if simulating a route for a Manhattan taxi driver driving from point A to point B - who is navigating the **streets of Manhattan** with the grid layout and one-way streets. For each difference in the compared vectors, the taxi driver needs to make a turn, thus making the ride this much longer.
+### 曼哈顿距离
+曼哈顿距离（也称为L1范数和出租车距离）- 计算一对向量之间的距离，就像模拟一辆曼哈顿出租车从点A驶向点B的路径 - 在曼哈顿街道网格布局和单向街道上导航。对于比较的向量之间的每个差异，出租车司机都需要转弯，从而使乘车时间变长。
 
-![Manhattan taxi driver](./img/manhatten-distance-cars.png)
+![曼哈顿出租车司机](./img/manhatten-distance-cars.png)
 
-The Manhattan distance is calculated by adding up the differences between vector values.
+曼哈顿距离是通过将向量值之间的差异相加来计算的。
 
-Following our previous example:
+根据我们之前的例子：
 * A `[1, 9, 3, 4, 5]`
 * B `[1, 2, 3, 9, 5]`
 
-We can calculate the Manhattan distance in these steps:
-1. distance = `|1-1| + |9-2| + |3-3| + |4-9| + |5-5|`
-1. distance = `0 + 7 + 0 + 5 + 0`
-1. distance = `12`
+我们可以按照以下步骤计算曼哈顿距离：
+1. 距离 = `|1-1| + |9-2| + |3-3| + |4-9| + |5-5|`
+1. 距离 = `0 + 7 + 0 + 5 + 0`
+1. 距离 = `12`
 
-For a deeper dive into the Hamming and Manhattan distances, check out our [blog post on distance metrics](/blog/distance-metrics-in-vector-search). There you will learn how each of the distances works in more detail, when to use each, and how they compare to other metrics.
+要深入了解Hamming和Manhattan距离，请查看我们关于[距离度量的博客文章](/blog/distance-metrics-in-vector-search)。在那里，您将更详细地了解每个距离如何工作，何时使用每个距离以及它们与其他指标的比较。
 
-## New Weaviate modules
+## 新的Weaviate模块
 
-<!-- TODO: add an image for Weaviate modules -->
-![New Weaviate modules](./img/weaviate-modules.png)
+<!-- TODO: 为Weaviate模块添加一张图片 -->
+![New Weaviate模块](./img/weaviate-modules.png)
 
-The list of the new goodies included with Weaviate `v1.15` goes on. Courtesy of a fantastic community contribution from [Dasith Edirisinghe](https://github.com/DasithEdirisinghe), we have two new Weaviate modules for you: Summarization and Hugging Face modules.
+Weaviate `v1.15` 包含的新功能不胜枚举。感谢 [Dasith Edirisinghe](https://github.com/DasithEdirisinghe) 对社区做出的杰出贡献，我们为您提供了两个新的 Weaviate 模块：Summarization 和 Hugging Face 模块。
 
-### Summarization Module
-The Summarization module allows you to summarize text data at query time.
+### Summarization 模块
+Summarization 模块允许您在查询时对文本数据进行摘要。
 
-The module adds a `summary` filter under the `_additional` field, which lets you list the properties that should be summarized.
+该模块在 `_additional` 字段下添加了一个 `summary` 过滤器，让您可以列出需要进行摘要的属性。
 
-For example, if we broke down this blog post into **chapters** in Weaviate, with **title** and **content** properties.
+例如，如果我们在Weaviate中将这篇博客文章拆分为具有**标题**和**内容**属性的**章节**。
 
-We could run a query to summarize the *"New distance metrics"* chapter like this:
+我们可以运行一个查询来总结“新距离度量”章节，就像这样：
 
 ```graphql
 {
@@ -377,7 +384,7 @@ We could run a query to summarize the *"New distance metrics"* chapter like this
 }
 ```
 
-Which would return the following result:
+这将返回以下结果:
 
 ```graphql
 {
@@ -406,34 +413,33 @@ Which would return the following result:
 }
 ```
 
-Head to the [Summarization Module docs page](/developers/weaviate/modules/reader-generator-modules/sum-transformers) to learn more.
+前往[摘要模块文档页面](/developers/weaviate/modules/reader-generator-modules/sum-transformers)了解更多信息。
 
-### Hugging Face Module
-The Hugging Face module (`text2vec-huggingface`) opens up doors to over 600 [Hugging Face sentence similarity models](https://huggingface.co/models?pipeline_tag=sentence-similarity), ready to be used in Weaviate as a vectorization module.
-Now, that's a lot of new models. 😉
+### Hugging Face 模块
+Hugging Face 模块 (`text2vec-huggingface`) 为 Weaviate 提供了超过600个[句子相似性模型](https://huggingface.co/models?pipeline_tag=sentence-similarity)，可以作为矢量化模块在 Weaviate 中使用。
+现在，这是很多新模型。😉
 
-#### How this works
-The way the module works, Weaviate coordinates the efforts around data imports, data updates, queries, etc. and delegates requests to the Hugging Face Inference API.
+#### 工作原理
+模块的工作方式是，Weaviate协调数据导入、数据更新、查询等工作，并将请求委托给Hugging Face推理API。
 
-You need a `Hugging Face API Token` to use the Hugging Face module. You can [request it here](https://huggingface.co/login?next=%2Fsettings%2Ftokens).
+使用Hugging Face模块需要一个`Hugging Face API Token`。您可以在[这里申请](https://huggingface.co/login?next=%2Fsettings%2Ftokens)。
 
-*Note. Hugging Face Inference uses [a pay-per-use pricing model](https://huggingface.co/inference-api#pricing).<br />
-Make sure to study it well before you run a big job.*
+*注意：Hugging Face推理使用的是[按使用量计费的定价模型](https://huggingface.co/inference-api#pricing)。<br />
+在运行大型作业之前，请确保对其进行充分研究。*
 
-To learn more, head to the [HuggingFace Module docs page](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-huggingface).
+要了解更多信息，请访问[HuggingFace模块文档页面](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-huggingface)。
 
-## Other improvements and bug fixes
+## 其他改进和错误修复
 
-![Other improvements and bug fixes](./img/smaller-improvements.jpg)
+![其他改进和错误修复](./img/smaller-improvements.jpg)
 
-And, of course, there are many other improvements and bug fixes that went into this release.
+当然，在这个版本中还有许多其他改进和错误修复。
 
-You can find the complete list and the relevant links in the [release notes](https://github.com/weaviate/weaviate/releases/tag/v1.15.0).
+您可以在[发布说明](https://github.com/weaviate/weaviate/releases/tag/v1.15.0)中找到完整的列表和相关链接。
 
 ## Enjoy
-We hope you enjoy all the new features, performance improvements, memory savings and bug fixes that made this the best Weaviate release yet!🔥
+我们希望您喜欢这个最新的Weaviate版本带来的所有新功能、性能改进、内存节省和错误修复！🔥
 
 import ShareFeedback from '/_includes/share-feedback.md';
 
 <ShareFeedback />
-

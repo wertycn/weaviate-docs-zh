@@ -1,54 +1,59 @@
 ---
-title: The Details Behind the Sphere Dataset in Weaviate
-slug: details-behind-the-sphere-dataset-in-weaviate
-authors: [zain]
+authors:
+- zain
 date: 2022-12-27
-tags: ['engineering', 'concepts']
+description: Learn about the hardware, software and performance metric specifications
+  behind our ~1B object import of the Sphere dataset into Weaviate.
 image: ./img/hero.png
-description: "Learn about the hardware, software and performance metric specifications behind our ~1B object import of the Sphere dataset into Weaviate."
+slug: details-behind-the-sphere-dataset-in-weaviate
+tags:
+- engineering
+- concepts
+title: The Details Behind the Sphere Dataset in Weaviate
 ---
-![Sphere dataset in Weaviate](./img/hero.png)
 
-<!-- truncate -->
+![Weaviate中的Sphere数据集](./img/hero.png)
 
-Earlier in December, we wrote [a blog post](/blog/sphere-dataset-in-weaviate) about importing the Sphere dataset into Weaviate. In that post, we talked about what the Sphere dataset is, announced the release of the Sphere dataset files for Weaviate, and shared how you can use Weaviate to search through large datasets like Sphere. More specifically, we provided a short guide on how you could import Sphere into Weaviate using Python as well as Spark, before finishing with example queries on the entire Sphere dataset. If you haven’t checked that out we recommend you have a quick look!
+<!-- 截断 -->
 
-In this post, we will pull back the curtains and go behind the scenes to show you how we got all of that data into Weaviate. You will see all the gory details of what it took to get all ~1 billion (898 million) article snippet objects from Sphere and their vector representations into Weaviate. We’ll also dive into the hardware and software setup that was used along with the performance metrics behind the import process.
+在12月份的早些时候，我们写了一篇关于将Sphere数据集导入Weaviate的博文。在那篇文章中，我们介绍了Sphere数据集是什么，宣布了用于Weaviate的Sphere数据集文件的发布，并分享了如何使用Weaviate搜索大型数据集（如Sphere）的方法。具体来说，我们提供了一个简短的指南，介绍了如何使用Python和Spark将Sphere导入Weaviate，并提供了关于整个Sphere数据集的示例查询。如果您还没有查看过这篇文章，我们建议您快速浏览一下！
 
-If you are:
+在本文中，我们将拉开帷幕，走进幕后，向您展示我们是如何将所有这些数据导入到Weaviate中的。您将看到从Sphere获取约10亿（8.98亿）篇文章摘要对象及其向量表示所需的所有细节。我们还将深入探讨所使用的硬件和软件设置，以及导入过程背后的性能指标。
 
-* Interested in ingesting a large dataset or corpus into Weaviate
-* Wondering how to use Apache Spark (or pyspark) with Weaviate, or
-* Wondering what it took for us to get a dataset that big into Weaviate,
+如果您是：
 
-This article will answer at least some of those questions.
+* 对于将大型数据集或语料库导入Weaviate感兴趣
+* 想知道如何使用Apache Spark（或pyspark）与Weaviate一起使用
+* 想知道将如此大的数据集导入Weaviate所需的步骤
 
-We note that our goal was to import 1B objects into Weaviate to see how the system behaves. Currently, for large datasets RAM is the most likely bottleneck, so we used node sizes that were larger than needed, to be on the safe side.
+本文将至少回答其中一些问题。
 
-Now let’s get to the details of the setup!
+我们注意到我们的目标是将10亿个对象导入Weaviate，以了解系统的行为。目前，对于大型数据集，RAM是最可能的瓶颈，因此我们使用了比实际需要更大的节点大小，以确保安全。
 
-## The Setup
+现在让我们来了解设置的详细信息！
+
+## 设置
 
 ![Gear](./img/gear.png)
 
-### Hardware:
+### 硬件：
 
-To set up our cluster we provisioned 6 Node GKE’s (Google Kubernetes Engine) located in US Central1 Region (Zone C). Each node was an instance of type m1-ultramem-40, which is a Memory optimized instance of 40 vCPU’s with a RAM of 961 GiB. So, in total our setup had 240 vCPUs and 5766 GiB of memory. We chose Memory optimized instances because the Compute optimised ones did not have enough memory. In hindsight, we might have gotten away with smaller instances since the RAM usage per instance peaked at about 600GiB.
+为了设置我们的集群，我们配置了6个位于美国Central1区域（C区）的Google Kubernetes Engine（GKE）节点。每个节点都是m1-ultramem-40类型的实例，该实例是一个内存优化的实例，具有40个vCPU和961 GiB的内存。因此，我们的设置总共有240个vCPU和5766 GiB的内存。我们选择了内存优化实例，因为计算优化实例的内存不足。事后看来，我们可能可以使用更小的实例，因为每个实例的RAM使用峰值约为600GiB。
 
-### Software (Weaviate and Spark):
+### 软件（Weaviate和Spark）：
 
 #### Weaviate
 
-We deployed 6 instances of Weaviate (one on each GKE node with automatic sharding per node for a total of 6 shards) where we gave Weaviate the entirety of the resources available on the machine. Additionally, each Weaviate instance had 1800 GiB of disk memory and the `text2vec-huggingface` vectorizer module enabled. We didn’t need to perform any vectorization of the dataset because the Sphere dataset comes with pre-computed vectors, the vectorizer module was meant to vectorize queries only. The Weaviate version used was built from v1.16.0 with a preview of the Hybrid Search functionality. You can see an example of the hybrid search in action in our [previous post](/blog/sphere-dataset-in-weaviate) and [last week with v1.17](/blog/weaviate-1-17-release) we officially released this Hybrid Search functionality for you to try as well!
+我们在6个GKE节点上部署了6个Weaviate实例（每个节点一个实例，每个节点自动分片，总共6个分片），我们将机器上的所有资源都分配给了Weaviate。此外，每个Weaviate实例有1800 GiB的磁盘内存，并启用了`text2vec-huggingface`的矢量化模块。我们不需要对数据集进行任何矢量化操作，因为Sphere数据集已经预先计算了矢量化结果，矢量化模块仅用于矢量化查询。所使用的Weaviate版本是基于v1.16.0构建的，并且具有Hybrid Search功能的预览版。您可以在我们的[先前的文章](/blog/sphere-dataset-in-weaviate)中看到Hybrid Search的示例运行，并且在我们的[上周发布的v1.17版本](/blog/weaviate-1-17-release)中，我们正式发布了这一Hybrid Search功能，供您尝试！
 
-#### Using the Spark Connector
+#### 使用 Spark 连接器
 
-To import the dataset into Weaviate, we used the [Spark Connector](https://github.com/weaviate/weaviate-spark-connector) instead of one of our client libraries. The massive size of this dataset led to the use of the Spark dataframe, and the Spark connector can efficiently populate Weaviate from a Spark dataframe. Another time-saving feature is that the connector is able to automatically infer the correct datatype for your Weaviate class schema based on the Spark DataType. (We have a podcast speaking with the creator of the Spark connector coming up soon on our [YouTube channel](https://www.youtube.com/@Weaviate) so keep your eyes and ears peeled for that!)
+为了将数据集导入Weaviate，我们使用了[Spark Connector](https://github.com/weaviate/weaviate-spark-connector)，而不是我们的客户端库之一。由于数据集的庞大大小，我们使用了Spark dataframe，并且Spark连接器可以有效地从Spark dataframe中填充Weaviate。另一个节省时间的功能是，连接器能够根据Spark DataType自动推断出Weaviate类模式的正确数据类型。（我们即将在我们的[YouTube频道](https://www.youtube.com/@Weaviate)上发布与Spark连接器的创建者的访谈，敬请关注！）
 
-We used a single 64 GiB Google Cloud Platform(GCP) n2 instance to run Spark. The steps below can be followed to import data from the Sphere dataset. You can refer to this [tutorial](/developers/weaviate/tutorials/spark-connector) for details on the import code.
+我们使用了一台64 GiB的Google Cloud Platform（GCP）n2实例来运行Spark。下面的步骤可以用来导入Sphere数据集中的数据。您可以参考这个[教程](/developers/weaviate/tutorials/spark-connector)了解导入代码的详细信息。
 
-> If you are following along, make sure to modify the code to import only as much of the Sphere dataset as you dare, as it might potentially become a very expensive exercise!
-First, using the `pyspark` library, you can instantiate a connection, called a `SparkSession`:
+> 如果您按照本教程进行操作，请确保修改代码，只导入您敢导入的Sphere数据集的数据，因为这可能会成为一项非常昂贵的操作！
+首先，使用`pyspark`库，您可以实例化一个连接，称为`SparkSession`:
 
 ```python
 spark = (
@@ -62,14 +67,14 @@ spark = (
 )
 ```
 
-Following this you need to import the Sphere dataset into a Spark dataframe, by loading the Parquet files that we have made available:
+接下来，您需要将Sphere数据集导入到Spark dataframe中，通过加载我们提供的Parquet文件：
 
 
 ```
 df = spark.read.parquet("gs://sphere-demo/parquet/sphere.899M.parquet")
 ```
 
-Next up, spin up a Weaviate instance (or cluster), connect to it and create a schema for the Sphere dataset:
+接下来，启动一个Weaviate实例（或集群），连接到它并为Sphere数据集创建一个模式：
 
 ```python
 client = weaviate.Client("http://localhost:8080")
@@ -86,7 +91,7 @@ client.schema.create_class(
 )
 ```
 
-Then import the contents of the Spark dataframe into Weaviate:
+然后将Spark dataframe的内容导入到Weaviate中：
 
 ```python
 df.withColumnRenamed("id",
@@ -100,35 +105,34 @@ df.withColumnRenamed("id",
     .mode("append").save()
 ```
 
-When this is done, your instance of Weaviate should have finished ingesting the specified data from Spark and be ready to go. The entire import took approximately 48 hours for us, but your mileage may vary of course, depending on your setup and how much of the Sphere data you are importing.
+当这个过程完成后，您的Weaviate实例应该已经完成了从Spark中摄取指定的数据，并且准备就绪。整个导入过程大约花费了48小时，但是您的时间可能会有所不同，这取决于您的设置和要导入的Sphere数据量。
 
-With the setup above our main goal was to look at system performance while importing 1B objects but we are working on another, further scalable solution using technologies such as [Vamana](https://github.com/microsoft/DiskANN), and HNSW+PQ. Vamana will allow for disk based Approximate Nearest Neighbours(ANN) search and with HNSW+PQ we are using HNSW to build and search a graph over product quantized (PQ) encoded, compressed vectors. Both of these developments should help with memory usage at scale - if you’d like to dig deeper have a read [here](/blog/ann-algorithms-vamana-vs-hnsw). More to come on this as we get into the new year, this is just a sneak peek at what our engineering team is cooking up for all of you!
+通过上述设置，我们的主要目标是在导入10亿个对象时观察系统性能，但我们正在开发另一种可扩展的解决方案，使用诸如[Vamana](https://github.com/microsoft/DiskANN)和HNSW+PQ等技术。Vamana将允许基于磁盘的近似最近邻（ANN）搜索，而HNSW+PQ则使用HNSW构建和搜索一个图形，该图形覆盖了经过产品量化（PQ）编码和压缩的向量。这些发展都应该有助于在大规模内存使用方面的优化-如果您想深入了解，请阅读[这里](/blog/ann-algorithms-vamana-vs-hnsw)。随着新年的到来，我们将会有更多的信息，这只是我们的工程团队为您准备的一小部分内容！
 
-## Import Performance Metrics
-![Magnifying Glass](./img/magnifying-glass.png)
+## 导入性能指标
+![放大镜](./img/magnifying-glass.png)
 
-In this section let’s take a look at a few stats related to the Sphere import run. This will give you an idea of the Weaviate cluster’s performance over the course of this massive import process.
+在本节中，让我们看一下与Sphere导入运行相关的一些统计数据。这将让您了解Weaviate集群在这个庞大的导入过程中的性能表现。
 
-Let’s start off with a bird’s eye view of the whole run. As mentioned above, the entire process took approximately 48 hours and on a high level the system performed very well. The graph beneath the text show the number of vectors imported over time:
+让我们从整个运行的俯视图开始。如上所述，整个过程大约需要48小时，在高层次上，系统的性能非常好。下面的图表显示了随时间导入的向量数量：
 
-![Number of vectors imported](./img/number-of-vectors-imported.png)
+![导入的向量数量](./img/number-of-vectors-imported.png)
 
-As can be seen the slope, indicating import speed, is almost linear. meaning that we see pretty much no slow down in the import times regardless of the quantity of objects already imported. Note here that the line is not completely straight due to the fact that time complexity of the HNSW index is roughly logarithmic and not linear.
+从斜率可以看出，即使导入的对象数量不同，导入速度的变化几乎是线性的，也就是说，我们几乎没有看到导入时间的明显延迟。需要注意的是，由于HNSW索引的时间复杂度大致是对数而不是线性的，所以这条线并不完全是直线。
 
-To remind ourselves of the scale of data that we’re dealing with, take a look at the bar chart below. It shows the size of the LSM stores.
+为了对我们所处理的数据规模有所了解，让我们来看一下下面的柱状图。它显示了LSM存储的大小。
 
-![LSM stores](./img/LSM-stores.png)
+![LSM存储](./img/LSM-stores.png)
 
-The object store stores the objects and their vectors, and the inverted index powers BM25+filter searches. The inverted index is not strictly required, but is mainly there to provide efficient filtering and more than worth the storage space it takes up. The LSM store size is well into terabytes of data - and yet Weaviate continues to perform admirably!
+对象存储库存储对象及其向量，倒排索引支持BM25+过滤搜索。倒排索引不是严格必需的，但主要用于提供高效的过滤和存储空间所占用的价值。LSM存储的大小可达到数TB的数据量，然而Weaviate仍然表现出色！
 
-Now we’ll zoom in and look at performance over a window of 15 minutes of batch imports. To provide a little context, we used 22 parallel batches each with a batch size of 100. An average batch duration of around 1s was great to work with since the batches are large enough for Weaviate to receive enough data to process without it being a bottleneck, yet small enough to minimize the risk of timing out.
+现在，我们将放大并查看批量导入的15分钟窗口内的性能。为了提供一些背景，我们使用了22个并行批次，每个批次大小为100。平均批次持续时间约为1秒，非常适合工作，因为批次足够大，Weaviate能够接收足够的数据进行处理，而不会成为瓶颈，同时又足够小以最小化超时的风险。
 
-![Batch objects latency](./img/batch-objects-latency.png)
+![批量对象延迟](./img/batch-objects-latency.png)
 
-As seen in the time window above we get great consistent performance and generally the batch latency is low, keeping under a second for the most part. With last week’s v1.17 release, large dataset imports are made even faster by enabling the memtable to adjust size dynamically and additional fixes also remove the occasional latency spikes.
+如上所示，在上述时间窗口中，我们获得了出色的一致性性能，通常情况下批处理延迟较低，大部分情况下保持在一秒以下。在上周的v1.17版本发布中，通过启用内存表动态调整大小，使得大型数据集的导入速度更快，并且通过其他修复措施也消除了偶尔出现的延迟峰值。
 
-And that’s all folks! Here we provided all the details of the hardware setup, the usage of the Spark connector and system performance during the Sphere dataset import run. Hope you had as much fun reading this as I did putting it together! As I alluded to earlier if this work excites you then you’ll be glad to know that we’ve got a lot more updates along this line of work cooking in the Weaviate kitchen🧑‍🍳.
-
+这就是全部内容了！在这里，我们提供了硬件设置的详细信息，Spark连接器的使用以及在导入Sphere数据集期间的系统性能。希望您阅读这篇文章的过程中和我整理它的过程一样有趣！正如我之前提到的，如果这项工作让您感到兴奋，那么您会很高兴地知道我们在Weaviate厨房里还有更多相关工作的更新正在进行中🧑‍🍳。
 
 import StayConnected from '/_includes/stay-connected.mdx'
 

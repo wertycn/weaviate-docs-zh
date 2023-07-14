@@ -1,240 +1,243 @@
 ---
-title: HNSW+PQ - Exploring ANN algorithms Part 2.1
-slug: ann-algorithms-hnsw-pq
-authors: [abdel]
+authors:
+- abdel
 date: 2023-03-14
-tags: ['research']
+description: Implementing HNSW + Product Quantization (PQ) vector compression in Weaviate.
 image: ./img/hero.png
-description: "Implementing HNSW + Product Quantization (PQ) vector compression in Weaviate."
+slug: ann-algorithms-hnsw-pq
+tags:
+- research
+title: HNSW+PQ - Exploring ANN algorithms Part 2.1
 ---
-![HNSW+PQ - Exploring ANN algorithms Part 2.1](./img/hero.png)
 
-<!-- truncate -->
+![HNSW+PQ - 探索 ANN 算法第2.1部分](./img/hero.png)
 
-Weaviate is already a very performant and robust vector database and with the recent release of  v1.18 we are now bringing vector compression algorithms to Weaviate users everywhere. The main goal of this new feature is to offer similar performance at a fraction of the memory requirements and cost. In this blog we expand on the details behind this delicate balance between recall performance and memory management.
+<!-- 省略部分 -->
 
-In our previous blog [Vamana vs. HNSW - Exploring ANN algorithms Part 1](/blog/ann-algorithms-vamana-vs-hnsw), we explained the challenges and benefits of the Vamana and HNSW indexing algorithms. However, we did not explain the underlying motivation of moving vectors to disk. In this post we explore:
+Weaviate已经是一个非常高性能和强大的向量数据库，而且随着最近发布的v1.18版本，我们现在将向量压缩算法带给了Weaviate用户。这个新功能的主要目标是以较低的内存需求和成本提供类似的性能。在本博客中，我们将详细介绍在召回性能和内存管理之间取得的这种微妙平衡的细节。
 
-- What kind of information we need to move to disk
-- The challenges of moving data to disk
-- What the implications of moving information to disk are
-- Introduce and test a full first solution offered by the new HNSW+PQ feature in Weaviate v1.18
+在我们之前的博客文章《Vamana vs. HNSW - 探索ANN算法第一部分》中，我们解释了Vamana和HNSW索引算法的挑战和优势。然而，我们没有解释将向量移动到磁盘的基本动机。在本文中，我们将探讨以下内容：
 
-## What Information to Move to disk
+- 需要移动到磁盘的信息类型
+- 将数据移动到磁盘的挑战
+- 将信息移动到磁盘的影响
+- 在Weaviate v1.18中介绍和测试由新的HNSW+PQ功能提供的完整第一解决方案
 
-When indexing, there exist two big chunks of information that utilize massive amounts of memory: vectors and neighborhood graphs.
+## 需要移动到磁盘的信息
 
-Weaviate currently supports vectors of `float32`. This means we need to allocate 4 bytes, or 32 bits, per stored vector dimension. A database like Sift1M contains 1 million vectors of 128 dimensions each. This means that holding the vectors in memory requires 1,000,000 x 128 x 4 bytes = 512,000,000 bytes.
+在索引过程中，存在两个占用大量内存的重要信息块：向量和邻居图。
 
-Additionally, a graph representation of neighborhoods is built when indexing. The graph represents the k-nearest neighbors for each vector. To identify each neighbor we use an `int64`, meaning we need 8 bytes to store each of the k-nearest neighbors per vector. The parameter controlling the size of the graph is `maxConnections`. If we use `maxConnections = 64` when indexing Sift1M we end up with 1,000,000 x 64 x 8 bytes = 512,000,000 bytes also for the graph. This would bring our total memory requirements to around ~1 GB in order to hold both, the vectors and the graph, for 1,000,000 vectors each with 128 dimensions.
+Weaviate目前支持`float32`类型的向量。这意味着我们需要为每个存储的向量维度分配4字节或32位的空间。像Sift1M这样的数据库包含了100万个128维的向量。这意味着将向量保存在内存中需要占用1,000,000 x 128 x 4字节 = 512,000,000字节。
 
-1 GB doesn't sound too bad! Why should we go through the trouble of compressing the vectors at all then!? Sift1M is a rather small dataset. Have a look at some of the other experimental datasets listed in Table 1 below; these are much bigger and this is where the memory requirements can begin to get out of hand. Furthermore, you might be using Weaviate with your own data which might be even bigger than the datasets we report on below. If we extrapolate out, consider how big these memory requirements could grow as you add more objects or represent these objects with long vector embeddings.
+此外，在索引时还会构建邻域的图表示。该图表示每个向量的k个最近邻。为了识别每个邻居，我们使用一个`int64`，这意味着我们需要8个字节来存储每个向量的k个最近邻。控制图大小的参数是`maxConnections`。如果我们在索引Sift1M时使用`maxConnections = 64`，那么图的大小将为1,000,000 x 64 x 8字节 = 512,000,000字节。这将使我们的总内存需求约为1 GB，以容纳每个具有128个维度的向量，总共1,000,000个向量和图。
 
-| DataSet     | Dimensions | Vectors   | Size in memory (MB) |
-|-------------|------------|-----------|---------------------|
-| Sift1M      | 128        | 1,000,000 | 512                 |
-| Gist        | 960        | 1,000,000 | 3840                |
-| DeepImage96 | 96         | 9,990,000 | 3836.16             |
+1 GB听起来不算太糟糕！那么为什么我们还要费力去压缩向量呢！？Sift1M是一个相对较小的数据集。请看下面表格1中列出的其他实验数据集；这些数据集要大得多，这就是内存需求可能会失控的地方。此外，您可能会使用Weaviate来处理比我们下面报告的数据集还要大的自己的数据。如果我们进行推算，考虑一下当您添加更多对象或使用长向量嵌入来表示这些对象时，这些内存需求可能会增长多大。
 
-**Table 1**: *Description of datasets.*
+| 数据集        | 维度       | 向量数量   | 内存大小（MB）        |
+|--------------|------------|-----------|----------------------|
+| Sift1M       | 128        | 1,000,000 | 512                  |
+| Gist         | 960        | 1,000,000 | 3840                 |
+| DeepImage96  | 96         | 9,990,000 | 3836.16              |
 
-Increasing the number of objects vs. storing longer dimensional vectors has an equivalent effect on the overall memory required to store the vectors. As an example consider the Gist dataset, which contains 1,000,000 vectors, each with 960 dimensions. This would mean we need roughly 500 MB for the graph but nearly ten times more memory for the vectors. On the other hand, a database such as DeepImage96 would have 96 dimensions but almost 10,000,000 vectors, meaning, that we would need around 10 GB to hold the vectors and the graph, ~5 GB for each graph.
+**表格 1**: *数据集描述*
 
-Our final goal is to move both vectors and graphs to disk. However, we will only explore moving vectors to disk in this post.
+增加对象数量与存储更长的维度向量对存储向量所需的总内存具有相等的影响。以Gist数据集为例，该数据集包含1,000,000个向量，每个向量具有960个维度。这意味着我们需要大约500 MB的存储来存储图形，但需要几乎十倍的内存来存储向量。另一方面，DeepImage96等数据库具有96个维度，但几乎有10,000,000个向量，这意味着我们需要约10 GB来存储向量和图形，每个图形约5 GB。
 
-Storing vectors on disk is not too challenging. The problem is that moving vectors to disk would have higher latency costs since we would then need lots of disk reads. The proposed solution by [DiskANN](https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf) is to store large complete representations of vectors on disk and keep a compressed representation of them in memory. The compressed representation is used to sort the vectors while searching for the nearest neighbors, and the complete representation is fetched from disk every time we need to explore a new vector from the sorted list.
+我们的最终目标是将向量和图形都移动到磁盘上。然而，在本文中，我们只会探索将向量移到磁盘上的方法。
 
-In plain English, we start our search from our root in the graph. From there, we get a set of neighbor candidates. We need to explore each candidate one at a time. We sort the candidates using the compressed representations, stored in memory, and decide what the best next candidate to explore is. Exploring a candidate would mean fetching it from disk. Notice now that we are not reading all vectors from disk, but only the most promising candidates we wish to explore. This way we still need to host the compressed vectors in memory, but it will give us enough information to reduce disk reads significantly.
+在磁盘上存储向量并不太具有挑战性。问题在于将向量移到磁盘上会导致更高的延迟成本，因为我们需要进行大量的磁盘读取操作。[DiskANN](https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf) 提出的解决方案是在磁盘上存储向量的完整表示，并在内存中保持它们的压缩表示。压缩表示用于在搜索最近邻时对向量进行排序，而完整表示则在每次需要从排序列表中探索新向量时从磁盘中获取。
 
-The next natural question is: How do we compress vectors?
+以简单的语言来说，我们从图中的根节点开始搜索。从那里，我们获得一组邻居候选节点。我们需要逐个探索每个候选节点。我们使用存储在内存中的压缩表示对候选节点进行排序，并决定下一个要探索的最佳候选节点是什么。探索一个候选节点意味着从磁盘中获取它。现在请注意，我们不是从磁盘中读取所有向量，而只是读取我们希望探索的最有希望的候选节点。这种方式我们仍然需要将压缩向量存储在内存中，但它将为我们提供足够的信息来显著减少磁盘读取次数。
 
-## How to Efficiently Compress Vectors
+下一个自然的问题是：我们如何压缩向量？
 
-The main idea behind vector compression is to have a “good-enough” representation of the vectors (as opposed to a perfect representation) so they take up less space in memory while still allowing us to calculate the distance between them in a performant and accurate way. Compression could come from different sources. We could, for example, aim to reduce redundant data to store information more efficiently. We could also sacrifice accuracy in the data in favor of space. We aim to do the latter in this post.
+## 如何高效地压缩向量
 
-Once we have the data compressed, we still need to be able to calculate distances. This can be accomplished in two ways: Either we compress vectors from the original space to a compressed space to store them and we decompress the vectors back to the original space when calculating the distance, or we define the distance function directly over the compressed space. Figures 1 and 2 graphically demonstrate the first and second options respectively.
+向量压缩的主要思想是获得一种“足够好”的向量表示（而不是完美的表示），以便在占用更少内存空间的同时，仍然能够以高效且准确的方式计算它们之间的距离。压缩可以来自不同的来源。例如，我们可以通过减少冗余数据来更高效地存储信息。我们也可以为了节省空间而在数据的准确性上做出一些牺牲。在本文中，我们将着重介绍后者。
 
-Notice the delta($\delta$) term in the explanation. This delta refers to the error we introduce due to the compression - we are using a lossy compression process. As we mentioned before, we are lowering the accuracy of our data, meaning the distance we calculate is a bit distorted; this distortion is exactly what we represent using delta. We don't aim to calculate such an error, nor to try to correct it. We should however acknowledge it and try to keep it low.
+一旦我们对数据进行了压缩，我们仍然需要能够计算距离。这可以通过两种方式实现：要么我们将原始空间中的向量压缩到一个压缩空间中进行存储，并在计算距离时将向量解压缩回原始空间，要么我们直接在压缩空间中定义距离函数。图1和图2分别以图形方式演示了第一种和第二种选项。
+
+请注意解释中的delta（$\delta$）项。这个delta是指由于压缩而引入的错误-我们正在使用一种有损压缩过程。正如我们之前提到的，我们降低了数据的准确性，这意味着我们计算的距离有些失真；这种失真正是我们用delta表示的。我们不打算计算这种错误，也不打算尝试纠正它。然而，我们应该意识到它并尽量将其保持较低。
 
 ![comp1](./img/image1.jpg)
-**Fig. 1**: *Suppose we have vectors $x$ and $y$ represented in their original space. We apply a compression function $C$ to obtain a shorter representation of $x$ ($x'$) and $y$ ($y'$) on a compressed space but would require a decompression function $C'$ from the compressed space into the original space to be able to use the original distance function. In this case we would obtain $x''$ and $y''$ from $x'$ and $y'$ respectively and apply the distance on the approximations of the original $x$ and $y$ so $d(x,y)=d(x'',y'') + \delta$ where $\delta$ is the distortion added to the distance calculation due of the reconstruction of the original vectors. The compression/decompression mechanisms should be such that the distortion is minimized.*
+**图1**：假设我们有向量$x$和$y$在它们原始空间中的表示。我们应用一个压缩函数$C$来获得$x$（$x'$）和$y$（$y'$）在压缩空间中的较短表示，但需要一个从压缩空间到原始空间的解压函数$C'$才能使用原始距离函数。在这种情况下，我们从$x'$和$y'$分别获得$x''$和$y''$，并在对原始$x$和$y$的近似值上应用距离函数，所以$d(x,y)=d(x'',y'') + \delta$，其中$\delta$是由于重构原始向量而添加到距离计算中的失真。压缩/解压机制应尽量使失真最小化。
 
 ![comp2](./img/image2.jpg)
-**Fig. 2**: *Suppose we have vectors $x$ and $y$ represented in their original space. We apply a compression function $C$ to obtain a shorter representation of $x$ ($x'$) and $y$ ($y'$) on a compressed space. This saves storage space but would require a new distance function $d'$ to operate directly on the compressed space so $d(x,y) = d'(x',y') + \delta$ where $\delta$ is the distortion of the distance. We also need the new distance to be such that the distortion is minimized.*
+**图2**：*假设我们有向量$x$和$y$在它们的原始空间中表示。我们应用压缩函数$C$来获得$x$（$x'$）和$y$（$y'$）在压缩空间中的较短表示。这样可以节省存储空间，但需要一个新的距离函数$d'$在压缩空间上直接操作，使得$d(x,y) = d'(x',y') + \delta$，其中$\delta$是距离的失真。我们还需要新的距离函数能够使失真最小化。*
 
-The second approach might be better in terms of performance since it does not require the decompression step. The main problem is that we might need to define a new distance function for each encoding compression function. This solution looks harder to maintain in the long run. The first approach seems more feasible and thus we will explore it next.
+第二种方法在性能方面可能更好，因为它不需要解压缩步骤。主要问题是我们可能需要为每个编码压缩函数定义一个新的距离函数。从长远来看，这种解决方案似乎更难以维护。第一种方法看起来更可行，所以我们将在下一步探索它。
 
-In addition to the above mentioned problem, we also need the new functions to operate efficiently so the overall performance of the system doesn't suffer. Keep in mind that for a single query, any ANN algorithm would require distance calculations so by adding unnecessary complexity to the distance function we might severely damage the latency of querying or the overall time to index vectors.
+除了上述提到的问题，我们还需要新的函数来高效地操作，以确保系统的整体性能不受影响。请记住，对于单个查询，任何ANN算法都需要进行距离计算，因此通过添加不必要的复杂性到距离函数中，我们可能会严重损害查询的延迟或整体索引向量的时间。
 
-For these reasons we need to select the compression mechanism very carefully! There already exist many compression mechanisms, of which a very popular one is Product Quantization(PQ). This is the compression algorithm we chose to implement in Weaviate with v1.18. Let's explore how PQ works.
+出于这些原因，我们需要非常谨慎地选择压缩机制！已经存在许多压缩机制，其中一个非常流行的是Product Quantization（PQ）。这是我们在Weaviate v1.18中选择实现的压缩算法。让我们来探索一下PQ是如何工作的。
 
 ## Product Quantization
 ![ann](./img/Ann.png)
 
-If you already know the details behind how Product Quantization works feel free to skip this section!
+如果您已经了解Product Quantization的工作原理，请随意跳过本节！
 
-The main intuition behind Product Quantization is that it adds the concept of segments to the compression function. Basically, to compress the full vector, we will chop it up and operate on segments of it. For example, if we have a 128 dimensional vector we could chop it up into 32 segments, meaning each segment would contain 4 dimensions. Following this segmentation step we compress each segment independently.
+Product Quantization的主要思想是在压缩函数中添加了片段的概念。基本上，为了压缩完整的向量，我们会将其切分并对其片段进行操作。例如，如果我们有一个128维的向量，我们可以将其切分为32个片段，即每个片段包含4维。在进行切分后，我们独立地压缩每个片段。
 
-The compression is carried out by using predefined centers, which we will explain shortly. If we aim to compress each segment down to 8 bits (one byte) of memory, we might have 256 (total combinations with 8 bits) predefined centers per segment. When compressing a vector we would go segment-by-segment assigning a byte representing the index of the predefined center. The segmentation and compression process is demonstrated in Figure 3 below.
+压缩是通过使用预定义的中心进行的，我们很快会解释。如果我们的目标是将每个片段压缩到8位（一个字节）的内存中，那么每个片段可能会有256个（8位的总组合）预定义中心。在压缩向量时，我们会逐个片段进行，分配一个表示预定义中心索引的字节。分割和压缩过程在下面的图3中展示。
 
 ![pq](./img/image3.jpg)
-**Fig. 3**: *We are compressing a 128 dimensions vector into a 32 bytes compressed vector. For this, we define 32 segments meaning the first segment is composed of the first four dimensions, the second segment goes from dimension 5th to 8th and so on. Then for each segment we need a compression function that takes a four dimensional vector as an input and returns a byte representing the index of the center which best matches the input. The decompression function is straightforward, given a byte, we reconstruct the segment by returning the center at the index encoded by the input.*
+**图3**：*我们将一个128维的向量压缩成32字节的压缩向量。为此，我们定义了32个段，意味着第一个段由前四个维度组成，第二个段从第5个到第8个维度，依此类推。然后，对于每个段，我们需要一个压缩函数，它接受一个四维向量作为输入，并返回一个表示最匹配输入的中心索引的字节。解压缩函数很简单，给定一个字节，我们通过返回由输入编码的索引处的中心来重构段。*
 
-A straightforward encoding/compression function uses KMeans to generate the centers, each of which can be represented using an id/code and then each incoming vector segment can be assigned the id/code for the center closest to it.
+一个简单的编码/压缩函数使用KMeans生成中心点，每个中心点可以用一个id/代码来表示，然后每个传入的向量段可以被分配给最接近它的中心点的id/代码。
 
-Putting all of this together, the final algorithm would work as follows: Given a set of N vectors, we segment each of them producing smaller dimensional vectors, then apply KMeans clustering per segment over the complete data and find 256 centroids that will be used as predefined centers. When compressing a vector we find the closest centroid per segment and return an array of bytes with the indexes of the centroids per segment. When decompressing a vector, we concatenate the centroids encoded by each byte on the array.
+将所有这些内容整合在一起，最终的算法将按照以下方式工作：给定一组N个向量，我们对每个向量进行分割，生成较小维度的向量，然后对完整数据进行分段的KMeans聚类，并找到将用作预定义中心的256个质心。在压缩一个向量时，我们找到每个分段最近的质心，并返回一个由每个分段的质心索引组成的字节数组。在解压缩一个向量时，我们将数组中的每个字节编码的质心连接起来。
 
-The explanation above is a simplification of the complete algorithm, as we also need to be concerned about performance for which we need to address duplication of calculations, synchronization in multithreading and so on. However what we have covered above should be sufficient to understand what you can accomplish using the PQ feature released in v1.18. Let's see some of the results HNSW implemented with PQ in Weaviate can accomplish next! If you're interested in learning more about PQ you can refer to the documentation [here](/developers/weaviate/concepts/vector-index#hnsw-with-product-quantizationpq). If you want to learn how to configure Weaviate to use PQ refer to the docs [here](/developers/weaviate/configuration/indexes#how-to-configure-hnsw).
+上述解释是对完整算法的简化，因为我们还需要考虑性能问题，需要解决计算的重复性、多线程中的同步等问题。然而，我们上面所涵盖的内容应该足以理解在v1.18中发布的PQ功能可以实现什么。接下来，让我们看看在Weaviate中使用PQ实现的HNSW可以实现的一些结果！如果您对PQ想了解更多，可以参考[此处的文档](/developers/weaviate/concepts/vector-index#hnsw-with-product-quantizationpq)。如果您想了解如何配置Weaviate来使用PQ，请参考[此处的文档](/developers/weaviate/configuration/indexes#how-to-configure-hnsw)。
 
-## KMeans encoding results
+## KMeans 编码结果
 
-First, the PQ feature added to version 1.18 of Weaviate is assessed in the sections below. To check performance and distortion, we compared our implementation to [NanoPQ](https://github.com/matsui528/nanopq) and we observed similar results.
+首先，在下面的章节中评估了添加到 Weaviate 1.18 版本中的 PQ 特性。为了检查性能和失真度，我们将我们的实现与 [NanoPQ](https://github.com/matsui528/nanopq) 进行了比较，并观察到了类似的结果。
 
-The main idea behind running these experiments is to explore how PQ compression would affect our current indexing algorithms. The experiments consist of fitting the Product Quantizer on some datasets and then calculating the recall by applying brute force search on the compressed vectors. This will give us two important results, the time it would take to fit the data with KMeans clustering and compress the vectors (which will be needed at some step by the indexing algorithm) and the distortion introduced by reconstructing the compressed vectors to calculate the distance. This distortion is measured in terms of a drop in recall.
+运行这些实验的主要目的是探索PQ压缩对我们当前的索引算法的影响。实验包括将Product Quantizer应用于一些数据集，并通过对压缩向量进行蛮力搜索来计算召回率。这将给我们带来两个重要的结果，即使用KMeans聚类适应数据并压缩向量所需的时间（这在索引算法的某个步骤中将需要），以及通过重构压缩向量计算距离所引入的失真。这种失真以召回率下降的形式进行衡量。
 
-We considered three datasets for this study: Sift1M, Gist1M and DeepImage 96. Table 1, shown above, summarizes these datasets. To avoid overfitting, and because this is how we intend to use it in combination with the indexing algorithm, we use only 200,000 vectors to fit KMeans and the complete data to calculate the recall.
+我们在这项研究中考虑了三个数据集：Sift1M、Gist1M和DeepImage 96。上面的表格1总结了这些数据集。为了避免过拟合，并且因为这是我们打算与索引算法结合使用的方式，我们仅使用了20万个向量来拟合KMeans，并使用完整的数据来计算召回率。
 
-We analyze Product Quantization with KMeans encoding using different segment lengths. Notice that the lengths for the segments should be an integer divisor of the total amount of dimensions. For Sift1M we have used 1, 2, 4 and 8 dimensions per segment, while for Gist and DeepImage we have used 1, 2, 3, 4 and 6 dimensions per segment. Using segment length of 1 on Sift1M would give us 128 segments, while a segment length of 8 would give us 16 segments.
+我们使用不同的段长度对产品量化和KMeans编码进行分析。请注意，段长度应为总维度的整数除数。对于Sift1M，我们使用了每个段的1、2、4和8个维度，而对于Gist和DeepImage，我们使用了每个段的1、2、3、4和6个维度。在Sift1M上使用段长度为1将给我们128个段，而段长度为8将给我们16个段。
 
-We also offer the flexibility of choosing the amount of centroids to use with KMeans. The compression rate will depend on the amount of centroids. If we use 256 centroids we only need one byte per segment. Additionally, using an amount in the range 257 to 65536 will require two bytes per segment.
+我们还提供了在KMeans中选择使用的质心数量的灵活性。压缩率将取决于质心的数量。如果我们使用256个质心，每个片段只需要一个字节。此外，使用257到65536的数量将需要每个片段两个字节。
 
 ### Sift
 
-First, we show results on Sift1M. We vary the amount of centroids starting with 256 and increase the number until it performs poorly compared to the next curve. Notice that similar recall/latency results with less segments still mean better compression rate.
+首先，我们在Sift1M数据集上展示结果。我们从256个聚类中心开始，逐渐增加聚类中心的数量，直到性能与下一条曲线相比表现较差。请注意，相似的召回率/延迟结果对于较少的分段仍意味着更好的压缩率。
 
 ![res1](./img/image5.png)
-**Fig. 4**: *Time (min) to fit the Product Quantizer with 200,000 vectors and to encode 1,000,000 vectors, all compared to the recall achieved. The different curves are obtained varying the segment length (shown in the legend) from 1 to 8 dimensions per segment. The points in the curve are obtained varying the amount of centroids.*
+**图4**：将200,000个向量拟合到产品量化器并对1,000,000个向量进行编码所需的时间（分钟），并与实现的召回率进行比较。不同的曲线是通过改变每个段的维度（在图例中显示）从1到8维得到的。曲线上的点是通过改变聚类中心的数量获得的。
 
 ![res2](./img/image6.png)
-**Fig. 5**: *Average time (microseconds) to calculate distances from query vectors to all 1,000,000 vectors compared to the recall achieved. The different curves are obtained varying the segment length (shown in the legend) from 1 to 8 dimensions per segment. The points in the curve are obtained varying the amount of centroids. The “base” curve refers to the fixed average time to calculate distances between uncompressed vectors.*
+**图5**：计算查询向量到所有100万个向量的平均时间（微秒）与召回率的比较。不同的曲线表示在每个段中变化段长度（在图例中显示）从1到8个维度。曲线上的点是通过改变质心数量获取的。"基准"曲线表示计算未压缩向量之间距离的固定平均时间。
 
-Notice some important findings from the experiments. Latency could vary significantly depending on the settings we use. We could reduce latency by paying some penalty in the distortion of the distances (observed in the recall drop) or we could aim for more accurate results with a higher latency penalty.
+请注意一些实验的重要发现。延迟可能会根据我们使用的设置而有很大的变化。我们可以通过在距离的扭曲（观察到的召回率下降）中承担一些代价来降低延迟，或者可以通过承受更高的延迟代价来获得更准确的结果。
 
-### Deep-Image
+### 深度图像
 
-Next we show the results on DeepImage96. We see a similar profile compared to Sift1M. Latency is nearly 10 times slower but this is due to the fact that we have nearly 10 times more vectors.
+接下来我们展示DeepImage96的结果。与Sift1M相比，我们可以看到类似的性能特点。延迟几乎慢了10倍，但这是因为我们有近10倍的向量数量。
 
 ![res3](./img/image7.png)
-**Fig. 6**: *Time (min) to fit the Product Quantizer with 200,000 vectors and to encode 9,990,000 vectors, all compared to the recall achieved. The different curves are obtained varying the segment length (shown in the legend) from 1 to 6 dimensions per segment. The points in the curve are obtained varying the amount of centroids.*
+**图6**：与达到的召回率相比，拟合带有200,000个向量的产品量化器和编码9,990,000个向量所需的时间（分钟）。不同的曲线是通过在每个段上变化段长度（在图例中显示）从1到6个维度来获得的。曲线上的点是通过改变聚类中心的数量获得的。
 
 ![res4](./img/image8.png)
-**Fig. 7**: *Average time (microseconds) to calculate distances from query vectors to all 9,990,000 vectors compared to the recall achieved. The different curves are obtained varying the segment length (shown in the legend) from 1 to 6 dimensions per segment. The points in the curve are obtained varying the amount of centroids. The “base” curve refers to the fixed average time to calculate distances between uncompressed vectors.*
+**图7**：计算查询向量到所有9,990,000个向量的距离的平均时间（微秒），与召回率的比较。不同的曲线是通过改变每个段的长度（在图例中显示）从1到6维度得到的。曲线上的点是通过改变质心的数量得到的。"base"曲线指的是计算未压缩向量之间距离的固定平均时间。
 
-### Gist
+### 要点
 
-Finally, we show results on the Gist database using the 1,000,000 vectors. We see a similar profile compared to Sift1M again. Latency is nearly 10 times slower but this time it is due to the fact that we have nearly 10 times more dimensions per vectors.
+最后，我们使用1,000,000个向量在Gist数据库上展示结果。与Sift1M相比，我们看到了类似的结果。延迟几乎慢了10倍，但这次是因为每个向量的维度增加了将近10倍。
 
 ![res5](./img/image9.png)
-**Fig. 8**: *Time (min) to fit the Product Quantizer with 200,000 vectors and to encode 1,000,000 vectors, all compared to the recall achieved. The different curves are obtained varying the segment length (shown in the legend) from 1 to 6 dimensions per segment. The points in the curve are obtained varying the amount of centroids.*
+**图8**：在拟合包含200,000个向量和编码1,000,000个向量的产品量化器的时间（分钟）以及与达到的召回率进行比较。不同的曲线是通过在每个片段中变化段长度（在图例中显示）从1到6维来获得的。曲线上的点是通过改变质心的数量来获得的。
 
 ![res6](./img/image10.png)
-**Fig. 9**: *Average time (microseconds) to calculate distances from query vectors to all 1,000,000 vectors compared to the recall achieved. The different curves are obtained varying the segment length (shown in the legend) from 1 to 6 dimensions per segment. The points in the curve are obtained varying the amount of centroids. The “base” curve refers to the fixed average time to calculate distances between uncompressed vectors.*
+**图9**：计算查询向量与所有1000000个向量之间的距离的平均时间（微秒），与召回率的比较。不同的曲线是通过改变每个片段的维度（在图例中显示）从1到6维获得的。曲线上的点是通过改变质心数量获得的。"基准"曲线是指计算未压缩向量之间距离的固定平均时间。
 
-As we should expect, Product Quantization is very useful for saving memory. It comes at a cost though. The most expensive part is fitting the KMeans clustering algorithm. To remedy this we could use a different encoder based on the distribution of the data, however that is a topic we shall save for later!
+正如我们所预期的那样，产品量化在节省内存方面非常有用。但是，它也有代价。其中最昂贵的部分是适应KMeans聚类算法。为了解决这个问题，我们可以使用基于数据分布的不同编码器，但这是一个我们将在以后讨论的话题！
 
-A final word on performance, not all applications require a high recall. Sometimes, it's enough to output relevant data really fast. In such cases we care about latency alot more than recall. Compressing, not only saves memory but also time. As an example, consider brute force where we compress very aggressively. This would mean we do not need memory at all for indexing data and very little memory for holding the vectors. The main metric of concern in this setting is the latency with which we can obtain our replies. Product Quantization not only helps with reducing memory requirements in this case but also with cutting down on latency. The following table compares improvement in latency that can be achieved using PQ aggressively.
+关于性能的最后一点说明，不是所有的应用程序都需要高召回率。有时，只需要快速输出相关数据就足够了。在这种情况下，我们更关心延迟而不是召回率。压缩不仅可以节省内存，还可以节省时间。例如，考虑到蛮力算法，我们会进行非常积极的压缩。这意味着我们不需要任何内存来进行数据索引，并且只需要很少的内存来存储向量。在这种情况下，我们关注的主要指标是可以获得回复的延迟。产品量化不仅可以帮助减少内存需求，还可以缩短延迟。下表比较了使用积极的产品量化可以实现的延迟改善情况。
 
-| Dataset   | Segments | Centroids | Compression |              | Latency (ms) |
-|-----------|----------|-----------|-------------|--------------|--------------|
-| Sift      | 8        | 256       | x64         | Compressed   | 46 (x12)     |
-|           |          |           |             | Uncompressed | 547          |
-| DeepImage | 8        | 256       | x48         | Compressed   | 468 (x8.5)   |
-|           |          |           |             | Uncompressed | 3990         |
-| Gist      | 48       | 256       | x80         | Compressed   | 221 (x17.5)  |
-|           |          |           |             | Uncompressed | 3889         |
+| 数据集     | 片段数    | 质心数    | 压缩方式     |              | 延迟时间（毫秒） |
+|----------|----------|----------|-------------|--------------|--------------|
+| Sift     | 8        | 256      | x64         | 压缩         | 46 (x12)     |
+|          |          |          |             | 未压缩       | 547          |
+| DeepImage| 8        | 256      | x48         | 压缩         | 468 (x8.5)   |
+|          |          |          |             | 未压缩       | 3990         |
+| Gist      | 48       | 256       | x80         | 压缩        | 221 (x17.5)  |
+|           |          |           |             | 未压缩      | 3889         |
 
-**Tab. 2**: *Brute force search latency with high compression ratio.*
+**表 2**: *高压缩比下的暴力搜索延迟。*
 
 ## HNSW+PQ
 
-Our complete implementation of [FreshDiskANN](https://arxiv.org/abs/2105.09613) still requires a few key pieces, however at this point we have released the HNSW+PQ implementation with v1.18 for our users to take advantage of. This feature allows HNSW to work directly with compressed vectors. This means using Product Quantization to compress vectors and calculate distances.
+我们完整实现了[FreshDiskANN](https://arxiv.org/abs/2105.09613)，但是目前还需要一些关键部分。然而，我们已经在v1.18中发布了HNSW+PQ实现，供用户使用。这个功能允许HNSW直接与压缩向量一起工作。这意味着使用Product Quantization来压缩向量并计算距离。
 
-As mentioned before, we could still store the complete representation of the vectors on disk and use them to correct the distances as we explore nodes during querying. For the time being, we are implementing only HNSW+PQ which means we do no correction to the distances. In the future we will explore adding such a correction and see the implications in recall and latency since we will have more accurate distances but also much more disk reads.
+如前所述，我们仍然可以将向量的完整表示存储在磁盘上，并在查询过程中使用它们来校正距离。目前，我们只实现了HNSW+PQ，这意味着我们不对距离进行校正。将来，我们将探索添加这样的校正，并观察其对召回率和延迟的影响，因为我们将拥有更准确的距离，但也需要更多的磁盘读取。
 
-We could use regular HNSW to start building our index. Once we have added some vectors (a fifth of the total amount, for example) we could then compress the existing vectors and from this point on, we compress the vectors once they come into the index.
-The seperation between loading data uncompressed, then compressing afterwards is necessary. The threshold of how much data needs to be loaded in prior to compressing (a fifth of the data) is not a rule though. The decision on when to compress should be taken keeping in mind that we need to send enough data for the Product Quantizer to infer the distribution of the data before actually compressing the vectors.
-If we compress too soon, when too little data is present in uncompressed form, the centroids will be underfit and won't capture the underlying data distribution. Alternatively, compressing too late will take up unnecessary ammounts of memory prior to compression. Keep in mind that the uncompressed vectors will require more memory so if we send the entire dataset and compress only at the end we will need to host all of these vectors in memory at some point prior to compressing after which we can free that memory. Depending on the size of your vectors the compressing time could be optimally calculated but this is not a big issue either.
+我们可以使用常规的HNSW算法开始构建索引。一旦我们添加了一些向量（例如总量的五分之一），我们可以压缩现有的向量，并且从此时开始，一旦向量进入索引，我们就对它们进行压缩。
+将加载数据和压缩分开是必要的。需要加载多少数据之后再进行压缩（数据的五分之一）并没有具体的规定。在决定何时进行压缩时，需要考虑到我们需要发送足够的数据给产品量化器，在实际压缩向量之前，产品量化器需要推断数据的分布情况。
+如果我们在压缩过早时，未压缩的数据量太少，聚类中心将无法准确捕捉数据的分布情况。相反，如果压缩过晚，将会占用不必要的内存资源。请注意，未压缩的向量将需要更多的内存，因此如果我们在最后阶段才对整个数据集进行压缩，那么在压缩之前我们需要将所有这些向量保存在内存中，然后再释放掉这部分内存。根据向量的大小，可以进行最佳计算压缩时间，但这并不是一个大问题。
 
-Figure 10 shows a profile of the memory used while loading Sift1M. Notice the first peak in memory at the beginning. This was the memory used for loading the first fifth of the data plus compressing the data. We then wait for the garbage collection cycle to claim the memory back after which we send the remaining data to the server. Note that the peaks in the middle are due to memory not being freed by the garbage collection process immediately. At the end you see the actual memory used after the garbage collection process clean everything up.
+图10展示了加载Sift1M时使用的内存概况。请注意开始时的第一个内存峰值。这是用于加载数据的前五分之一以及对数据进行压缩的内存使用量。然后我们等待垃圾回收循环来回收内存，之后将剩余的数据发送到服务器。请注意中间的峰值是由于垃圾回收过程未立即释放内存所致。最后，您可以看到垃圾回收过程清理后的实际内存使用量。
 
 ![graf](./img/image11.png)
-**Fig. 10**: *Heap usage while loading the data into the Weaviate server. Memory does not grow smoothly. Instead there is a higher peak at the beginning before the vectors are compressed.*
+**图 10**: *将数据加载到Weaviate服务器时的堆使用情况。内存并不平稳增长，而是在向量压缩之前出现较高的峰值。*
 
-Lets focus the comparison in three directions:
-- How much longer does it take to index compressed data?
-- How much does it affect the recall and latency?
-- How much do we save in memory requirements?
+让我们将比较集中在三个方面：
+- 压缩数据的索引时间是否更长？
+- 这是否会影响召回率和延迟时间？
+- 我们在内存需求上能节省多少？
 
-### Performance Results
+### 性能结果
 
-In the following figures we show the performance of HNSW+PQ on the three databases used above. Notice how compressing with KMeans keeps the recall closer to the uncompressed results. Compressing too aggressively (KMeans with a few dimensions per segment) improves memory, indexing and latency performance but it rapidly destroys the recall so we recommend using it discreetly. Notice also that KMeans encoding with as many segments as dimensions ensures a 4 to 1 compression ratio. The next segment amounts ensure 8, 16 and 32 to 1 compression ratio (in the case of sift which uses 2, 4 and 8 dimensions per segment).
+在下面的图表中，我们展示了HNSW+PQ在上述三个数据库上的性能。注意，使用KMeans进行压缩可以使召回率与未压缩结果更接近。过于激进地压缩（每个片段只使用少量维度的KMeans）可以提高内存、索引和延迟性能，但会迅速降低召回率，因此我们建议谨慎使用。还要注意，使用与维度数相同的片段数进行KMeans编码可以实现4比1的压缩比。下一个片段数量可以实现8、16和32比1的压缩比（在使用2、4和8维度每片段的sift情况下）。
 
-All experiments were performed adding 200,000 vectors using uncompressed behavior, then compressing and adding the rest of the data.
+所有实验都是在添加了200,000个向量的情况下进行的，使用了未压缩的行为，然后对剩余的数据进行压缩和添加。
 
-We do not include the same charts for DeepImage but results are similar to those obtained over Sift1M.
+我们没有包含DeepImage的相同图表，但结果与在Sift1M上获得的结果类似。
 
 ![perf1](./img/image12.png)
-**Fig. 11**: *The chart shows Recall (vertical axis) Vs Latency (in microseconds, on the horizontal axis). For this experiment we have added 200,000 vectors using the normal HNSW algorithm, then we switched to compressed and added the remaining 800,000 vectors.*
+**图11**：*该图显示了召回率（垂直轴）与延迟（微秒级，水平轴）之间的关系。在这个实验中，我们使用普通的HNSW算法添加了20万个向量，然后切换到压缩算法，并添加了剩下的80万个向量。*
 
 ![perf2](./img/image13.png)
-**Fig. 12**: *The chart shows Recall (vertical axis) Vs Indexing time (in minutes, on the horizontal axis). For this experiment we have added 200,000 vectors using the normal HNSW algorithm, then we switched to compressed and added the remaining 800,000 vectors.*
+**图12**：*图表显示了召回率（纵轴）与索引时间（横轴，以分钟为单位）的关系。对于这个实验，我们使用了普通的HNSW算法添加了20万个向量，然后切换到压缩模式，并添加了剩下的80万个向量。*
 
 ![perf3](./img/image14.png)
-**Fig. 13**: *The chart shows Recall (vertical axis) Vs Latency (in microseconds, on the horizontal axis). For this experiment we have added 200,000 vectors using the normal HNSW algorithm, then we switched to compressed and added the remaining 800,000 vectors.*
+**图13**：*该图显示了召回率（纵轴）与延迟（以微秒为单位，横轴）的关系。在这个实验中，我们使用普通的HNSW算法添加了20万个向量，然后我们切换到压缩算法，并添加了剩下的80万个向量。*
 
 ![perf4](./img/image15.png)
-**Fig. 14**: *The chart shows Recall (vertical axis) Vs Indexing time (in minutes, on the horizontal axis). For this experiment we have added 200,000 vectors using the normal HNSW algorithm, then we switched to compressed and added the remaining 800,000 vectors.*
+**图14**：*该图显示召回率（纵轴）与索引时间（横轴，单位为分钟）之间的关系。对于这个实验，我们首先使用普通的HNSW算法添加了20万个向量，然后切换到压缩模式并添加了剩下的80万个向量。*
 
-### Memory compression results
+### 内存压缩结果
 
-To explore how the memory usage changes with the HNSW+PQ feature, we compare the two versions: uncompressed HNSW and HNSW plus compression using the KMeans encoder. We only compare KMeans using the same amount of segments as dimensions. All other settings could achieve a little bit of a higher compression rate but since we do not compress the graph, it is not significant for these datasets.
-Keep in mind that the whole graph built by HNSW is still hosted in memory. As we have mentioned before, this is not the final solution where we still do not move information to disk. Our final solution would use a compressed version of the vectors to guide the exploration and fetch the fully described data (vectors and graph) from disk as needed. With the final approach we will achieve better compression rate but also better recall since the uncompressed vectors will be used to correct the compression distortion.
-A final remark. Notice how the compression rate is better on Gist. The reason for this is the fact that we have larger vectors. This means that the memory dedicated to vectors is larger than the memory dedicated to the graph and since we only compress vectors, then the larger the vectors the higher the compression rate. Having even larger vectors such as OpenAI embeddings (1536 dimensions) would reach even better compression rates.
+为了探索HNSW+PQ特征的内存使用情况变化，我们将两个版本进行了比较：未压缩的HNSW和使用KMeans编码器进行压缩的HNSW。我们只比较使用与维度相同数量的分段的KMeans。所有其他设置可以实现稍微更高的压缩率，但由于我们没有压缩图形，对于这些数据集来说并不重要。
+请记住，HNSW构建的整个图仍然存储在内存中。正如我们之前提到的，这不是最终的解决方案，我们仍然没有将信息移动到磁盘上。我们的最终解决方案将使用向量的压缩版本来引导探索，并根据需要从磁盘获取完整描述的数据（向量和图形）。通过最终的方法，我们将实现更好的压缩比率，同时也能获得更好的召回率，因为未经压缩的向量将用于纠正压缩失真。
+最后一点注意事项。请注意，Gist 上的压缩率更好。原因是我们有更大的向量。这意味着向量所占用的内存比图形所占用的内存更大，而我们只压缩向量，因此向量越大，压缩率就越高。即使是更大的向量，比如 OpenAI 嵌入（1536维），也将达到更好的压缩率。
 
 ![perf5](./img/image16.png)
-**Fig.15**: *The charts show heap usage. Top down it shows Sift1M, DeepImage and Gist. Charts to the left show Recall (vertical axis) Vs Heap usage (horizontal axis). Charts to the right show Heap usage (horizontal axis) Vs the different parameter sets. Parameter sets to achieve a larger graph (also producing a more accurate search) are charted from top down.*
+**图15**：*图表显示了堆使用情况。从上到下显示了Sift1M、DeepImage和Gist。左边的图表显示了召回率（纵轴）与堆使用情况（横轴）之间的关系。右边的图表显示了堆使用情况（横轴）与不同参数集之间的关系。为了实现更大的图表（也能够产生更准确的搜索结果），从上到下绘制了参数集。*
 
-Let's sumamrize what we see in the above charts. We could index our data using high or low parameters set. Additionally, we could aim for different levels of compression. The fact that the graph is still in memory makes it hard to see the difference between those different levels of compression. The more we compress the lower the recall we would expect. Let us discuss the lowest level of compression along with some expectations.
+让我们总结一下上面图表中所见的内容。我们可以使用高或低的参数设置来索引我们的数据。此外，我们还可以针对不同的压缩级别进行操作。由于图表仍然在内存中，很难看出这些不同压缩级别之间的差异。我们压缩得越多，预期的召回率就越低。让我们讨论一下最低压缩级别以及一些期望。
 
-For Sift1M we would require roughly 1277 MB to 1674 MB of memory to index our data using uncompressed HNSW. This version would give us recall ranging from 0.96811 to 0.99974 and latencies ranging from 293 to 1772 microseconds. If we compress the vectors then the memory requirements goes down to 610 MB to 1478 MB range. After compression recall, drops to values ranging from 0.9136 to 0.9965. Latency rises up to the 401 to 1937 microsends range.
+对于Sift1M数据集，我们需要大约1277 MB到1674 MB的内存来使用未压缩的HNSW索引数据。这个版本可以给我们提供0.96811到0.99974的召回率和293到1772微秒的延迟。如果对向量进行压缩，则内存需求下降到610 MB到1478 MB的范围。压缩后的召回率下降到0.9136到0.9965的范围。延迟上升到401到1937微秒的范围。
 
-For DeepImage96 we would require roughly 9420 MB to 15226 MB of memory to index our data using uncompressed HNSW. This version would give us recall ranging from 0.8644 to 0.99757 and latencies ranging from 827 to 2601 microseconds. If we compress the vectors then the memory requirements goes down to the 4730 MB to 12367 MB range. After compression, recall drops to values ranging from 0.8566 to 0.9702. Latency rises up to the 1039 to 2708 microsends range.
+对于DeepImage96，使用未压缩的HNSW算法来索引我们的数据，大约需要9420 MB到15226 MB的内存。这个版本可以提供从0.8644到0.99757的召回率，并且延迟在827到2601微秒之间。如果我们对向量进行压缩，内存需求将降低到4730 MB到12367 MB的范围。在压缩后，召回率下降到0.8566到0.9702的值。延迟上升到1039到2708微秒的范围。
 
-For Gist we would require roughly 4218 MB to 5103 MB of memory to index our data using uncompressed HNSW. This version would give us recall ranging from 0.7446 to 0.9962 and latencies ranging from 2133 to 15539 microseconds. If we compress the vectors then the memory requirements goes down to the 1572 MB to 2129 MB range. After compression, recall drops to values ranging from 0.7337 to 0.9545. Latency rises up to the 7521 to 37402 microsends range.
+对于Gist，我们需要大约4218 MB到5103 MB的内存来使用未压缩的HNSW对数据进行索引。这个版本将给我们带来从0.7446到0.9962的召回率和从2133到15539微秒的延迟。如果我们压缩向量，内存需求将降低到1572 MB到2129 MB的范围。压缩后，召回率下降到0.7337到0.9545的值。延迟上升到7521到37402微秒的范围。
 
-A summary is shown in Table 3 below.
+下面是表3的摘要。
 
 |                       |              | Recall100@100 | Latency ($\mu s$)         | Memory required (MB)         |
 |-----------------------|--------------|---------------|---------------------------|------------------------------|
-| Sift1M Low params     | Uncompressed | 0.91561       | 293                       | 1277                         |
-|                       | Compressed   | 0.91361       | 401               (x1.36) | 610                 (47.76%) |
-| Sift1M High params    | Uncompressed | 0.99974       | 1772                      | 1674                         |
-|                       | Compressed   | 0.99658       | 1937             (x1.09)  | 1478               (88.29%)  |
-| DeepImage Low params  | Uncompressed | 0.8644        | 827                       | 9420                         |
-|                       | Compressed   | 0.85666       | 1039             (x1.25)  | 4730               (50.21%)  |
-| DeepImage High params | Uncompressed | 0.99757       | 2601                      | 15226                        |
-|                       | Compressed   | 0.97023       | 2708             (x1.04)  | 12367             (81.22%)   |
-| Gist Low params       | Uncompressed | 0.74461       | 2133                      | 4218                         |
-|                       | Compressed   | 0.73376       | 7521             (x3.52)  | 1572              (37.26%)   |
-| Gist High params      | Uncompressed | 0.99628       | 15539                     | 5103                         |
-|                       | Compressed   | 0.95455       | 37402           (x2.40)   | 2129               (41.72%)  |
+| Sift1M Low params     | 未压缩       | 0.91561       | 293                       | 1277                         |
+|                       | 压缩         | 0.91361       | 401               (x1.36) | 610                 (47.76%) |
+| Sift1M 高参数   | 未压缩     | 0.99974 | 1772          | 1674               |
+|              | 压缩       | 0.99658 | 1937 (x1.09)  | 1478 (88.29%)     |
+| DeepImage 低参数 | 未压缩     | 0.8644  | 827           | 9420               |
+|              | 压缩       | 0.85666 | 1039 (x1.25)  | 4730 (50.21%)     |
+| DeepImage 高参数 | 未压缩 | 0.99757 | 2601 | 15226 |
+|                  | 压缩   | 0.97023 | 2708 (x1.04) | 12367 (81.22%) |
+| Gist 低参数       | 未压缩 | 0.74461 | 2133 | 4218 |
+|                  | 压缩   | 0.73376 | 7521 (x3.52) | 1572 (37.26%) |
+| Gist高参数      | 未压缩 | 0.99628       | 15539                     | 5103                         |
+|                       | 压缩   | 0.95455       | 37402           (x2.40)   | 2129               (41.72%)  |
 
-**Tab. 3**: *Summary of the previously presented results. We show results for the shortest and largest parameter sets for uncompressed and compressed versions. Additionally we show the speed down rate in latency and the percentage of memory, compared to uncompressed, needed to operate under compressed options.*
+**表格3**：*先前呈现结果的总结。我们展示了未压缩和压缩版本的最短和最大参数集的结果。另外，我们还展示了压缩选项下的延迟降低率和内存百分比，与未压缩相比，需要进行操作。*
 
-We would like to give you an extra bonus row from the above table. [Sphere](https://github.com/facebookresearch/sphere) is an open-source dataset recently released by Meta. It collects 768 dimensions and nearly a billion objects. Only hosting the vectors in memory would take 3.1 TB. To work with data of this size, either you need to spend more to provision expensive resources, or you can sacrifice a bit on recall and latency and save drastically on resources.
+我们希望为您提供上表中的额外奖励行。[Sphere](https://github.com/facebookresearch/sphere)是由Meta最近发布的开源数据集。它收集了768个维度和近十亿个对象。仅将向量存储在内存中就需要占用3.1 TB的空间。要处理这么大的数据，您要么需要花费更多来提供昂贵的资源，要么可以在召回率和延迟上做出一些妥协，并大大节省资源。
 
-We show a simple test below to drive home the importance of compressing data and eventually moving graphs also to disk. The test was run over 10 million objects only. A final note on the numbers. While all the experiments above have been carried out directly on the algorithm, the table below is constructed using data collected from interactions with the Weaviate server. This means the latency is calculated end to end (with all the overhead on communication from clients).
+我们在下面展示了一个简单的测试，以强调压缩数据和最终将图形移动到磁盘的重要性。该测试仅针对1000万个对象运行。关于数字的最后一点说明。虽然以上所有实验都是直接在算法上进行的，但下表是使用从与Weaviate服务器的交互中收集的数据构建的。这意味着延迟是通过端到端计算的（包括来自客户端的所有通信开销）。
 
-|                         |                         | Latency (ms) | Memory required (GB) | Memory to host the vectors (GB) |
+|                         |                         | 延迟（毫秒） | 需要的内存（GB） | 托管向量所需的内存（GB） |
 |-------------------------|-------------------------|--------------|----------------------|---------------------------------|
-| 10M vectors from Sphere | Uncompressed            | 119          | 32.54                | 28.66                           |
-|                         | Compressed<br/>(4-to-1) | 273 (x2.29)  | 10.57 (32.48%)       | 7.16 (24.98%)                   |
+| 来自Sphere的1000万个向量 | 未压缩                  | 119          | 32.54                | 28.66                           |
+|                         | 压缩<br/>(4比1) | 273 (x2.29)  | 10.57 (32.48%)       | 7.16 (24.98%)                   |
 
-**Tab. 4**: *Summary of latency and memory requirements on the 10M Sphere subset. Additionally we show the speed down rate in latency and the percentage of memory, compared to uncompressed, needed to operate under compressed options.*
+**表 4**: *在10M Sphere子集上的延迟和内存需求摘要。此外，我们还展示了压缩选项下相对于未压缩的延迟速度降低率和内存使用百分比。*
 
-## Conclusions
+## 结论
 
-In this post we explore the journey and details behind the HNSW+PQ feature released in Weaviate v1.18. Though we still have a ways to go on this journey, as noted earlier, but what we've accomplished thus far can add loads of value to Weaviate users. This solution already allows for significant savings in terms of memory. When compressing vectors ranging from 100 to 1000 dimensions you can save half to three fourths of the memory you would normally need to run HNSW. This saving comes with a little cost in recall or latency. The indexing time is also larger but to address this we've cooked up a second encoder, developed specially by Weaviate, based on the distribution of the data that will reduce the indexing time significantly. Keep your eyes peeled for more details on this soon on [our blog](/blog)! We will share our insights as we go. 😀
+在本篇文章中，我们探讨了Weaviate v1.18中发布的HNSW+PQ功能的旅程和细节。尽管我们在这个旅程中还有很长的路要走，正如之前所提到的，但迄今为止我们取得的成就可以为Weaviate用户带来很大的价值。这个解决方案已经可以在内存方面实现显著的节省。当压缩维度从100到1000时，您可以节省一半到四分之三的内存，而通常情况下运行HNSW所需要的内存。这种节省在召回率或延迟方面会有一些代价。索引时间也会更长，但为了解决这个问题，我们已经特别开发了第二个编码器，它基于数据的分布，可以显著减少索引时间。请密切关注我们的[博客](/blog)，很快我们将会分享更多细节。我们将在前进的过程中分享我们的见解。😀
 
 
 import WhatNext from '/_includes/what-next.mdx'

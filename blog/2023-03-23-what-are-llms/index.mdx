@@ -1,98 +1,100 @@
 ---
-title: How GPT4.0 and other Large Language Models Work
-slug: what-are-llms
-authors: [zain]
+authors:
+- zain
 date: 2023-03-23
-tags: ['concepts']
+description: A gentle introduction to Large Language Models (LLMs) - how they work
+  and what they learn.
 image: ./img/hero.png
-description: "A gentle introduction to Large Language Models (LLMs) - how they work and what they learn."
+slug: what-are-llms
+tags:
+- concepts
+title: How GPT4.0 and other Large Language Models Work
 ---
+
 ![LLMs](./img/hero.png)
 
-<!-- truncate -->
+<!-- 截断 -->
 
-In this blog we discuss:
-- How LLMs can generate magically realistic language when prompted
-- Question whether they actually understand the content they’ve read in the way humans understand
-- Touch on some of the recent improvements and limitations of LLMs
-
-
-## ChatGPT: Catching Lightning in a Bottle ⚡
+在本博客中，我们将讨论以下内容：
+- 当提示时，LLMs如何生成具有神奇逼真的语言
+- 怀疑它们是否真正理解了它们所阅读的内容，就像人类理解一样
+- 简要介绍了LLMs的一些最新改进和局限性
 
 
-When OpenAI launched ChatGPT at the end of 2022, more than one million people had tried the model in just a week and that trend has only continued with monthly active users for the chatbot service reaching over 100 Million, quicker than any service before, as reported by [Reuters](https://www.reuters.com/technology/chatgpt-sets-record-fastest-growing-user-base-analyst-note-2023-02-01/) and [Yahoo Finance](https://finance.yahoo.com/news/chatgpt-on-track-to-surpass-100-million-users-faster-than-tiktok-or-instagram-ubs-214423357.html?guccounter=1). Since then, OpenAI has been iteratively improving the underlying model, announcing the release of GPT (Generative Pretrained Transformer) 4.0 last week, with new and improved capabilities. It wouldn’t be hyperbole to say that Natural Language Processing (NLP) and Generative Large Language Models (LLMs) have taken the world by storm.
+## ChatGPT：捕捉瓶中闪电⚡
+
+
+当OpenAI在2022年底推出ChatGPT时，仅一周内就有超过一百万人尝试了这个模型，并且这一趋势仅在持续增长，根据[路透社](https://www.reuters.com/technology/chatgpt-sets-record-fastest-growing-user-base-analyst-note-2023-02-01/)和[雅虎财经](https://finance.yahoo.com/news/chatgpt-on-track-to-surpass-100-million-users-faster-than-tiktok-or-instagram-ubs-214423357.html?guccounter=1)的报道，该聊天机器人服务的月活跃用户已经达到1亿以上，比任何其他服务都要快。自那时以来，OpenAI一直在不断改进底层模型，并宣布上周发布了GPT（生成预训练变换器）4.0，具备了新的和改进的功能。毫不夸张地说，自然语言处理（NLP）和生成式大型语言模型（LLM）已经席卷了全球。
 
 ![gpt100](./img/ChatGPT-2.png)
 
-Though ChatGPT was not the first AI chatbot that has been released to the public, what really surprised people about this particular service was the breadth and depth of knowledge it had and its ability to articulate that knowledge with human-like responses. Aside from this, the generative aspect of this model is also quite apparent as it can hallucinate situations and dream up vivid details to fill in descriptions when prompted to do so. This gives the chatbot service somewhat of a human-like “creativity” - which is what adds a whole new dimension of utility for the service, as well as a wow factor to the user experience!
+尽管ChatGPT并不是首个向公众发布的AI聊天机器人，但人们对这项特定服务感到惊讶的是它所拥有的广度和深度的知识，以及其以类似人类的回应表达这些知识的能力。除此之外，该模型的生成能力也十分显著，它可以在提示的情况下产生出虚构的情景并填充生动的细节描述。这使得聊天机器人服务具备了某种类似人类的“创造力”，为服务增添了全新的实用性维度，也给用户体验带来了惊喜！
 
-In fact, a huge reason why these models are fascinating is because of their ability to paraphrase and articulate a vast general knowledge base by generating human-like phrases and language. If ChatGPT had simply “copy-pasted” content from the most relevant source to answer our questions, it would be far less impressive a technology. In the case of language models, their ability to summarize, paraphrase and compress source knowledge into realistic language is much more impressive. Ted Chiang captures this exact concept eloquently in his recent article [ChatGPT Is a Blurry JPEG of the Web](https://www.newyorker.com/tech/annals-of-technology/chatgpt-is-a-blurry-jpeg-of-the-web).
+事实上，这些模型之所以令人着迷，很大程度上是因为它们能够通过生成人类化的短语和语言，重新表述和阐述广泛的常识知识库。如果ChatGPT只是简单地“复制粘贴”最相关的来源内容来回答我们的问题，那么它将远不及其令人印象深刻的技术。在语言模型的情况下，它们将源知识概括、转述和压缩为真实语言的能力更加令人印象深刻。Ted Chiang在他最近的文章[ChatGPT是网络的模糊JPEG](https://www.newyorker.com/tech/annals-of-technology/chatgpt-is-a-blurry-jpeg-of-the-web)中巧妙地表达了这个概念。
 
-In this blog, I’ll attempt to explain the intuition of how these models generate realistic language by providing a gentle introduction to their underlying mechanisms. We’ll keep it very high level so that even if you don’t have a background in machine learning or the underlying mathematics, you’ll understand what they can and cannot do.
+在这篇博文中，我将尝试解释这些模型如何通过提供对其基本机制的简单介绍来生成逼真的语言。我们将保持非常高层次的介绍，即使您没有机器学习或基础数学的背景，您也能理解它们的能力和局限性。
 
-
-## What Are LLMs? - Simply Explained
+## 什么是语言模型？简单解释
 
 ![books](./img/books.png)
 
-I like to think of large language models as voracious readers 👓📚: they love to read anything and everything they can get their hands on. From cooking recipes to Tupac rap lyrics, from car engine manuals to Shakespeare poetry, from Manga to source code. Anything you can imagine that is publicly available to be read, LLMs have read. Just to give you an idea, GPT 3.0 was trained on 500+ billion words crawled from Wikipedia, literature, and the internet. Think of it this way: LLMs have already read anything you can google and learn. The fact that LLMs have read all of this material is what forms their vast knowledge base.
+我喜欢将大型语言模型比作贪婪的读者👓📚：它们喜欢阅读一切可以得到的东西。从烹饪食谱到Tupac的说唱歌词，从汽车引擎手册到莎士比亚的诗歌，从漫画到源代码。任何你能想象到的公开可读的东西，语言模型都已经读过。只是为了给你一个概念，GPT 3.0是在维基百科、文学作品和互联网上抓取的500多亿个单词的训练数据上进行训练的。可以这样理解：语言模型已经读过你能够在谷歌上搜索并学习到的一切。语言模型已经阅读了所有这些材料，这就形成了它们广泛的知识库。
 
-This explains why LLMs know something about basically everything but it still doesn’t explain how they articulate this knowledge with human-like responses. The question then arises, what is the point of all this reading!? Are LLMs trying to comprehend what’s being read? Are they trying to break apart and learn the logic behind the concepts they are reading so they can piece back together concepts on demand upon questioning - as a student preparing for an exam would? Perhaps, but not quite in the way that humans learn and understand from reading. The answer to these questions lies in their name: “Language Model”. **LLMs are trying to build a statistical model of the language they are reading.**
+这就解释了为什么语言模型对基本上所有的知识都有所了解，但它仍然无法解释它们如何用与人类类似的方式表达这些知识。于是问题就出现了，所有这些阅读的目的是什么呢？LLMs是在尝试理解正在阅读的内容吗？它们是在尝试分解并学习所阅读概念背后的逻辑，以便在被询问时能够按需拼接概念，就像准备考试的学生一样吗？也许是，但并不完全像人类从阅读中学习和理解的方式那样。这些问题的答案就在它们的名字中：“语言模型”。**LLMs试图建立一个关于所阅读语言的统计模型。**
 
-To understand how LLMs work let's consider a scenario. Imagine you are on the Wheel of Fortune game show and are tasked with completing the following phrase:
+为了理解语言模型是如何工作的，让我们考虑一个场景。想象一下你参加了《幸运之轮》游戏节目，并且被要求完成以下短语：
 
 ![wheel](./img/wheeloffortune.jpeg)
 
 
-The vast majority of you, I bet, would answer: "EASY! It’s: '**ANOTHER FEATHER <u>*I*</u>N YO<u>*U*</u>R <u>*C*</u>A<u>*P*</u>**'." And you would be correct! But humor me for a second while I play devil’s advocate and propose an alternative: Why not: “**ANOTHER FEATHER <u>*O*</u>N YO<u>*U*</u>R <u>*C*</u>A<u>*T*</u>**”? This is a perfectly structured and complete English sentence. Why, then, did no one think of this alternative as a potential completion of the phrase?
+绝大多数人，我打赌，会回答：“简单！就是：'在你帽子上又一根羽毛'。” 你们是正确的！但请你们给我点耐心，让我扮演一下魔鬼的代言人，提出一个替代方案：为什么不是：“'在你猫身上又一根羽毛'”呢？这是一个完全结构完整的英语句子。那么，为什么没有人将这个替代方案作为短语的潜在补全来考虑呢？
 
-Humans can reason and understand language at increasingly deeper levels of meaning. Here are some reasons, in order of increasing lingual comprehension, that explains why the latter phrase didn’t occur to many:
+人类可以在越来越深层次的意义上进行推理和理解语言。以下是一些原因，按照语言理解的增加顺序解释了为什么许多人没有想到后一种短语：
 
-1. You’ve heard the former phrase before, whereas you’ve never heard the latter; one combination of words is common and familiar, while the other is not.
+1. 你之前听过前一种短语，而后一种短语你从未听说过；一种词语的组合是常见和熟悉的，而另一种则不是。
 
-2. You know that feathers can go in caps, however feathers don’t go on cats! Even on a superficial level, one makes sense based on our understanding and knowledge of the world, and the other does not!
+2. 你知道羽毛可以放在帽子上，但是羽毛不能放在猫身上！即使在表面上，一个符合我们对世界的理解和知识，而另一个则不符合！
 
-3. You can understand the deeper meaning behind the prior phrase as accomplishing something to be proud of, whereas the latter doesn’t have any deeper meaning behind it.
+3. 你可以理解前一句话背后的深层含义是取得一些值得骄傲的成就，而后者则没有任何深层含义。
 
-4. If there were a deeper meaning to be interpreted, such as irony or sarcasm that was subtley woven into the phrase, humans would also be able to comprehend that.
+4. 如果有更深层含义需要解释，比如被巧妙地编织到短语中的讽刺或嘲讽，人类也能够理解。
 
-The question then arises...
+那么问题就来了...
 
-## Do LLMs Actually Understand What They Read?
+## 语言模型是否真正理解它们阅读的内容？
 
-The above scenario is an example of the statistical model and understanding of language that humans possess. Humans are great at understanding and constructing a statistical model of our mother tongues or languages that we’ve been trained in. So good, in fact, that we can use this model implicitly on demand without even realizing the multiple levels of comprehension we’re considering when completing the phrase - it becomes second nature to us.
+上述情景是人类具备的统计模型和语言理解的一个例子。人类在理解和建构我们的母语或我们接受过训练的语言方面非常出色。事实上，我们可以在需要的时候无意识地隐式使用这个模型，甚至在完成短语时都没有意识到我们考虑的多个层次的理解 - 这对我们来说已经成为第二天性了。
 
-At a high level, this is what LLMs like OpenAI’s GPT 4.0, Meta’s LLaMA, and Google’s LaMDA are trying to achieve from their vast amounts of reading. They are trying to measure which words are often used together across different types of texts. This allows them to quantify which combination of words and phrases are common and which ones aren’t - allowing them to emulate the first level of reasoning above.
+从高层次来看，像OpenAI的GPT 4.0、Meta的LLaMA和Google的LaMDA这样的LLMs试图通过大量的阅读来实现以下目标。它们试图衡量不同类型的文本中常常一起使用的单词。这使它们能够量化哪些词语和短语的组合是常见的，哪些是不常见的 - 这使它们能够模拟上述第一层次的推理。
 
-Furthermore, by putting together knowledge of commonly occurring words, they can also learn higher level concepts (such as relationships between words), to learn that feathers can go in caps but they don’t go on cats - and reach the second point above.
+此外，通过整合常见词汇的知识，它们还可以学习更高层次的概念（如词语之间的关系），从而学会羽毛可以放在帽子上，而不能放在猫身上 - 并达到上述第二点。
 
-The state-of-the-art LLMs such as GPT 4.0 can even abstract away and quantify that you’re not actually referring to feathers and caps when you say “ANOTHER FEATHER IN YOUR CAP” since they have read this exact phrase used in context before! This gets them partially to the third point we mentioned above.
+像GPT 4.0这样的最先进的语言模型甚至可以抽象和量化，当您说“ANOTHER FEATHER IN YOUR CAP”时，它们并不实际指的是羽毛和帽子，因为它们之前已经在上下文中阅读过这个确切的短语！这使得它们在一定程度上实现了我们上面提到的第三点。
 
-One current limitation of LLMs, which can prevent them from attaining points 3 and 4 reliably, and is actively being worked on, is how far these features and interactions can penetrate into deeper meanings of language, to follow logic and use a world model to understand and follow a sequence of actions. GPT 4.0 shows great strides forward compared to GPT 3.5 in this domain, as demonstrated by [Daniel Feldman's prompting](https://twitter.com/d_feldman/status/1636955260680847361) shared below:
+LLMs的一个当前限制是，它们无法可靠地实现第3点和第4点，这个问题正在积极解决中。这个限制是关于这些特性和互动能够深入理解语言的更深层含义、遵循逻辑并使用世界模型来理解和跟随一系列动作。与GPT 3.5相比，GPT 4.0在这个领域取得了巨大的进步，这一点在下面的[Daniel Feldman的提示](https://twitter.com/d_feldman/status/1636955260680847361)中得到了证明。
 
 GPT 3.5             |  GPT 4.0
 :-------------------------:|:-------------------------:
 ![t1](./img/twitter1.jpeg)  |  ![t2](./img/twitter2.png)
 
-These LLMs are distilling the information they read from vast amounts of interactions between words. So both humans and LLMs in their unique ways build a statistical understanding of the language they are trained on.
+这些语言模型通过阅读大量的文字互动来提取信息。因此，无论是人类还是语言模型，它们都以自己独特的方式对其训练的语言进行统计理解。
 
-As Geoff Hinton, sometimes referred to as the “Godfather of Deep Learning”, recently put it:
+正如被称为“深度学习教父”的杰弗·辛顿最近所说的：
 
-> “LLMs do not do pattern matching in the sense that most people understand it. They use the data to create huge numbers of features and interactions between features such that these interactions can predict the next word.”
+> "LLMs（语言模型）并不像大多数人理解的那样进行模式匹配。它们使用数据创建大量特征和特征之间的相互作用，以便这些相互作用可以预测下一个词。"
 
-These features are preserved in the LLM’s parameters (what I like to think of as the brains of the model), which GPT 3.0 has 175 billion of - it would require 800GB to even store these parameters. Now whether you consider passing a prompt through these parameters and getting an LLM to generate the most likely response word by word as requiring an “understanding” of the underlying text in the same way that a human would “understand” a question prior to formulating an answer, is an open question that I leave to the reader to ponder!
+这些功能被保留在LLM的参数中（我喜欢把它们称为模型的大脑），GPT 3.0有1750亿个参数 - 甚至需要800GB的存储空间才能存储这些参数。现在，无论您是否认为通过这些参数传递提示并让LLM逐字生成最可能的响应，就像人类在制定答案之前“理解”问题一样，这是一个开放的问题，我留给读者思考！
 
-Geoff has another great take on this:
+Geoff对此有另一个很好的观点：
 
-> “I believe that factoring the discrete symbolic information into a very large number of features and interactions ***IS*** intuitive understanding and that this is true for both brains and LLMs even though they may use different learning algorithms for arriving at these factorizations.”
+> “我相信将离散的符号信息因子化为大量特征和交互是直观理解的，而且这对于大脑和LLM来说都是正确的，尽管它们可能使用不同的学习算法来实现这些因子化。”
 
-Another limitation of these models, to keep in mind when thinking about whether LLMs understand what they read, is that they are only “language” models whereas humans have the benefit of putting together and choosing between multiple modalities of understanding, including language, visual, aural, mathematical, physical etc. An example of this is that LLMs are not good at solving mathematical problems since they cannot distill and learn the rules of algebra from reading a math textbook - they don’t have a “math mode” that overrides their “language mode” when tasked with solving even the easiest of math problems. So it’s really not fair to compare an LLM’s uni-modal comprehension to that of a humans full multi-modal comprehension capabilities. Efforts are being made to make these models understand other modalities of data - for example with the release of GPT 4.0 last week, ChatGPT can now understand images that you pass in and can couple this image understanding with its language understanding.
+对于这些模型的另一个限制，在考虑到语言模型是否理解所读内容时需要注意的是，它们只是“语言”模型，而人类可以从多种理解模式中进行选择和组合，包括语言、视觉、听觉、数学、物理等。一个例子是，由于无法通过阅读数学教科书来提炼和学习代数规则，LLMs在解决数学问题方面并不擅长 - 当它们被要求解决即使是最简单的数学问题时，它们没有一个“数学模式”能够覆盖其“语言模式”。因此，将LLM的单一模态理解能力与人类的多模态理解能力进行比较是不公平的。目前正在努力使这些模型能够理解其他数据的模态 - 例如，最近发布的GPT 4.0使ChatGPT能够理解传入的图像，并将这种图像理解与其语言理解相结合。
 
 
-## Conclusions
+## 结论
 
-In this post we dove into a plain English explanation of what LLMs are, how they work and what they are "learning" that allows them to approximate human language with such prowess! If you enjoy plain and simple explanations of machine learning concepts that are revolutionizing our everyday lives, keep an eye out on [our blog](/blog) page - we've got lots more coming!
-
+在这篇文章中，我们对LLMs进行了简明扼要的解释，包括它们是什么、它们是如何工作的以及它们是如何通过学习来模拟人类语言的。如果你喜欢对机器学习概念进行简单明了的解释，并且这些概念正在改变我们的日常生活，请密切关注我们的[博客](/blog)页面-我们还有更多精彩内容即将推出！
 
 import WhatNext from '/_includes/what-next.mdx'
 

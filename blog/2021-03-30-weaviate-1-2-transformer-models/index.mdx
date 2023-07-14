@@ -1,41 +1,42 @@
 ---
-title: Weaviate 1.2 release - transformer models
-slug: weaviate-1-2-transformer-models
-authors: [etienne]
+authors:
+- etienne
 date: 2021-03-30
-tags: ['release']
+description: Weaviate v1.2 introduced support for transformers (DistilBERT, BERT,
+  RoBERTa, Sentence-BERT, etc) to vectorize and semantically search through your data.
 image: ./img/hero.png
-# canonical-url: https://medium.com/semi-technologies/weaviate-version-1-2-x-now-supports-transformer-models-4a12d858cce3
-# canonical-name: Medium
-description: "Weaviate v1.2 introduced support for transformers (DistilBERT, BERT, RoBERTa, Sentence-BERT, etc) to vectorize and semantically search through your data."
+slug: weaviate-1-2-transformer-models
+tags:
+- release
+title: Weaviate 1.2 release - transformer models
 ---
-![Weaviate 1.2 release - transformer models](./img/hero.png)
 
-In the v1.0 release of Weaviate ([docs](/developers/weaviate/) — [GitHub](https://github.com/weaviate/weaviate)) we introduced the concept of [modules](/developers/weaviate/concepts/modules). Weaviate modules are used to extend the vector database with vectorizers or functionality that can be used to query your dataset. With the release of Weaviate v1.2, we have introduced the use of transformers ([DistilBERT](https://arxiv.org/abs/1910.01108), [BERT](https://github.com/google-research/bert), [RoBERTa](https://arxiv.org/abs/1907.11692), Sentence-[BERT](https://arxiv.org/abs/1908.10084), etc) to vectorize and semantically search through your data.
+![Weaviate 1.2发布-Transformer模型](./img/hero.png)
 
-<!-- truncate -->
+在Weaviate v1.0版本的发布中（[文档](/developers/weaviate/) — [GitHub](https://github.com/weaviate/weaviate)），我们引入了[模块](/developers/weaviate/concepts/modules)的概念。Weaviate模块用于通过向量化器或功能扩展向量数据库，以便查询数据集。随着Weaviate v1.2版本的发布，我们引入了使用转换器（[DistilBERT](https://arxiv.org/abs/1910.01108)、[BERT](https://github.com/google-research/bert)、[RoBERTa](https://arxiv.org/abs/1907.11692)、句子-[BERT](https://arxiv.org/abs/1908.10084)等）对数据进行向量化和语义搜索的功能。
 
-### Weaviate v1.2 introduction video
+<!-- 截断 -->
+
+### Weaviate v1.2 介绍视频
 
 <div className="youtube">
     <iframe src="//www.youtube.com/embed/S4lXPPZvGPQ" frameBorder="0" allowFullScreen></iframe>
 </div>
 
-## What are transformers?
-A [transformer](https://en.wikipedia.org/wiki/Transformer_(machine_learning_model)) (e.g., [BERT](https://en.wikipedia.org/wiki/BERT_(language_model))) is a deep learning model that is used for NLP tasks. Within Weaviate the transformer module can be used to vectorize and query your data.
+## 什么是 transformers？
+一个[transformer](https://en.wikipedia.org/wiki/Transformer_(machine_learning_model))（例如[BERT](https://en.wikipedia.org/wiki/BERT_(language_model))）是用于自然语言处理任务的深度学习模型。在Weaviate中，transformer模块可以用于对数据进行向量化和查询。
 
-## Getting started with out-of-the-box transformers in Weaviate
-By selecting the text-module in the [Weaviate configuration tool](/developers/weaviate/installation/docker-compose#configurator), you can run Weaviate with transformers in one command. You can learn more about the Weaviate transformer module [here](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers).
+## 开始使用Weaviate的开箱即用的transformers模块
+通过在[Weaviate配置工具](/developers/weaviate/installation/docker-compose#configurator)中选择文本模块，您可以在一个命令中运行带有transformers的Weaviate。您可以在这里了解更多关于Weaviate transformer模块的信息[/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers)。
 
-![Weaviate configurator — selecting the Transformers module](./img/configurator-demo.gif)
-*Weaviate configurator — selecting the Transformers module*
+![Weaviate配置工具-选择Transformers模块](./img/configurator-demo.gif)
+*Weaviate配置工具-选择Transformers模块*
 
-## Custom transformer models
-You can also use custom transformer models that are compatible with Hugging Face's `AutoModel` and `AutoTokenzier`. Learn more about using custom models in Weaviate [here](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers).
+## 自定义转换器模型
+您还可以使用与Hugging Face的`AutoModel`和`AutoTokenzier`兼容的自定义转换器模型。在Weaviate中了解更多关于使用自定义模型的信息 [here](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers)。
 
-## Q&A style questions on your own dataset answered in milliseconds
-Weaviate now allows you to get to sub-50ms results by using transformers on your own data. You can learn more about Weaviate’s speed in combination with transformers in [this article](https://towardsdatascience.com/a-sub-50ms-neural-search-with-distilbert-and-weaviate-4857ae390154).
-
+## 在毫秒内回答您自己数据集上的问答式问题
+现在，Weaviate允许您在自己的数据上使用transformers来实现低于50毫秒的搜索结果。您可以通过阅读[这篇文章](https://towardsdatascience.com/a-sub-50ms-neural-search-with-distilbert-and-weaviate-4857ae390154)了解更多关于Weaviate与transformers结合使用的速度信息。
 
 import WhatNext from '/_includes/what-next.mdx'
 

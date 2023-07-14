@@ -1,60 +1,60 @@
 ---
-title: Monitoring Weaviate in Production
-slug: monitoring-weaviate-in-production
 authors: john
 date: 2023-03-28
+description: Learn about how to monitor Weaviate in production and observe key metrics.
 image: ./img/hero.png
-tags: ['concepts', 'engineering']
-description: "Learn about how to monitor Weaviate in production and observe key metrics."
-
+slug: monitoring-weaviate-in-production
+tags:
+- concepts
+- engineering
+title: Monitoring Weaviate in Production
 ---
-![Monitoring Weaviate in Production](./img/hero.png)
 
-<!-- truncate -->
+![在生产环境中监控Weaviate](./img/hero.png)
 
-Weaviate is designed to be easy to monitor and observe by following a cloud native approach. To do this Weaviate supports the following features
+<!-- 省略 -->
 
-1. Publishing of Prometheus metrics to the standard `/metrics` endpoint
+Weaviate被设计为遵循云原生方法来进行监控和观察。为了实现这一点，Weaviate支持以下功能：
 
-2. Use of built-in Kubernetes [liveness and readiness](/developers/weaviate/api/rest/well-known) checks
+1. 将Prometheus指标发布到标准的`/metrics`端点
 
-3. Configuration of settings via environment variables
+2. 使用内置的Kubernetes [活跃性和就绪性](/developers/weaviate/api/rest/well-known)检查
 
-4. Simplified deployment via [helm charts](https://github.com/weaviate/weaviate-helm)
+3. 通过环境变量配置设置
 
-There is existing documentation on [the exported metrics](/developers/weaviate/configuration/monitoring) which also has [an example](https://github.com/weaviate/weaviate-examples/tree/main/monitoring-prometheus-grafana) for how to use a Prometheus instance for metrics.
+4. 通过[helm charts](https://github.com/weaviate/weaviate-helm)简化部署
 
-One common question though is: How can I integrate Weaviate with my existing observability stack?
+已经有关于[导出指标](/developers/weaviate/configuration/monitoring)的文档，其中还有一个示例，展示如何使用Prometheus实例进行指标监控。
 
-This article describes two approaches using either Grafana agent or Datadog agent to scrape these metrics. It also provides a list of important metrics to monitor.
+然而，一个常见的问题是：我如何将Weaviate与现有的可观察性堆栈集成？
 
-## Prerequisites
+本文介绍了两种方法，使用Grafana agent或Datadog agent来抓取这些指标。它还提供了一份重要的指标监控清单。
 
-It is assumed that you have already deployed Weaviate. By default Prometheus monitoring is disabled, so you can enable it with this environment setting:
+## 先决条件
+
+假设您已经部署了Weaviate。默认情况下，Prometheus监控是禁用的，您可以通过设置环境变量来启用它:
 
 ```sh
 PROMETHEUS_MONITORING_ENABLED=true
 ```
 
-Weaviate will then publish Prometheus metrics on port `2112`.
+Weaviate会在端口`2112`上发布Prometheus指标。
 
 ::::note
 If you are using Weaviate `1.17` or lower, you may want to upgrade to `1.18` before enabling Prometheus metrics. The reason being Weaviate previously published many histograms which has since been [replaced](https://github.com/weaviate/weaviate/pull/2605) by summaries for performance reasons. Additionally, be careful enabling Prometheus metrics if you have many thousands of classes as you may end up with high cardinality labels due to some metrics being produced per class.
 ::::
 
 ## Grafana Agent
-![monitoring weaviate in production](./img/Weaviate-monitoring-weaviate-in-prod-light.png#gh-light-mode-only)
-![monitoring weaviate in production](./img/Weaviate-monitoring-weaviate-in-prod-dark.png#gh-dark-mode-only)
+![在生产环境中监控 Weaviate](./img/Weaviate-monitoring-weaviate-in-prod-light.png#gh-light-mode-only)
+![在生产环境中监控 Weaviate](./img/Weaviate-monitoring-weaviate-in-prod-dark.png#gh-dark-mode-only)
 
-For the first approach we will use the open-source [Grafana agent](https://grafana.com/docs/grafana-cloud/data-configuration/agent/). In this case, we will show writing to Grafana Cloud for hosted metrics. This is configurable via the remote write section if you alternatively want to write to a self-hosted Mimir or Prometheus instance.
+第一种方法，我们将使用开源的[Grafana agent](https://grafana.com/docs/grafana-cloud/data-configuration/agent/)。在这种情况下，我们将展示如何将指标写入Grafana Cloud。如果您希望将指标写入自托管的Mimir或Prometheus实例，可以通过远程写入部分进行配置。
 
+### 安装步骤
 
-### Steps to Install
+1. 在目标环境中安装Grafana agent，按照[设置指南](https://grafana.com/docs/agent/latest/)进行操作。
 
-1\. Install Grafana agent in your target environment following the [set-up guide](https://grafana.com/docs/agent/latest/).
-
-2\. Configure the Grafana `agent.yaml` to include a scrape job called `weaviate`. This will autodiscover Weaviate pods
- in Kubernetes. The `app=weaviate` label is automatically added by the Weaviate helm chart which makes autodiscovery easy.
+2. 配置Grafana的`agent.yaml`文件，包含名为`weaviate`的抓取作业。这将在Kubernetes中自动发现Weaviate的Pod。`app=weaviate`标签是由Weaviate的helm chart自动添加的，这使得自动发现变得简单。
 
 ```yaml
 metrics:
@@ -78,38 +78,38 @@ metrics:
         password: <Your Grafana.com API Key>
 ```
 
-3\. Validate that you are receiving data by going to explore and running the following PromQL query in Grafana.
+3. 通过在Grafana的"探索"页面中运行以下PromQL查询，验证是否收到数据。
 
 ```
 go_memstats_heap_inuse_bytes{job="weaviate"}
 ```
-### Dashboards
+### 仪表盘
 
-One benefit of this approach is that you can now reuse the existing Weaviate Grafana dashboards.
+使用这种方法的一个好处是，您现在可以重用现有的Weaviate Grafana仪表盘。
 
-Steps to import these dashboards:
+导入这些仪表盘的步骤：
 
-1\. Download and import the [prexisting dashboards](https://github.com/weaviate/weaviate/tree/master/tools/dev/grafana/dashboards).
+1. 下载并导入[预设的仪表盘](https://github.com/weaviate/weaviate/tree/master/tools/dev/grafana/dashboards)。
 
-2\. If you're using Grafana Cloud hosted Prometheus you will need to patch the dashboards to change the datasource uid to be `grafanacloud-prom` as below.
+2. 如果您正在使用Grafana Cloud托管的Prometheus，您需要对仪表盘进行修补，将数据源uid更改为`grafanacloud-prom`，如下所示。
 
 ```sh
 sed 's/"uid": "Prometheus"/"uid": "grafanacloud-prom"/g' querying.json > querying-patched.json
 ```
 
-The dashboards should now be visible!
+仪表板现在应该可见了！
 
-![query latency](./img/query-latency.png)
+![查询延迟](./img/query-latency.png)
 
 ## Datadog
 
-[Datadog](https://www.datadoghq.com/) is another popular solution for observability, and the Datadog agent has support for scraping Prometheus metrics.
+[Datadog](https://www.datadoghq.com/) 是另一个流行的可观测性解决方案，Datadog代理支持抓取Prometheus指标。
 
-### Steps to Install
+### 安装步骤
 
-1\. Install the datadog agent. For this example, installation was done using their [Helm](https://docs.datadoghq.com/containers/kubernetes/installation/?tab=helm) charts.
+1. 安装Datadog代理。在本示例中，使用了它们的[Helm](https://docs.datadoghq.com/containers/kubernetes/installation/?tab=helm)图表进行安装。
 
-2\. Provide a `datadog-values.yml` config including the below. You can also capture Weaviate logs using the method.
+2. 提供一个包含以下内容的 `datadog-values.yml` 配置。您还可以使用该方法捕获 Weaviate 日志。
 
 ```yaml
 datadog:
@@ -127,7 +127,7 @@ datadog:
           min_collection_interval: 30
 ```
 
-3\. Customize the Weaviate [helm chart](https://github.com/weaviate/weaviate-helm/blob/80346f0f1e1f22ad84a899b5f9e12f44be3ee809/weaviate/values.yaml#L730) to have annotations `prometheus.io/scrape` and `prometheus.io/port`
+3. 自定义Weaviate [helm chart](https://github.com/weaviate/weaviate-helm/blob/80346f0f1e1f22ad84a899b5f9e12f44be3ee809/weaviate/values.yaml#L730)，添加注释 `prometheus.io/scrape` 和 `prometheus.io/port`。
 
 ```yaml
 # Pass any annotations to Weaviate pods
@@ -136,65 +136,58 @@ annotations:
   prometheus.io/port: "2112"
 ```
 
-4\. Validate metrics are available. `go_memstats_heap_inuse_bytes` should always be present even with an empty schema.
+4. 验证指标是否可用。即使是空架构，`go_memstats_heap_inuse_bytes` 应该始终存在。
 
-![datadog summary](./img/datadog-summary.png)
+![datadog 概要](./img/datadog-summary.png)
 
+## 关键指标
 
-## Key Metrics
+以下是一些要监控的关键 Weaviate 指标。标准的 CPU、磁盘、网络指标也很有用，还有 [Kubernetes 事件](https://grafana.com/blog/2023/01/23/how-to-use-kubernetes-events-for-effective-alerting-and-monitoring/)。
+请注意，只有发生了操作（例如批量操作），才会显示一些Weaviate指标。
 
-Below are some key Weaviate metrics to monitor. Standard CPU, Disk, Network metrics are also useful as are [Kubernetes
-events](https://grafana.com/blog/2023/01/23/how-to-use-kubernetes-events-for-effective-alerting-and-monitoring/).
-Note that some Weaviate metrics will not appear until an operation has occured (for instance batch operations).
+### 堆使用情况
 
-### Heap Usage
-
-For heap usage, the expectation is the memory will have a standard jagged pattern underload but that memory will drop periodically
-due to the Go garbage collection. If memory is not dropping and is staying very close to the [GOMEMLIMIT](/blog/gomemlimit-a-game-changer-for-high-memory-applications), you may need to increase resources.
+对于堆使用情况，预期是在负载下，内存会呈现出标准的起伏模式，但由于Go语言的垃圾回收机制，内存会定期降低。如果内存没有下降，而是保持非常接近[GOMEMLIMIT](/blog/gomemlimit-a-game-changer-for-high-memory-applications)，则可能需要增加资源。
 
 ```
 go_memstats_heap_inuse_bytes
 ```
 
-### Batch Latency
+### 批处理延迟
 
-Batch latency is important as batch operations are the most efficient way to write data to
-Weaviate. Monitoring this can give an indication if there is a problem with indexing data. This metric has a label `operation` which
-allows you to see how long objects, vectors, and inverted index sub operations take. If you are using a [vectorizer module](/developers/weaviate/modules/retriever-vectorizer-modules) you will see additional latency due to the overhead of sending data to the module.
+批处理延迟很重要，因为批处理操作是将数据写入Weaviate的最有效方式。监控这个指标可以提醒是否存在索引数据的问题。该指标具有一个名为`operation`的标签，用于标识操作类型。
+允许您查看对象、向量和倒排索引子操作所需的时间。如果您使用[向量化模块](/developers/weaviate/modules/retriever-vectorizer-modules)，由于发送数据到模块的开销，您将看到额外的延迟。
 
 ```
 rate(batch_durations_ms_sum[30s])/rate(batch_durations_ms_count[30s])
 ```
 
-For batch deletes the corresponding `batch_delete_durations_ms` metric will also be useful.
+对于批量删除操作，对应的`batch_delete_durations_ms`指标也会很有用。
 
-### Object Latency
+### 对象延迟
 
-Generally, batch indexing is recommended but there are situations where you would do single `PUT` or `DELETE` operations
-such as handling live changes from a user in an application. In this case you will want to monitor the object latency
-instead.
+通常情况下，建议使用批量索引操作，但也有一些情况下你可能需要进行单个的`PUT`或`DELETE`操作，比如处理用户在应用程序中的实时更改。在这种情况下，你需要监控对象的延迟。
 
 ```
 rate(objects_durations_ms_sum{operation="put"}[30s])/rate(objects_durations_ms_latency{operation="put"}[30s])
 ```
 
-### Query Latency and Rate
+### 查询延迟和速率
 
-The latency and number of queries per second are also important, particularly for monitoring usage patterns.
+查询延迟和每秒查询数也非常重要，特别是用于监控使用模式。
 
 ```
 rate(queries_durations_ms_sum[30s])/rate(queries_durations_ms_count[30s])
 rate(queries_durations_ms_count)[30s]
 ```
 
-## Other Integrations
+## 其他集成
 
-Many other solutions that have integrations for Prometheus that can also be used:
+还有许多其他解决方案可以与Prometheus集成使用：
 
 * [Elastic](https://docs.elastic.co/integrations/prometheus)
 * [Splunk](https://www.splunk.com/en_us/blog/devops/metrics-from-prometheus-exporters-are-now-available-with-the-sfx-smart-agent.html)
 * [New Relic](https://docs.newrelic.com/docs/infrastructure/prometheus-integrations/get-started/send-prometheus-metric-data-new-relic/)
-
 
 import StayConnected from '/_includes/stay-connected.mdx'
 

@@ -1,35 +1,37 @@
 ---
-title: Ranking Models for Better Search
-slug: ranking-models-for-better-search
-authors: [connor, erika]
+authors:
+- connor
+- erika
 date: 2023-04-11
+description: Learn about the different ranking models that are used for better search.
 image: ./img/hero.png
-tags: ['search']
-description: "Learn about the different ranking models that are used for better search."
-
+slug: ranking-models-for-better-search
+tags:
+- search
+title: Ranking Models for Better Search
 ---
 
-![ranking models animation](./img/hero.png)
-<!-- truncate -->
+![模型排名动画](./img/hero.png)
+<!-- 省略 -->
 
-Whether searching to present information to a human, or a large language model, quality matters. One of the low hanging fruit strategies to improve search quality are ranking models. Broadly speaking, ranking models describe taking the query and each candidate document, one-by-one, as input to predict relevance. This is different from vector and lexical search where representations are computed offline and indexed for speed. Back in August, we [published](/blog/cross-encoders-as-reranker) our thoughts on Cross Encoder Ranking.
+无论是为了向人类呈现信息，还是为了大规模的语言模型，质量都非常重要。提高搜索质量的一种简单策略是使用排序模型。广义上来说，排序模型是指将查询和每个候选文档逐个作为输入，以预测相关性。这与向量和词汇搜索不同，后者在离线计算表示并建立索引以提高速度。在八月份，我们在[博客](/blog/cross-encoders-as-reranker)上发表了关于交叉编码器排序的想法。
 
-![animation](./img/animation.png)
+![动画](./img/animation.png)
 
-The blog post included this great visual to help with the visualization of combining Bi-Encoders and Cross-Encoders. This fishing example explains the concept of coarse-grained retrieval (fishing net = vector search / bm25) and manual inspection of the fish (fishermen = ranking models). Depicted with manual inspection of fish, the main cost of ranking models is speed.
+这篇博客文章包含了一个很棒的可视化图像，用于帮助理解Bi-Encoders和Cross-Encoders的组合。这个钓鱼的例子解释了粗粒度检索（渔网 = 向量搜索 / bm25）和对鱼的手动检查（渔民 = 排名模型）的概念。用手动检查鱼的方式来描绘，排名模型的主要成本是速度。
 
-In March, Bob van Luijt appeared on a Cohere panel to discuss [“AI and The Future of Search”](https://twitter.com/cohereai/status/1636396916157079554?s=46&t=Zzg6vgh4rwmYEkdV-3v5gg). Bob explained the effectiveness of combining zero-shot vector embedding models from providers such as Cohere, OpenAI, or HuggingFace with BM25 sparse search together in Hybrid Search. Developers who want to build AI-powered applications can now skip the tedious process of complex training strategies. Now you can simply take models off-the-shelf and plug them into your apps. Applying a ranking model to hybrid search results is a promising approach to keep pushing the frontier of zero-shot AI.
+三月份，Bob van Luijt出现在Cohere的一个小组讨论中，讨论了“AI和搜索的未来”。Bob解释了将来自Cohere、OpenAI或HuggingFace等供应商的零样本向量嵌入模型与BM25稀疏搜索相结合的混合搜索的有效性。想要构建AI驱动的应用程序的开发人员现在可以跳过复杂的训练策略的繁琐过程。现在，您只需将现成的模型插入您的应用程序中即可。将排名模型应用于混合搜索结果是推动零样本AI领域前沿的一种有前途的方法。
 
-Imagine we want to retrieve information about the Weaviate Ref2Vec feature. If our application is using the Cohere embedding model, it has never seen this term or concept. Luckily, hybrid search comes to the rescue by combining the contextual semantics from the vector search and the keyword matching from the BM25 scoring. If the query is: `How can I use ref2vec to build a home feed?` The pairing of vector search and BM25 will return a good set of candidates. Now with the ranking model, it takes the [query, candidate document] pair as input and is able to further reason about the relevance of these results without specialized training.
+假设我们想要获取有关Weaviate Ref2Vec功能的信息。如果我们的应用程序正在使用Cohere嵌入模型，它从未见过这个术语或概念。幸运的是，混合搜索通过将向量搜索的上下文语义和BM25评分的关键字匹配相结合，来拯救我们。如果查询是：“如何使用ref2vec构建主页订阅？”向量搜索和BM25的组合将返回一组良好的候选项。现在，通过排名模型，它将[查询，候选文档]对作为输入，并能够在没有专门训练的情况下进一步推断关于这些结果的相关性。
 
-Let’s begin with categories of ranking models. We see roughly 3 different genres of ranking models with:
+让我们从排名模型的分类开始。我们大致可以将排名模型分为以下3个不同的类型：
 
-1. [Cross Encoders](#cross-encoders) (collapsing the use of Large Language Models for ranking into this category as well)
-1. [Metadata Rankers](#metadata-rankers)
-1. [Score Rankers](#score-rankers)
+1. [交叉编码器](#交叉编码器)（将使用大型语言模型进行排名的方法也归入此类别）
+1. [元数据排名器](#元数据排名器)
+1. [得分排名器](#得分排名器)
 
-## Cross Encoders
-Cross Encoders are one of the most well known ranking models for content-based re-ranking. There is quite a collection of pre-trained cross encoders available on [sentence transformers](https://www.sbert.net/docs/pretrained_cross-encoders.html). We are currently envisioning interfacing cross encoders with Weaviate using the following syntax. This will take the candidates from hybrid search and apply the cross encoder to rank the final results.
+## 交叉编码器
+Cross Encoders 是用于基于内容的重新排序的最著名的排序模型之一。在 [sentence transformers](https://www.sbert.net/docs/pretrained_cross-encoders.html) 上有一系列预训练的 cross encoders 可供使用。我们目前正在考虑使用以下语法将 cross encoders 与 Weaviate 进行接口连接。这将使用混合搜索的候选项，并应用 cross encoder 对最终结果进行排序。
 
 :::warning
 This feature is not implemented into Weaviate yet, so the below code is an example of what it will look like.
@@ -56,62 +58,62 @@ This feature is not implemented into Weaviate yet, so the below code is an examp
 }
 ```
 
-Let’s see an example of this in action using the Weaviate Podcast Search dataset!
+让我们通过使用Weaviate Podcast Search数据集来看一个示例！
 
-**Query**: Are there any ways to benchmark the performance of self-ask prompting?
+**查询**: 有没有办法评估自我提问提示的性能？
 
-| Ranker                | Output |
+| 排名器                | 输出 |
 |---------------------------|------------------------------------|
-| Cross Encoder                  | That's a great question. Honestly, you should invite Ofir to chat about that. And it's a great question. I hadn't thought of it that way. I don't know where it is in the data and it may simply be that the model is mashing up all this other data that it has in an interesting way, the same way that you can get stable diffusion to give you like people sitting around a campfire on an airplane, I think I saw go by, or like salmon swimming in a stream where it was literal pieces of salmon. That was never anywhere in the training set, but it managed to mash it up and figure out what to do with it. And I wonder if something similar is happening here. What I love about all this work, like self-ask, chain of thought, we're developing new querying languages. This is like us inventing SQL, except that we didn't design the database. The database came into being and we have to figure out how to interact with it. That example I mentioned about the IPython interaction, like that's a, again, it's a new querying language. And I honestly thought the most potent part of the self-ask wasn't even necessarily the self-ask part. It was that Ofir did such a phenomenal job of figuring out a way to measure the complexity of the knowledge that was extracted from the model. He gave us a benchmark, a ladder to climb, a way to measure whether we could retrieve certain kinds of information from models. And I think that's going to open the door to a ton more benchmarks. And you know what happens when there's a benchmark. We optimize the hell out of that benchmark and it moves science forward… [ truncated for visibility ] |
-| Hybrid Only            | Or, at least being able to ask follow up questions when it’s unclear about and that’s surprisingly not that difficult to do with these current systems, as long as you’re halfway decent at prompting, you can build up these follow up systems and train them over the course of a couple 1,000 examples to perform really, really well, at least to cove r90, 95% of questions that you might get. |
+| 交叉编码器 | 这是一个很好的问题。老实说，你应该邀请Ofir来讨论这个问题。这是一个很好的问题，我之前没有考虑到。我不知道数据中的具体位置，可能是模型以一种有趣的方式将所有这些其他数据混合在一起，就像你可以通过稳定扩散得到人们围坐在飞机上的篝火，我想我看到过类似的场景，或者像鲑鱼在溪流中游动，那是真实的鲑鱼。这在训练集中从未出现过，但它设法将其混合并找到处理方式。我想知道这里是否发生了类似的情况。我喜欢关于所有这些工作的部分，比如自问自答、思维链，我们正在开发新的查询语言。这就像我们发明SQL一样，只不过我们没有设计数据库。数据库产生了，我们必须找出如何与它互动。我提到的那个IPython交互的例子，再次强调，这是一种新的查询语言。老实说，我认为自问自答最有价值的部分并不一定是自问自答的部分，而是Ofir在找到一种衡量从模型中提取的知识复杂性的方法时做得非常出色。他给了我们一个基准，一个攀登的阶梯，一种衡量我们是否能从模型中检索到某种类型信息的方式。我认为这将打开更多基准测试的大门。你知道当有了基准测试之后会发生什么。我们会对这个基准进行极致优化，推动科学的进步...[为了展示的可见性而截断] |
+| 仅混合问答      | 或者，至少能够在不清楚的情况下提出后续问题，这在当前的系统中并不难实现，只要你在提示方面做得还不错，你可以通过数千个示例来构建这些后续系统并对其进行训练，从而使其表现得非常好，至少可以覆盖90%至95%的可能问题。 |
 
-By re-ranking the results we are able to get the clip where Jonathan Frankle describes the benchmarks created by Ofir Press et al. in the self-ask paper! This result was originally placed at #6 with Hybrid Search only. This is a great opportunity to preview the discussion of how LLMs use search versus humans. When humans search, we are used to scrolling through the results a bit to see the one that makes sense. In contrast, language models are constrained by input length; we can only give so many results to the input of the LLM. Thus, quality at the expense of speed, becomes more interesting.
+通过重新排序结果，我们能够获取到Jonathan Frankle在自问论文中描述的Ofir Press等人创建的基准测试片段！这个结果最初只在混合搜索中排名第6。这是一个很好的机会来预览LLM（语言模型）与人类在搜索中的使用方式的讨论。当人类搜索时，我们习惯于浏览结果，找到一个有意义的结果。相比之下，语言模型受到输入长度的限制，我们只能给LLM的输入提供有限的结果。因此，在牺牲速度的情况下追求质量变得更加有趣。
 
-### LLMs as Cross Encoders
+### 作为交叉编码器的LLM
 
-So, let’s dive into the LLM hype a little more, how can we use LLMs for re-ranking? There are generally 2 ways to do this. The first strategy is identical to the cross encoder, we give the LLM the [query, document] input and prompt it to output a score of how relevant the document is to the query. The tricky thing with this is bounding the score. One technique is to prompt it with:
-`please output a relevance score on a scale of 1 to 100.`
+那么，让我们更深入地了解LLM的热度，我们如何将LLM用于重新排序？一般有两种方法。第一种策略与交叉编码器相同，我们将[查询，文档]作为输入提供给LLM，并提示其输出文档与查询的相关程度得分。这种方法的棘手之处在于限定得分的范围。一种技术是使用以下提示：
+`请输出一个在1到100之间的相关度得分。`
 
-I think the second strategy is a bit more interesting, in which we put as many documents as we can in the input and ask the LLM to rank them. The key to making this work is the emergence of LLMs to follow instructions, especially with formatting their output. By prompting this ranking with “please output the ranking as a dictionary of IDs with the key equal to the rank and the value equal to the document id”. Also interesting is the question around how many documents we can rank like this and how expensive it is. For example, if we want to re-rank 100 documents, but can only fit 5 in the input at a time, we are going to need to construct some kind of tournament-style decomposition of the ranking task.
+我认为第二种策略更有趣，我们尽可能多地将文档放入输入，并要求LLM对它们进行排序。使这种方法有效的关键是LLM能够遵循指令，特别是在格式化输出方面。通过使用“请将排名作为ID字典输出，其中键等于排名，值等于文档ID”来触发此排序。还有一个有趣的问题是我们可以以这种方式对多少个文档进行排序，以及这样做的成本如何。例如，如果我们想重新对100个文档进行排序，但每次只能放入5个文档，那么我们需要构建一种类似锦标赛的排名任务分解方法。
 
-Further these approaches are well positioned to generalize to Recommendation. In Recommendation, instead of taking a [query, document] as input to a cross-encoder, we take as input a [user description, document] pair. For example, we can ask users to describe their preferences. Further, we could combine these in trios of [user description, query, item] for LLM, or more lightweight cross-encoder, ranking.
+此外，这些方法在推荐领域也很适用。在推荐中，我们不再将[查询，文档]作为跨编码器的输入，而是将[用户描述，文档]对作为输入。例如，我们可以要求用户描述他们的偏好。此外，我们还可以将它们组合成[用户描述，查询，项目]的三元组，用于LLM或更轻量级的跨编码器排序。
 
-There is a bonus 3rd idea where we use the log probabilities concatenating the query with the document. However, most of the LLM APIs don’t actually give us these probabilities. Further, this is probably pretty slow. We will keep an eye on it, but it doesn’t seem like the next step to take for now.
+有一个额外的第三个想法，我们可以使用查询和文档的对数概率进行拼接。然而，大多数语言模型API实际上并没有提供这些概率。此外，这种方法可能会相当慢。我们会密切关注它，但目前看来不是下一步要采取的方法。
 
-## Metadata Rankers
-Whereas I would describe Cross-Encoders as `content-based` re-ranking, I would say Metadata rankers are `context-based` re-rankers. Metadata rankers describe using symbolic features to rank relevance. Typically this is in the context of recommendation in which we have metadata about users, as well as the documents or items.
+## 元数据排序器
+然而，我会将Cross-Encoders描述为“基于内容”的重新排序器，而将Metadata rankers描述为“基于上下文”的重新排序器。Metadata rankers使用符号特征来评估相关性。通常，这是在推荐的背景下，我们有关于用户以及文档或物品的元数据。
 
-So for example, say we have features that describe a Users looking for Movies such as:
+例如，假设我们有描述用户寻找电影的特征，例如：
 
-User Features - (Age, Gender, Location, Occupation, Preferences)
-Movie Features - (Release Year, Genre, Box Office, Duration).
+用户特征 -（年龄，性别，位置，职业，偏好）
+电影特征 -（上映年份，类型，票房，时长）。
 
-So together, the Metadata ranker takes as input something like: [Age, Gender, Location, Occupation, Preferences, Release year, Genre, Box Office, Duration] and predicts a score of how much this User will like the movie. We can fix the User features and rotate in each Document to get a score for each of the candidate movies (retrieved with something like ref2vec) to rank with.
+因此，元数据排序器的输入可以是类似于：[年龄，性别，地点，职业，偏好，上映年份，类型，票房，时长]，并预测用户对电影的喜好程度得分。我们可以固定用户特征，并在每个文档中进行旋转，以获得每个候选电影的得分（使用类似于ref2vec的方法检索）。
 
-In addition to vectors, Weaviate also enables storing metadata features about objects such as `price`, or `color`. We can send these features to wherever our Metadata Ranker is hosted and get those scores back to Weaviate to sort our search results.
+除了向量之外，Weaviate还可以存储关于对象的元数据特征，例如`price`或`color`。我们可以将这些特征发送到我们托管的元数据排序器，并将得分返回到Weaviate以对搜索结果进行排序。
 
-This is also closely related to another category of ranking methods that use models like XGBoost to combine features, as well as say the bm25 score, vector distance, and maybe even the cross encoder score as well. This is a pretty interesting technique when you additionally factor in multiple properties. For example, we could have a bm25, vector, and cross encoders for the `title`, as well as `content` properties and use a learned model to combine these into a final ranking score.
+这也与另一类排名方法密切相关，这些方法使用像XGBoost这样的模型来组合特征，以及bm25分数、向量距离，甚至可能还包括交叉编码器分数。当您还考虑到多个属性时，这是一种非常有趣的技术。例如，我们可以为`title`和`content`属性使用bm25、向量和交叉编码器，并使用学习的模型将它们组合成最终的排名分数。
 
-I recently came across a paper titled “Injecting the BM25 Score as Text Improves BERT-Based Re-rankers” published in ECIR 2023. Taken directly from the paper, “Our findings indicate that cross-encoder re-rankers can efficiently be improved without additional computational burden and extra steps in the pipeline by explicitly adding the output of the first-stage ranker to the model input, and this effect is robust for different models and query types”. Taking this a bit further, [Dinh et al.](https://arxiv.org/abs/2206.06565) shows that most tabular machine learning tasks can be translated to text and benefit from transfer learning of text-based models. Many of these metadata rankers may also take in something like a collaborative filtering score that is based on this user’s history, as well as other users on the platform — another interesting feature to think of interfacing this way.
+最近我看到了一篇标题为《将BM25分数注入文本以改进基于BERT的重新排序器》的论文，该论文发表在ECIR 2023上。直接引用论文中的话来说：“我们的研究结果表明，通过将第一阶段排序器的输出明确地添加到模型输入中，可以有效地改进交叉编码器的重新排序器，而无需额外的计算负担和流程中的额外步骤，并且这种效果在不同的模型和查询类型上是稳健的”。更进一步，Dinh等人表明，大多数表格机器学习任务可以转化为文本，并从基于文本的模型的迁移学习中受益。许多元数据排序器还可以接受类似于基于用户历史记录和平台上其他用户的协同过滤分数的输入，这也是一种有趣的接口方式。 [Dinh et al.](https://arxiv.org/abs/2206.06565)
 
-The main point being, maybe we can just add these meta features to our [query, document] representation and keep the Zero-Shot party going. We recently had an interesting discussion about metadata ranking and future directions for ranking models broadly on our latest Weaviate podcast! 👉 Check it out [here](https://www.youtube.com/watch?v=aLY0q6V01G4)
+主要观点是，也许我们可以将这些元特征添加到我们的[查询，文档]表示中，并继续进行零-shot学习。我们最近在最新的Weaviate播客中就元数据排序和排名模型的未来方向进行了有趣的讨论！👉 在这里查看 [链接](https://www.youtube.com/watch?v=aLY0q6V01G4)
 
-## Score Rankers
-Score rankers describe using either a classifier to detect things, or a regression model to score things, about our candidate documents to rank with. These kinds of models are increasingly being used as guardrails for generative models. For example, a harmful or NSFW content detector can prevent these generations from making it through the search pipeline. An interesting idea I recently heard from Eddie Zhou on Jerry Liu’s Llama Index Fireside Chat is the idea of using Natural Language Inference models to prevent hallucination by predicting the entailment or contradiction taking as the [retrieved context, generated output] as input. Because large language models are stochastic models, we can sample several candidate generations and filter them through score rankers like these.
+## 分数排名器
+评分排名器通常使用分类器来检测事物，或使用回归模型对候选文档进行评分，以进行排名。这些模型越来越被用作生成模型的防护措施。例如，有害或不适宜内容的检测器可以防止这些生成内容通过搜索流程。我最近从Eddie Zhou在Jerry Liu的Llama Index Fireside Chat中听到一个有趣的想法，即使用自然语言推理模型通过预测[检索上下文、生成输出]之间的蕴涵或矛盾来防止产生幻觉。由于大型语言模型是随机模型，我们可以对多个候选生成结果进行采样，并将它们通过这样的评分排名器进行过滤。
 
-## A Recap of the Ranking Models
-* **Cross Encoders** are content-based re-ranking models that utilize pre-trained models, such as those available on Sentence Transformers, to rank the relevance of documents. They offer the advantage of further reasoning about the relevance of results without needing specialized training. Cross Encoders can be interfaced with Weaviate to re-rank search results, trading off performance for slower search speed.
+## 排名模型回顾
+* **交叉编码器**是基于内容的重新排序模型，利用预训练模型（例如在Sentence Transformers上可用的模型）来对文档的相关性进行排序。它们的优点是可以在不需要专门训练的情况下进一步推理结果的相关性。交叉编码器可以与Weaviate进行接口，重新排序搜索结果，以性能为代价换取较慢的搜索速度。
 
-* **Metadata Rankers** are context-based re-rankers that use symbolic features to rank relevance. They take into account user and document features, such as age, gender, location, preferences, release year, genre, and box office, to predict the relevance of candidate documents. By incorporating metadata features, these rankers offer a more personalized and context-aware search experience.
+* **元数据排序器**是基于上下文的重新排序器，使用符号特征对相关性进行排序。它们考虑用户和文档特征，例如年龄、性别、位置、偏好、发布年份、流派和票房等，以预测候选文档的相关性。通过结合元数据特征，这些排序器提供了更加个性化和上下文感知的搜索体验。
 
-* **Score Rankers** employ classifiers or regression models to score and detect content, acting as guardrails for generative models. These scores can help in filtering harmful or NSFW content and prevent hallucinations with cutting edge ideas such as Natural Language Inference filters.
+* **分数排序器** 使用分类器或回归模型对内容进行评分和检测，作为生成模型的防护栏。这些分数可以帮助过滤有害或不安全的内容，并通过诸如自然语言推理过滤器等前沿思想来防止产生幻觉。
 
-Each of these ranking models have particular use cases. However, the lines between these models are blurring with new trends such as translating tabular metadata features into text to facilitate transfer learning from transformers pre-trained on text. Of course, the recent successes of LLMs are causing a rethink of most AI workflows and the application of LLMs to rank and score rankers to filter generations are both exciting. To end this article, let’s discuss a little further why ranking is so exciting for the most hyped pairing of LLMs and Search: Retrieval-Augmented Generation.
+这些排名模型各自具有特定的用途。然而，随着将表格元数据特征转化为文本以便于从预训练的文本转换器中进行迁移学习等新趋势的出现，这些模型之间的界限正在变得模糊。当然，最近LLMs的成功引发了对大多数AI工作流程的重新思考，将LLMs应用于排名和评分排名器以筛选生成结果也是非常令人兴奋的。为了结束这篇文章，让我们进一步讨论一下为什么排名对于LLMs和搜索的结合如此令人兴奋：检索增强生成。
 
-## Ranking for Retrieval-Augmented Generation
-A lot of the recent successes of vector search can be attributed to their effectiveness as a tool for Large Language Models. So whereas the speed trade-off with rankers may be a major bottleneck for how humans use search, it might not be as much of a problem for how LLMs use search. Of course fast generation is preferred, but if you are paying for the result, quality may be more important than speed. Shi et al. have published “Large Language Models are easily distracted by irrelevant context”, highlighting how problematic bad precision in search can be for retrieval-augmented generation.
+## 检索增强生成的排名
+最近向量搜索的许多成功都可以归因于它们作为大型语言模型的有效工具。因此，尽管排序器的速度权衡可能是人类使用搜索的主要瓶颈，但对于语言模型的搜索来说，这可能不是一个很大的问题。当然，快速生成是首选，但如果您为结果付费，质量可能比速度更重要。Shi等人发表了《大型语言模型容易受到无关上下文的干扰》，强调了搜索中不准确性的问题对于检索增强生成的影响。
 
-The recent developments in LLM agent tooling such as LangChain, LlamaIndex, and recent projects such as AutoGPT or Microsoft’s Semantic Kernel are paving the way towards letting LLMs run for a while to complete complex tasks. By ranking each handoff from search to prompt, we can achieve better results in each intermediate task. Thus when we leave an LLM running overnight to research the future of ranking models, we can expect a better final result in the morning!
+近期LLM代理工具（如LangChain、LlamaIndex）以及AutoGPT或微软的语义内核等最新项目的发展为LLM在完成复杂任务方面铺平了道路。通过对每次从搜索到提示的交接进行排序，我们可以在每个中间任务中获得更好的结果。因此，当我们让LLM在夜间持续运行以研究排名模型的未来时，我们可以期待早上获得更好的最终结果！
 
 
 import WhatNext from '/_includes/what-next.mdx'

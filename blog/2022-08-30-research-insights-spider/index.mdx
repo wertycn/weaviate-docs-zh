@@ -1,182 +1,185 @@
 ---
-title: Research Insights – Learning to Retrieve Passages without Supervision
-slug: research-insights-spider
-authors: [connor]
+authors:
+- connor
 date: 2022-08-30
-tags: ['research']
+description: Self-Supervised Retrieval can surpass BM25 and Supervised techniques.
+  This technique also pairs very well alongside BM25 in Hybrid Retrieval. Learn more
+  about it.
 image: ./img/hero.jpg
-description: "Self-Supervised Retrieval can surpass BM25 and Supervised techniques. This technique also pairs very well alongside BM25 in Hybrid Retrieval. Learn more about it."
+slug: research-insights-spider
+tags:
+- research
+title: Research Insights – Learning to Retrieve Passages without Supervision
 ---
-![Research Insights – Learning to Retrieve Passages without Supervision](./img/hero.jpg)
 
-<!-- truncate -->
+![研究见解 - 无监督学习检索段落](./img/hero.jpg)
 
-## Intro
+<!-- 截断 -->
 
-There is a lot of excitement around Deep Learning systems with new ML models being trained every day. However, they have been limited by the need for large labeled datasets, which leads us on a search for other solutions that could help us avoid that limitation.
+## 简介
 
-We found interesting ideas in the [Learning to Retrieve Passages without Supervision](https://arxiv.org/pdf/2112.07708.pdf) paper by Ori Ram, Gal Shachaf, Omer Levy, Jonathan Berant and Amir Globerson. The authors explore
-Self-Supervised Learning – a class of learning algorithms that can bootstrap loss functions – as an alternative route to training new models **without** the need for human labeling!
+围绕着深度学习系统，每天都有新的机器学习模型训练出来，这引起了很多兴奋。然而，它们受到了需要大量标记数据集的限制，这促使我们寻找其他解决方案，以避免这种限制。
 
-Self-Supervised Learning has led to massive advances in generative modeling and representation learning. In this article, we will explain **Span-based Unsupervised Dense Retriever (Spider)**, a recent breakthrough for Self-Supervised representation learning applied to text retrieval in search.
+在Ori Ram、Gal Shachaf、Omer Levy、Jonathan Berant和Amir Globerson的论文《无监督学习检索片段》中，我们发现了一些有趣的想法。作者们探索了一种称为自监督学习的学习算法类别，该算法可以通过引导损失函数来训练新模型，而无需人工标注！论文链接：[Learning to Retrieve Passages without Supervision](https://arxiv.org/pdf/2112.07708.pdf)
 
-### Results
-The results Spider achieves are extremely exciting! The headline is that Spider's Zero-Shot Generalization rivals the performance of the Supervised baseline on Supervised evaluation. This means that we take the labeled dataset, divide it into train-test splits, train a Supervised model on this train split, and then evaluate both models on the held-out test split. Although Spider has not been trained on this distribution (Zero-Shot Generalization), it achieves a similar performance to the model which has!
+自监督学习在生成建模和表示学习方面取得了巨大的进展。在本文中，我们将介绍最近的突破性自监督表示学习方法——基于跨度的无监督稠密检索器（Spider），该方法应用于搜索中的文本检索。
 
-The authors further probe this Zero-Shot Generalization across several Open-Domain Question Answering datasets to illustrate how much better these Self-Supervised algorithms are than their Supervised predecessors. Further, the authors show how we can target Spider’s performance to a particular data distribution with Transfer Learning. The new algorithms prove to be much more sample-efficient, requiring only 128 labeled examples!
+### 结果
+Spider取得的结果非常令人兴奋！要点是，Spider的零样本泛化能力与监督基线在监督评估上的性能相媲美。这意味着我们将有标签的数据集分成训练集和测试集，用训练集训练一个监督模型，然后在保留的测试集上评估这两个模型。尽管Spider没有在这个分布上进行训练（零样本泛化），但它达到了与已经训练过的模型相似的性能！
 
-## Information Retrieval with Deep Learning
+作者进一步探索了这种零样本泛化在几个开放领域问答数据集上的表现，以展示这些自监督算法比它们的有监督前身更好。此外，作者还展示了如何通过迁移学习将Spider的性能针对特定数据分布进行优化。这些新算法证明了它们具有更高的样本效率，仅需要128个标记样本！
 
-Information Retrieval describes the task of matching a query with relevant information in a large collection of documents. For example, the question "What is the atomic number of oxygen?" would be paired with the Wikipedia sentence "Oxygen is the chemical element with the symbol O and atomic number 8".
+## 利用深度学习进行信息检索
 
-In order to answer queries based on data from Wikipedia, we take every sentence, or paragraph from Wikipedia, and use a Deep Learning model to build a predicted vector representation. Before we can use the Deep Learning model for this, we need to first train it! And in order to train a Deep Learning model, we need:
-* a dataset (such as paragraphs from Wikipedia),
-* and an optimization task.
+信息检索描述了在大量文档集合中将查询与相关信息进行匹配的任务。例如，问题“氧的原子序数是多少？”将与维基百科的句子“氧是符号为O、原子序数为8的化学元素”进行匹配。
 
-Here we can use Contrastive Learning, which is a strong optimization task. Contrastive Learning uses a combination of positive (semantically similar – we want these to match) and negative (semantically dissimilar – we don't want these to match) samples from a given anchor/query point.
+为了根据维基百科的数据回答查询，我们会对维基百科的每个句子或段落进行处理，并使用深度学习模型构建预测的向量表示。在使用这个深度学习模型之前，我们需要先对其进行训练！为了训练深度学习模型，我们需要：
+* 一个数据集（例如来自维基百科的段落），
+* 以及一个优化任务。
 
-The image below illustrates the concept of Contrastive Learning. We want to align representations of Meerkat images by contrasting them with sampled negatives. If we choose negatives that are too easy (like comparing Meerkats with a New York City photograph), the model won't learn a whole lot about semantics. However, if we choose a better negative (like a Golden Retriever), the model has to capture more semantics about the visual features of Meerkats.
+在这里，我们可以使用对比学习（Contrastive Learning），这是一项强大的优化任务。对比学习使用来自给定锚点/查询点的正样本（语义相似 - 我们希望它们匹配）和负样本（语义不相似 - 我们不希望它们匹配）的组合。
 
-<!-- TODO: update the image from Svitlana -->
+下面的图片说明了对比学习的概念。我们希望通过与负样本进行对比，来对Meerkat图像的表示进行对齐。如果我们选择的负样本太容易（例如将Meerkat与纽约市的照片进行比较），模型将无法学习到有关语义的很多信息。然而，如果我们选择一个更好的负样本（例如一只金毛犬），模型就必须捕捉更多关于Meerkat视觉特征的语义信息。
 
-![Bad Negative vs Good Negative](./img/contrastive-learning-example.jpg)
-*Images sourced from Unsplash – Thanks to Bastian Riccardi, Dan Dennis, Clay Banks, and Shayna Douglas!*
+<!-- TODO: 更新图片来自Svitlana -->
 
-The problem with Contrastive Learning is that the construction of positive and negative samples typically requires expensive and time-consuming manual labeling. Self-Supervised Learning, on the other hand, aims to minimize this cost and offers a clear breakthrough in the performance of these techniques.
+![坏的负面对比好的负面](./img/contrastive-learning-example.jpg)
+*图片来自Unsplash - 感谢Bastian Riccardi，Dan Dennis，Clay Banks和Shayna Douglas！*
 
-Some quick terms before diving in:
-* Anchor - A query point that the model takes as input to compare with the Positive and Negative.
-* Positive - The data point we want the model to predict is semantically similar to the Anchor.
-* Negative - The data point we want the model to predict is semantically dissimilar to the Anchor.
-* Document - A collection of Passages such as a Wikipedia article, blog post, or scientific paper, to give a few examples.
-* Passage - 100 word chunks extracted from a Document.
-* Span - A snippet of words such as "Deep Learning" or "biological brain of most living organisms".
-* Recurring Span - A piece of text (ignoring punctuation, etc) that appears in more than one Passage.
+对比学习的问题在于构建正负样本通常需要昂贵且耗时的手动标注。自监督学习则旨在最小化这种成本，并在这些技术的性能上取得明显突破。
 
-## What’s New - Span-based Unsupervised Dense Retriever (SPIDER)
+在深入了解之前，先简单介绍一些术语：
+* 锚点（Anchor）- 模型以之作为输入与正样本和负样本进行比较的查询点。
+* 正例 - 我们希望模型预测的数据点在语义上与锚点相似。
+* 负例 - 我们希望模型预测的数据点在语义上与锚点不相似。
+* 文档 - 例如维基百科文章、博客帖子或科学论文等由段落组成的集合。
+* 段落 - 从文档中提取的100个字的块。
+* 范围 - 一段词语的片段，例如“深度学习”或“大多数生物的生物大脑”。
+* 循环出现的片段 - 在多个段落中出现的一段文本（忽略标点等）。
 
-Spider offers a way to automatically generate **Anchor**, **Positive** and **Negative** training data with **Recurring Span Retrieval**. One of the key elements of Spider is to identify the longest Recurring Spans that appear in two (or more) different places within the same Document. Then use that to later construct positive and negative training data.
+## 新功能 - 基于片段的无监督密集检索器（SPIDER）
 
-### Exercise – Spider implementation
+Spider提供了一种使用**重复跨度检索**自动生成**锚点**、**正例**和**负例**训练数据的方法。Spider的一个关键要素是识别在同一文档中出现在两个（或多个）不同位置的最长重复跨度。然后，使用这些跨度构建正例和负例训练数据。
 
-As an exercise, I've prepared a [Google Colab notebook](https://colab.research.google.com/github/CShorten/Small-Weaviate-Examples/blob/main/Recurring-Spans.ipynb), where I implemented a basic version of the Spider Algorithm. The idea is to identify the longest Recurring Spans in the "Deep learning" Wikipedia article.
+### 练习 - Spider实现
 
-### Exercise – pseudocode
-In case you are curious on how my implementation works.
-I can explain it in 4 steps:
+作为一项练习，我准备了一个[Google Colab笔记本](https://colab.research.google.com/github/CShorten/Small-Weaviate-Examples/blob/main/Recurring-Spans.ipynb)，在其中我实现了Spider算法的基本版本。这个算法的思想是识别出"深度学习"维基百科文章中最长的重复片段。
 
-* **Step 1** – Split the **Document** in a list of 100 word **Passages**.<br/>
-	Note. We could also eliminate punctuation and stop words.
+### 练习 - 伪代码
+如果你对我的实现方式感兴趣，我可以用4个步骤来解释它的工作原理：
 
-* **Step 2** – Extract **spans (n-grams)** from all **Passages**.<br/>
-	For example, from the sentence: **"Deep learning (also known as deep structured learning)..."**<br/>
-	we could get the following 3-grams / spans:<br/>
-	`["Deep learning also", "learning also known", "also known as", "known as deep"]`
+* **步骤 1** - 将**文档**拆分为一个包含100个单词**段落**的列表。<br/>
+	注意。我们也可以去除标点符号和停用词。
 
-* **Step 3** - Find matching **Recurring Spans** across **Passages**.<br/>
-	This can be done with a double loop where you go through the n_grams of a passage and then compare it to the set of n_grams in every other passage.
+* **步骤 2** - 从所有的**段落**中提取**片段（n-gram）**。<br/>
+	例如，从句子：**"深度学习（也称为深层结构学习）..."**<br/>
+	我们可以得到以下的3-gram / 片段：<br/>
+	`["深度学习也", "学习也称为", "也称为深层", "称为深层结构学习"]`
 
-* **Step 4** - Find the longest **Recurring Spans**.<br/>
-Finally, sort **Recurring Spans** by length and take the longest matching passages to use as an **Anchor** and **Positive** pair.
+* **步骤 3** - 在**段落**中查找匹配的**重复片段**。<br/>
+可以通过双重循环来完成，首先遍历一个段落的n_gram，然后将其与其他每个段落中的n_gram集合进行比较。
 
-### Exercise – results
+* **步骤 4** - 找到最长的**重复片段**。<br/>
+最后，按长度对**重复片段**进行排序，并选择最长的匹配段落作为**锚点**和**正样本**。
 
-As a result, the algorithm identified the following, as the longest Recurring Span in the "Deep Learning" article:<br/>
- **"and toxic effects of environmental chemicals in nutrients, household products and drugs"**
+### 练习 - 结果
 
-With that we can construct an Anchor, Positive & Negative samples, like this:
+作为结果，算法在“深度学习”文章中识别出了以下内容作为最长的循环跨度：<br/>
+**“研究已经探索了使用深度学习来预测生物分子靶点、非靶标、以及营养品、家庭产品和药物中的环境化学物质的毒性效应。”**
 
-* **Anchor** = "Research has explored use of deep learning to predict the biomolecular targets, off-targets, **and toxic effects of environmental chemicals in nutrients, household products and drugs**."
+有了这个，我们可以构建锚点、正样本和负样本，如下所示：
 
-* **Positive** = "In 2014, Hochreiter's group used deep learning to detect off-target **and toxic effects of environmental chemicals in nutrients, household products and drugs** and won the "Tox21 Data Challenge" of NIH, FDA, and NCATS."
+* **锚点** = “研究已经探索了使用深度学习来预测生物分子靶点、非靶标、以及营养品、家庭产品和药物中的环境化学物质的毒性效应。”
 
-* **Negative** = "Advances in hardware have driven renewed interest in deep learning. In 2009, Nvidia was involved in what was called the "big bang" of deep learning, "as deep-learning neural networks were trained with Nvidia graphics processing units (GPUs)."
+* **正面** = "2014年，Hochreiter的团队利用深度学习检测环境化学物质、营养品、家庭产品和药物的离靶和毒性效应，并赢得了NIH、FDA和NCATS的"Tox21数据挑战"。"
 
-### Exercise – summary
+* **负面** = "硬件的进步推动了对深度学习的重新关注。2009年，Nvidia参与了被称为深度学习的"大爆炸"，"通过Nvidia的图形处理单元（GPU）训练深度学习神经网络。"
 
-It was a fun exercise seeing which spans re-appeared in the "Deep Learning" wikipedia article such as *"toxic effects of environmental chemicals in nutrients household products"* or *"competitive with traditional speech recognizers on certain tasks"*.
+### 练习 - 总结
 
-Feel free to open my [Google Colab notebook](https://colab.research.google.com/github/CShorten/Small-Weaviate-Examples/blob/main/Recurring-Spans.ipynb), and replace the `Raw_Document` text with the text of your document of choice! It will be interesting to see what you get.
+这是一个有趣的练习，我们可以看到在《深度学习》维基百科文章中重新出现的一些短语，比如“环境化学物质对营养家庭产品的有毒影响”或者“在某些任务上与传统语音识别器具有竞争力”。
 
-## SPIDER – deeper dive
-The notion of passages is a clever Self-Supervised Learning trick that uses the structure inherent in documents such as Wikipedia articles. A passage is the abstraction of atomic units, i.e. sentences, paragraphs, or some arbitrary sequence length. Passages are sourced from documents such as the Wikipedia article "Oxygen". Thus positive pairs are passages that share an overlapping n-gram and negative pairs are passages that do not.
+请随意打开我的[Google Colab笔记本](https://colab.research.google.com/github/CShorten/Small-Weaviate-Examples/blob/main/Recurring-Spans.ipynb)，并用您选择的文档的文本替换`Raw_Document`文本！很有趣看看您会得到什么。
 
-This has an auto-labeling benefit since the negative pair is likely to be semantically similar to the query point, rather than learning the function of entailment which distinguishes positives and negatives. Similar to the image above, which either compares a Meerkat with a New York City photograph or a Golden Retriever, we want to find better negatives for text retrieval. We will get better representations if the model learns to contrast particular sections of the "Oxygen" article, rather than something describing the basketball career of LeBron James.
+## SPIDER - 深入探究
+“Passages（段落）”的概念是一种巧妙的自监督学习技巧，它利用了文档中固有的结构，例如维基百科文章。段落是原子单位（例如句子、段落或某个任意序列长度）的抽象。段落来自于维基百科文章“氧气”。因此，正对（positive pairs）是共享有重叠n-gram的段落，而负对（negative pairs）是没有重叠n-gram的段落。
 
-### Query Transformation
+由于负样本很可能在语义上与查询点相似，而不是学习区分正样本和负样本的蕴含功能，因此这具有自动标记的好处。就像上面的图片一样，比较的是一个猫鼬和纽约市的照片或一个金毛犬，我们希望为文本检索找到更好的负样本。如果模型学会对比“氧气”文章的特定部分，而不是描述勒布朗·詹姆斯篮球生涯的内容，我们将获得更好的表示。
 
-Thus far, we have presented 2 key innovations in Spider – **Recurring Span** positive selection and **Document-Passage** decomposition to leverage the inherent structure in a Document to source anchor, positive, and negative data tuples for Contrastive Learning. The third key innovation we will explore is **Query Transformation**.
+### 查询转换
 
-Once positive pairs are sampled based on Recurring Spans, a **Query Transformation** is either applied to the anchor or not, with 50% probability. If not applied, the anchor remains as it was found in the text. Alternatively if the query transformation is applied, the overlapping n-gram is deleted from the anchor passage. The anchor is further processed via adjacent window sampling of random length between 5 and 30 neighboring tokens. This is done to make the anchor better represent the queries we expect to see with search systems, which generally have shorter length than the passages they aim to retrieve.
+到目前为止，我们在Spider中提出了两个关键创新——**循环跨度**正向选择和**文档-段落**分解，以利用文档中的固有结构来获取对比学习的源锚点、正向和负向数据元组。我们将探讨的第三个关键创新是**查询转换**。
 
-The authors experimentally ablate the effectiveness of applying this query transformation, the impact of sampling a negative as well as a positive (i.e. using positives from other documents as negatives for the current query point), as well as the impact of batch size and training time on performance.
+在基于重复跨度采样的情况下，根据概率50%的概率，对锚点应用**查询转换**。如果不应用查询转换，则锚点保持与文本中发现的一致。另外，如果应用了查询转换，则从锚点段落中删除重叠的n-gram。然后，通过邻近窗口采样，随机选择长度在5到30个相邻标记之间的锚点进行进一步处理。这样做是为了使锚点更好地代表我们期望在搜索系统中看到的查询，这些查询通常比它们希望检索的段落长度要短。
 
-The image below demonstrates two examples with the matching Recurring Spans **"the priesthood for himself and his male descendants"** and **"Yoko Ono"**. The first anchor point keeps the Recurring Span in the positive. The second anchor deletes the phrase **"Yoko Ono"**.
+作者通过实验验证了应用查询转换的有效性，采样正样本和负样本的影响（即使用其他文档中的正样本作为当前查询点的负样本），以及批次大小和训练时间对性能的影响。
 
-![Construction of positive and negative samples](./img/positive-negative-samples.jpg)
-*Image source: Learning to Retrieve Passages without Supervision, Ram et al. 2022.*
+下面的图片展示了两个示例，其中匹配的重复片段分别是**"the priesthood for himself and his male descendants"**和**"Yoko Ono"**。第一个锚点保持了正向的重复片段。第二个锚点删除了短语**"Yoko Ono"**。
 
-## Experimental Evaluation
+![正向和负向样本的构建](./img/positive-negative-samples.jpg)
+*图片来源：无监督学习检索段落，Ram等人，2022年。*
 
-The authors experimentally present the effectiveness of Spider with the use of ODQA (Open-Domain Question Answering) datasets. ODQA datasets consist of labeled (question, answer, context) tuples. For example ("What is the atomic number of oxygen?", "8", "Oxygen is the chemical element with the symbol O and atomic number 8."). Retrieval models are evaluated based on whether they can retrieve this context given the question as input and a large collection of contexts represented as vectors. This is reported with the top-k retrieval accuracy, the percentage of questions for which the answer span is found in the top-k passages most similar to the query.
+## 实验评估
 
-The Spider retrieval models are 110 million parameter BERT-base transformers, using an uncased WordPiece tokenizer. The vector representations of passages are extracted by indexing the [CLS] token, a common indexing technique describing extraction from the leftmost vector in BERT’s output matrix. Spider is trained on a Wikipedia dump from Dec. 20th, 2018 with passages of 100 words as retrieval units, totalling 21 million passages after preprocessing. Spider is trained for 200,000 steps using a batch size of 1024. This takes 2 days on 8 80GB A100 GPUs. The authors additionally explore fine-tuning Spider with Supervised Learning using 8 Quadro RTX 8000 GPUs.
+作者们通过使用ODQA（开放领域问答）数据集实验证明了Spider的有效性。ODQA数据集由标记的（问题、答案、上下文）元组组成。例如（"氧的原子序数是多少？"，"8"，"氧是具有符号O和原子序数8的化学元素。"）。检索模型根据其是否能够在给定问题和表示为向量的大量上下文集合上作为输入的情况下检索到该上下文来进行评估。这通过top-k检索准确率来报告，即在与查询最相似的top-k段落中是否找到了答案跨度的问题的百分比。
 
-### Spider + BM25 is on par with Supervised DPR when evaluated on the Supervised DPR test set!
+Spider检索模型是由1.1亿参数的BERT-base转换器组成的，使用的是不区分大小写的WordPiece分词器。通过索引[CLS]标记提取段落的向量表示，这是一种常见的索引技术，描述了从BERT输出矩阵的最左边向量中提取信息的方法。Spider模型使用2018年12月20日的维基百科数据进行训练，使用100个单词作为检索单位，经过预处理后总共有2100万个段落。Spider模型使用批量大小为1024进行了20万步的训练。在8个80GB的A100 GPU上，训练过程耗时2天。作者还使用了8个Quadro RTX 8000 GPU对Spider模型进行了监督学习的微调。
 
-The results of this paper are extremely exciting for Self-Supervised text retrieval! As a quick primer, Supervised text retrieval is annotated by showing a passage to a labeler, then the labeler produces a question-answer pair from the passage. The system is then trained to align the question with the passage in the same Contrastive Learning framework we have described. Supervised Learning models are typically evaluated by dividing the dataset into train-test splits. Spider (especially when boosted in a Hybrid Search framework alongside BM25) is on par with Supervised DPR when evaluated on the held-out DPR test set!
+### 当在Supervised DPR测试集上进行评估时，Spider + BM25与Supervised DPR表现相当！
 
-This is an absolutely amazing result and testimony to the excitement of Self-Supervised Learning methods! Who knows how much further we can take the performance of Spider since we are no longer limited by manual labeling costs? Thus, further investment in model size, unlabeled dataset size, and training time will likely yield even further improvements. The core graphic comparing Spider with Hybrid Retrieval Spider + BM25, DPR, Hybrid Retrieval DPR + BM25, BM25, and ICT is shown below:
+这篇论文的结果对于自监督文本检索来说非常令人兴奋！简单来说，有监督的文本检索是通过向标注者展示一个段落，然后标注者从段落中生成一个问题-答案对来进行注释。然后，系统在我们所描述的相同对比学习框架中训练以使问题与段落对齐。通常，有监督学习模型会通过将数据集分成训练集和测试集来进行评估。当在保留的DPR测试集上评估时，Spider（尤其是在与BM25一起在混合搜索框架中增强时）与有监督的DPR相当。
 
-![Graph comparing Spider vs Supervised models](./img/retrieval-accuracy-graph.jpg)
+这是一个绝对令人惊讶的结果，也证明了自监督学习方法的激动人心之处！由于不再受限于手动标注的成本，我们无法预料Spider性能还能提升多少？因此，进一步投入模型大小、无标签数据集大小和训练时间很可能会带来更进一步的改进。下面是核心图表，比较了Spider与混合检索Spider + BM25、DPR、混合检索DPR + BM25、BM25和ICT的性能：
 
-The exact numbers behind the visualization shown above and evaluations with Natural Questions (NQ), TriviaQA, and Web Questions (WQ) are presented below:
+![Spider模型与有监督模型的检索准确性对比图](./img/retrieval-accuracy-graph.jpg)
 
-![Data comparing Spider vs Supervised models](./img/retrieval-accuracy-data.jpg)
+上述可视化图表背后的具体数据以及在自然问题（NQ）、TriviaQA和Web Questions（WQ）上的评估结果如下所示：
 
-### Zero-Shot Generalization
+![Spider模型与有监督模型的数据对比图](./img/retrieval-accuracy-data.jpg)
 
-The results above look at DPR models which have been trained on the dataset they are tested on, i.e. the train-test sets are independent and identically distributed splits of the same data distribution. Another interesting measurement of these models is the **Zero-Shot Generalization** ability - how well these models can perform on data distributions they were not trained on.
+### 零-shot泛化能力
 
-Shown below, the Spider models have a much better **Zero-Shot Generalization** than the Supervised DPR models. The generalization of Supervised Learning is very limited to the training data distribution. In contrast, Self-Supervised Learning techniques such as Spider are more robust to esoteric details of questions such as the style or length. This is of course in addition to the general content such as biomedical text versus legal text.
+上面的结果是针对在训练集上进行训练的DPR模型进行的测试，即训练集和测试集是来自同一数据分布的独立且相同的划分。这些模型的另一个有趣的评估指标是**零样本泛化**能力 - 即这些模型在未经训练的数据分布上的表现如何。
 
-![Zero-Shot Generalization data](./img/zero-shot-generalization-data.jpg)
+如下所示，Spider模型比监督式DPR模型具有更好的“零样本泛化”能力。监督学习的泛化能力在很大程度上受限于训练数据的分布。相反，自监督学习技术（如Spider）对问题的奇特细节（如样式或长度）更加稳健。当然，这还包括一般内容，如生物医学文本与法律文本之间的区别。
 
-### Supervised Fine-Tuning of Spider
+![零样本泛化数据](./img/zero-shot-generalization-data.jpg)
 
-Perhaps more practically is to use Spider in tandem with Supervised Learning. Again, the general procedure for labeling datasets like this is to (1) show a labeler some context, like a passage and then (2) have the labeler derive a question/answer pair from the context. The training dataset is then to align questions with the originally presented passage.
+### Spider的监督微调
 
-An interesting question with this approach is: How many questions do we need to label? Spider further provides a benefit here, greatly reducing the number of examples needed for strong Transfer Learning performance. As described by the Ram et al., "Spider fine-tuned on 128 examples is able to outperform all other baselines when they are trained on 1024 examples". The image below presents the results of Supervised Fine-tuning with 128 examples, 1024 examples, and the full dataset.
+也许更实际的方法是将Spider与监督学习结合使用。同样，对于标记这样的数据集，一般的流程是：（1）向标记者展示一些上下文，比如一段文字，然后（2）让标记者从上下文中提取出问题/答案对。然后，训练数据集就是将问题与最初呈现的文字进行对齐。
 
-![Fine-tuning comparison - data](./img/fine-tuning-comparison-data.jpg)
+这种方法中一个有趣的问题是：我们需要标记多少个问题？Spider在这方面提供了一个好处，大大减少了强迁移学习性能所需的示例数量。正如Ram等人所描述的，"Spider在使用128个示例进行微调时，能够胜过其他所有基线模型在使用1024个示例进行训练时的性能"。下图展示了使用128个示例、1024个示例以及完整数据集进行监督微调的结果。
 
-### Similar Techniques
+![微调比较 - 数据](./img/fine-tuning-comparison-data.jpg)
 
-The authors present an excellent description of experimental baselines which we encourage readers to explore. These include BM25, BERT, ICT, Condenser, CoCondenser, MSS, Contriever, and DPR.
+### 相似技术
 
-## Reflections
+作者们提供了对实验基线的出色描述，我们鼓励读者进行探索。这些基线包括BM25、BERT、ICT、Condenser、CoCondenser、MSS、Contriever和DPR。
 
-It is extremely exciting to see advances in Self-Supervised Learning for retrieval. This enables us to utilize larger datasets to train larger models. Further, this algorithm shows that there is plenty of opportunity on the task construction side of Self-Supervised Learning. These experiments show that how we sample positive and negative pairs is crucial for the resulting performance of the models.
+## 反思
 
-We may be able to improve this further by looking at the structure of how Documents are sourced in batches. The current Spider algorithm may sample completely unrelated articles such as "Oxygen" and "LeBron James", but we can imagine isolating a set of article titles that are semantically similar. This would provide even more semantic signal in the negatives used to optimize the model. It is interesting to think of how we would source a Document batch sampling like this – the easiest way would probably be to sample a single article and then use a semantic similarity search from a zero-shot embedding model. We might also be able to exploit the ontology structure present in some datasets like Wikidata / Wikipedia.
+非常令人兴奋地看到自监督学习在检索方面取得的进展。这使我们能够利用更大的数据集来训练更大的模型。此外，该算法表明，在自监督学习的任务构建方面存在大量机会。这些实验表明，我们如何采样正负样本对对于模型的最终性能至关重要。
 
-This is very interesting for those looking to train a custom retrieval model for their search applications. We now have an established technique to Self-Supervised this training that goes beyond simple heuristics like using neighboring passages as positives. Hopefully we will see more and more people doing this and populating the HuggingFace model hub with retrieval checkpoints!
+我们可以通过查看文档批量获取的结构来进一步改进。当前的Spider算法可能会采样完全无关的文章，比如"氧气"和"勒布朗·詹姆斯"，但我们可以想象隔离一组语义上相似的文章标题。这将在用于优化模型的负面语义信号中提供更多的信号。思考如何获取这样的文档批次采样是很有趣的——最简单的方法可能是随机采样一篇文章，然后使用零样本嵌入模型进行语义相似度搜索。我们还可以利用一些数据集中的本体结构，比如Wikidata/Wikipedia。
 
-It is also very interesting to see the improvement of pairing Spider with BM25, another testimony to the effectiveness of Hybrid (Dense / Sparse) retrieval techniques. On a similar note, the ODQA evaluation suite seemed fairly comprehensive. However, it may be worth further digging into how this performs on benchmarks such as BEIR.
+对于那些希望为他们的搜索应用程序训练自定义检索模型的人来说，这非常有趣。我们现在有一种已经建立起来的自监督训练技术，超越了简单的启发式方法，如使用相邻段落作为正样本。希望我们能看到越来越多的人这样做，并且用检索检查点填充HuggingFace模型中心！
 
-It is also very exciting to think about the generality of this algorithm. We could imagine applying this to code snippets, as well as DNA sequences and molecular structures. We could apply the exact same technique to code, looking for recurring spans across say a GitHub repository, or maybe even one long program. DNA sequences are a very interesting example of this as well as shared *"ACCGTCCG"* spans may signal a shared functional / semantic similarity. Molecular structures are also made of sub-structures in which recurrence across molecules could be a positive signal of semantic similarity. I think that this will be very useful for discrete data like text, code, base pair sequences, or molecular structures. I do not think this heuristic will be as effective for continuous data like images or audio.
+很有趣的是，将Spider与BM25配对使用，也能看到混合（稠密/稀疏）检索技术的有效性。类似地，ODQA评估套件似乎相当全面。然而，进一步研究其在BEIR等基准测试上的表现可能是值得的。
 
-Although not tested in the paper, these top-k searches can further leverage **Approximate Nearest Neighbor (ANN)** indexes such as **HNSW** to achieve polylogarithmic scaling with respect to search time and the number of total documents. This is a very important detail for practical engineering of billion-scale similarity search.
+对于这个算法的普适性也非常令人兴奋。我们可以想象将其应用于代码片段、DNA序列和分子结构。我们可以对代码应用完全相同的技术，寻找在GitHub代码库中或者一个很长的程序中重复出现的部分。DNA序列也是一个非常有趣的例子，共享的“ACCGTCCG”序列可能表明共享的功能/语义相似性。分子结构也由亚结构组成，在分子之间的重复可能是语义相似性的积极信号。我认为这对于像文本、代码、碱基序列或分子结构这样的离散数据非常有用。但是，我不认为这种启发式方法对于像图像或音频这样的连续数据会非常有效。
 
-## Custom Retrievers in Weaviate
+虽然论文中没有对这些前k个搜索进行测试，但这些搜索可以进一步利用**近似最近邻（ANN）**索引，例如**HNSW**，以实现对搜索时间和总文档数量的对数级扩展。这对于亿级相似性搜索的实际工程非常重要。
 
-![Spider with Weaviate](./img/weaviate-spider-diagram.jpg)
+## 在Weaviate中自定义检索器
 
-Advances such as Spider can be added to the Weaviate vector database by creating a custom module. The authors have [open-sourced their model](https://github.com/oriram/spider) and published the weights on the [HuggingFace model hub](https://huggingface.co/tau/spider). Weaviate has a tight integration with HuggingFace in examples such as the nearText module. This enables users to change the path in their Weaviate docker image to access different HuggingFace models.
+![Weaviate中的蜘蛛图](./img/weaviate-spider-diagram.jpg)
 
-## Conclusion
+通过创建自定义模块，可以将Spider等进阶功能添加到Weaviate向量数据库中。作者已经将他们的模型[开源](https://github.com/oriram/spider)，并在[HuggingFace模型中心](https://huggingface.co/tau/spider)上发布了权重。Weaviate与HuggingFace有着紧密的集成，例如nearText模块的示例。这使得用户可以更改Weaviate docker镜像中的路径，以访问不同的HuggingFace模型。
 
-In conclusion, methods like Spider give Weaviate users the ability to have a customized retriever without needing to label data. Performance can be improved by labeling data, but the amount needed is greatly reduced. For the development of Weaviate, we are on the hunt for new techniques in retrieval models like this to understand advances in Search technology. We hope this article inspired your interest in Self-Supervised retrieval and emerging technologies around this!
+## 结论
+
+总之，像Spider这样的方法使Weaviate用户能够拥有一个定制的检索器，而无需对数据进行标注。通过标注数据可以提高性能，但所需的数据量大大减少。对于Weaviate的开发，我们正在寻找新的检索模型技术，以了解搜索技术的进展。我们希望本文能激发您对自监督检索和相关新兴技术的兴趣！
 
 
 import WhatNext from '/_includes/what-next.mdx'

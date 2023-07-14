@@ -1,44 +1,49 @@
 ---
-title: Tutorial - Backup and Restore in Weaviate
-slug: tutorial-backup-and-restore-in-weaviate
-authors: [stefan, jp]
+authors:
+- stefan
+- jp
 date: 2022-11-15
-tags: ['how-to']
+description: Learn how to quickly and easily back up and restore your Weaviate data
+  with the native backup feature.
 image: ./img/hero.png
-description: "Learn how to quickly and easily back up and restore your Weaviate data with the native backup feature."
+slug: tutorial-backup-and-restore-in-weaviate
+tags:
+- how-to
+title: Tutorial - Backup and Restore in Weaviate
 ---
-![Tutorial - Backup and Restore in Weaviate](./img/hero.png)
 
-<!-- truncate -->
+![在 Weaviate 中的备份和恢复教程](./img/hero.png)
 
-Maintaining data integrity is one of the key goals for database users. So it should come as no surprise that backing up the data is an important part of database best practices.
+<!-- 截断 -->
 
-Although it has always been possible to back up Weaviate data, doing so used to require many manual and inelegant steps. So, we have introduced a [backup feature](/developers/weaviate/configuration/backups) in Weaviate `v1.15` that streamlines the backup process, whether it be to a **local file system** or to a **cloud storage provider**.
+保持数据完整性是数据库用户的关键目标之一。因此，备份数据是数据库最佳实践的重要组成部分，这一点毫不奇怪。
 
-If you have not yet had a chance to use this cool feature, don't worry! This tutorial will show you how to use this feature to back up your data and restore it to another Weaviate instance.
+虽然以前已经可以对Weaviate数据进行备份，但是备份过程需要进行许多手动且不够优雅的步骤。因此，我们在Weaviate `v1.15`中引入了一个[备份功能](/developers/weaviate/configuration/backups)，以简化备份过程，无论是备份到**本地文件系统**还是备份到**云存储提供商**。
 
-## Objectives
+如果您还没有机会使用这个很酷的功能，不用担心！本教程将向您展示如何使用该功能来备份数据并将其恢复到另一个Weaviate实例。
 
-By the end of this tutorial, you will have:
-- Spun up two instances of Weaviate,
-- Populated one Weaviate instance with a new schema & data,
-- Backed up the Weaviate instance, and
-- Restored the backup data to the other instance.
+## 目标
 
-## Preparations
-To get started, clone [github.com/weaviate-tutorials/weaviate-backup](https://github.com/weaviate-tutorials/weaviate-backup) repository and spin up Weaviate:
+通过本教程，您将完成以下任务：
+- 启动两个Weaviate实例，
+- 在一个Weaviate实例中填充新的模式和数据，
+- 备份Weaviate实例，并
+- 将备份数据恢复到另一个实例中。
+
+## 准备工作
+要开始，请克隆 [github.com/weaviate-tutorials/weaviate-backup](https://github.com/weaviate-tutorials/weaviate-backup) 仓库并启动 Weaviate：
 
 ```bash
 docker-compose up -d
 ```
 
-The Docker configuration file (`docker-compose.yaml`) has been set up to spin up two Weaviate instances for this tutorial. You should be able to connect to them at `http://localhost:8080` and `http://localhost:8090` respectively. We'll call them **W1** and **W2** from this point on for convenience.
+Docker配置文件（`docker-compose.yaml`）已经设置好，以便在本教程中启动两个Weaviate实例。您应该可以通过`http://localhost:8080`和`http://localhost:8090`连接到它们，我们将分别称它们为**W1**和**W2**以方便起见。
 
-Think of **W1** as the source instance you want to back up, while **W2** is the destination instance you want to restore the backup to.
+将**W1**视为您要备份的源实例，而**W2**是您要将备份还原到的目标实例。
 
-### Local backups
+### 本地备份
 
-The `docker-compose.yaml` also specifies the below parameters to enable local backups.
+`docker-compose.yaml`还指定了以下参数以启用本地备份。
 ```yaml
 environment:
   …
@@ -48,51 +53,51 @@ volumes:
   - ./backups:/tmp/backups
 ```
 
-This enables the `backup-filesystem` module to back up data from Weaviate to the filesystem, and sets `/tmp/backups` as the `BACKUP_FILESYSTEM_PATH`, which is the backup path within the Docker container.
+这将使`backup-filesystem`模块能够将Weaviate的数据备份到文件系统，并将`/tmp/backups`设置为`BACKUP_FILESYSTEM_PATH`，该路径是Docker容器内的备份路径。
 
-The `volumes` parameter [mounts a volume](/developers/weaviate/configuration/persistence) from outside the container such that Weaviate can save data to it. Setting it to `./backups:/tmp/backups` maps `./backups` on the local device to `/tmp/backups` within the container, so the generated backup data will end up in the `./backups` directory as you will see later on.
+`volumes`参数会将一个卷挂载到容器之外，以便Weaviate可以将数据保存到该卷中。将其设置为`./backups:/tmp/backups`，将本地设备上的`./backups`映射到容器内的`/tmp/backups`，因此生成的备份数据将最终保存在`./backups`目录中，稍后您将会看到。
 
-Now let's dive into it to see the backup functionality in action!
+现在让我们深入了解并看看备份功能的实际操作！
 
-### Utility scripts
-To begin with, both Weaviate instances **W1** and **W2** should be empty. In order to get straight to the point of this tutorial, we've prepared a set of scripts (located in the `scripts` folder) that will help you prepare your Weaviate instances and test them out.
+### 实用脚本
+首先，Weaviate实例 **W1** 和 **W2** 应该是空的。为了直接开始本教程的内容，我们准备了一组脚本（位于 `scripts` 文件夹中），这些脚本将帮助您准备您的 Weaviate 实例并进行测试。
 
 
 :::note Examples available in other languages
 The tutorial text refers to shell scripts (e.g. `0_query_instances.sh`), but we also provide code examples in other languages including **Python** and **JavaScript**. These files are located in `scripts` subdirectory and we encourage you to try them out yourself using your favorite client.
 :::
 
-If you run the `0_query_instances` script, you should see that neither instances contain a schema.
+如果您运行`0_query_instances`脚本，您会发现两个实例都不包含模式。
 
 ```bash
 scripts/0_query_instances.sh
 ```
 
-If it is not empty, or if at any point you would like to reset your Weaviate instances, you can run the `9_delete_all` script, which will delete all of the existing schema and data at those locations.
+如果不为空，或者在任何时候您想要重置您的Weaviate实例，您可以运行`9_delete_all`脚本，该脚本将删除这些位置上所有现有的模式和数据。
 
 ```bash
 scripts/9_delete_all.sh
 ```
 
-### Populate **W1** with data
+### 将 **W1** 填充数据
 
-As our first order of action, we will populate **W1** with data. Run the following to create a schema and import data:
+作为我们的首要任务，我们将填充 **W1** 的数据。运行以下命令来创建模式并导入数据：
 
 ```bash
 scripts/1_create_schema.sh
 scripts/2_import.sh
 ```
 
-Now, running the `0_query_instances` script will return results showing the `Author` and `Book` classes in the schema as well as the objects. Great! We are ready to get to the main point of this tutorial –> back up and restore.
+现在，运行`0_query_instances`脚本将返回显示架构中的`Author`和`Book`类以及对象的结果。太棒了！我们已经准备好开始本教程的重点——备份和恢复。
 
 ```bash
 scripts/0_query_instances.sh
 ```
 
-## Back up & restore data
-Now let's move on to creating our first backup. Initiating a backup involves just a short bit of code.
+## 备份和恢复数据
+现在让我们继续创建我们的第一个备份。初始化备份只需要一小段代码。
 
-The below `curl` command will back up all classes in **W1**, and call the backup `my-very-first-backup`.
+下面的`curl`命令将备份**W1**中的所有类，并将备份命名为`my-very-first-backup`。
 ```bash
 curl \
 -X POST \
@@ -107,15 +112,15 @@ http://localhost:8080/v1/backups/filesystem
 The ID value is used to create a subdirectory in the backup location, and attempting to reuse an existing ID will cause Weaviate to throw an error. Delete the existing directory if one already exists.
 :::
 
-Now try running `3_backup` yourself to back up data from **W1**.
+现在尝试自己运行`3_backup`来备份**W1**的数据。
 
 ```bash
 scripts/3_backup.sh
 ```
 
-If you check the contents of the backup directory again, you should see a new directory called `my-very-first-backup` containing the backup data files.
+如果再次检查备份目录的内容，您应该会看到一个名为`my-very-first-backup`的新目录，其中包含备份数据文件。
 
-Restoring this data can be done with a similarly short piece of code. The `curl` command below will restore our backup:
+恢复这些数据可以使用一段类似的简短代码来完成。下面的`curl`命令将恢复我们的备份：
 ```bash
 curl \
 -X POST \
@@ -126,46 +131,46 @@ curl \
 http://localhost:8090/v1/backups/filesystem/my-very-first-backup/restore
 ```
 
-Try running `4_restore` yourself to restore the **W1** backup data to **W2**.
+尝试自己运行`4_restore`来将**W1**的备份数据还原到**W2**。
 
 ```bash
 scripts/4_restore.sh
 ```
 
-Now, check the schemas again for **W1** and **W2**.
+现在，再次检查**W1**和**W2**的模式。
 
 ```bash
 scripts/0_query_instances.sh
 ```
 
-Do they *both* now contain the same schema? What about the data objects? They should be identical.
+它们现在都包含相同的模式吗？数据对象呢？它们应该是相同的。
 
-Great. You have successfully backed up data from **W1** and restored it onto **W2**!
+太好了。您已成功从**W1**备份数据，并将其还原到**W2**!
 
-## Backup features
-Before we finish, let's go back to talk a little more about additional backup options, and some important notes.
+## 备份功能
+在我们结束之前，让我们再谈谈其他备份选项和一些重要说明。
 
-### Local backup location
-If you wish to back up your data to a different location, edit the `volumes` parameter in `docker-compose.yaml` to replace `./backups` with the desired location.
+### 本地备份位置
+如果您希望将数据备份到其他位置，请在`docker-compose.yaml`中编辑`volumes`参数，将`./backups`替换为所需的位置。
 
-For example, changing it from `./backups:/tmp/backups` to `./my_archive:/tmp/backups` would change the backup destination from `./backups` to `./my_archive/`.
+例如，将其从`./backups:/tmp/backups`更改为`./my_archive:/tmp/backups`会将备份目标从`./backups`更改为`./my_archive/`。
 
-### Cloud storage systems
-Note, you can also configure Weaviate backup to work with **cloud storage systems** like **Google Cloud Storage** (**GCS**) and **S3-compatible blob storage** (like **AWS S3** or **MinIO**).
+### 云存储系统
+请注意，您还可以配置Weaviate备份与**云存储系统**（如**Google Cloud Storage**（**GCS**）和**兼容S3的块存储**（如**AWS S3**或**MinIO**））一起工作。
 
-Each requires a different Weaviate backup module (`backup-gcs` and `backup-s3`), configuration parameters and authentication.
+每个系统都需要不同的Weaviate备份模块（`backup-gcs`和`backup-s3`），配置参数和身份验证。
 
-### Learn more
-Check our documentation to learn more about:
+### 了解更多
+请查阅我们的文档，了解更多关于：
 
-* [Local backup](/developers/weaviate/configuration/backups#filesystem)
-* [GCS backup](/developers/weaviate/configuration/backups#gcs-google-cloud-storage)
-* [S3 backup](/developers/weaviate/configuration/backups#s3-aws-or-s3-compatible)
+* [本地备份](/developers/weaviate/configuration/backups#filesystem)
+* [GCS备份](/developers/weaviate/configuration/backups#gcs-google-cloud-storage)
+* [S3备份](/developers/weaviate/configuration/backups#s3-aws-or-s3-compatible)
 
-### Partial backup and restore
-Weaviate's backup feature allows you to back up or restore a subset of available classes. This might be very useful in cases where, for example, you may wish to partially export a subset of data to a development environment or import an updated class.
+### 部分备份和恢复
+Weaviate的备份功能允许您备份或恢复可用类的子集。在某些情况下，这可能非常有用，例如，您可能希望部分导出数据到开发环境或导入更新的类。
 
-For example, the below `curl` command will restore only the `Author` class regardless of whether any other classes have been also included in `my-very-first-backup`.
+例如，下面的`curl`命令将仅还原`Author`类，而不管是否还包括了其他类在`my-very-first-backup`中。
 ```bash
 curl \
 -X POST \
@@ -177,40 +182,40 @@ curl \
 http://localhost:8090/v1/backups/filesystem/my-very-first-backup/restore
 ```
 
-Delete everything in **W2** first with `8_delete_w2`, and try out the partial restore with `4a_partial_restore`.
+首先使用`8_delete_w2`删除**W2**中的所有内容，然后使用`4a_partial_restore`尝试部分恢复。
 
 ```bash
 scripts/8_delete_w2.sh
 scripts/4a_partial_restore.sh
 ```
 
-You should see that **W2** will only contain one class even though its data was restored from a backup that contains multiple classes.
+你会看到，即使从包含多个类的备份中恢复了数据，**W2**中只会包含一个类。
 
-The restore function allows you to restore a class as long as the target Weaviate instance does not already contain that class. So if you run another operation to restore the `Book` class to **W2**, it will result in an instance containing both `Author` and `Book` classes.
+只要目标Weaviate实例中不存在该类，恢复函数就可以恢复一个类。因此，如果你运行另一个操作将`Book`类恢复到**W2**中，结果将是一个包含`Author`和`Book`两个类的实例。
 
-### Asynchronous operations
-In some cases, Weaviate's response to your `backup` or `restore` request may have  `"status":"STARTED"`.<br/>
-*Isn't it interesting that the status was not indicative of a completion?*
+### 异步操作
+在某些情况下，Weaviate对您的`backup`或`restore`请求的响应可能是`"status":"STARTED"`。<br/>
+*有趣的是，状态并不表示操作已完成。*
 
-That is because Weaviate's backup operation can be initiated and monitored asynchronously.
+这是因为Weaviate的备份操作可以异步地启动和监视。
 
-This means that you don't need to maintain a connection to the server for the operation to complete. And you can look in on the status of a restore operation with a command like:
+这意味着您不需要保持与服务器的连接即可完成操作。您可以使用类似以下命令的方式查看恢复操作的状态：
 ```bash
 curl http://localhost:8090/v1/backups/filesystem/my-very-first-backup/restore
 ```
 
-Weaviate remains available for read and write operations while backup operations are ongoing. And you can poll the endpoint to check its status, without worrying about any potential downtime.
+在备份操作进行期间，Weaviate仍然可以进行读写操作。您可以轮询端点以检查其状态，而无需担心任何潜在的停机时间。
 
-Check out `3a_check_backup_status.sh` and `4b_check_restore_status.sh` for examples of how to query **W1** for the backup status, or **W2** for the restore status respectively.
+分别查看`3a_check_backup_status.sh`和`4b_check_restore_status.sh`的示例，了解如何查询备份状态的**W1**，或者恢复状态的**W2**。
 
-## Wrap-up
-That's it for our quick overview of the new backup feature available in Weaviate. We are excited about this feature as it will make it easier and faster for you to back up your data, which will help make your applications more robust.
+## 总结
+这就是我们对Weaviate中新备份功能的快速概述。我们对这个功能感到兴奋，因为它将使您更轻松、更快速地备份数据，从而帮助使您的应用程序更加健壮。
 
-To recap, Weaviate's new backup feature allows you to back up one or more classes from an instance of Weaviate to a backup, and to restore one or more classes from a backup to Weaviate. Weaviate remains functional during these processes, and you can poll the backup or restore operation status periodically if you wish.
+回顾一下，Weaviate的新备份功能允许您从Weaviate的实例中备份一个或多个类，并将一个或多个类从备份还原到Weaviate。在这些过程中，Weaviate保持可用，并且您可以定期轮询备份或还原操作的状态（如果您希望的话）。
 
-Weaviate currently supports backing up to your local filesystem, AWS or GCS. But as the backup orchestration is decoupled from the remote backup storage backends, it is relatively easy to add new providers and use them with the existing backup API.
+Weaviate目前支持将备份存储到本地文件系统、AWS或GCS。但由于备份编排与远程备份存储后端是解耦的，因此相对容易添加新的提供商并将它们与现有的备份API一起使用。
 
-If you would like to use another storage provider to use with Weaviate, we encourage you to open a feature request or consider contributing it yourself. For either option, [join our Slack community](https://weaviate.io/slack) to have a quick chat with us on how to get started.
+如果您想要使用其他存储提供商与Weaviate一起使用，我们鼓励您提出功能请求或考虑自己进行贡献。对于任何一种选择，[加入我们的Slack社区](https://weaviate.io/slack)与我们进行快速交流，了解如何开始。
 
 import StayConnected from '/_includes/stay-connected.mdx'
 

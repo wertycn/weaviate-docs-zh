@@ -1,95 +1,98 @@
 ---
-title: How A.I. Creates Art - A Gentle Introduction to Diffusion Models
-slug: how-ai-creates-art
-authors: [zain]
+authors:
+- zain
 date: 2023-01-24
-tags: ['concepts']
+description: Machine learning models can create beautiful and novel images. Learn
+  how Diffusion Models work and how you could make use of them.
 image: ./img/hero.png
-description: "Machine learning models can create beautiful and novel images. Learn how Diffusion Models work and how you could make use of them."
+slug: how-ai-creates-art
+tags:
+- concepts
+title: How A.I. Creates Art - A Gentle Introduction to Diffusion Models
 ---
-![How A.I. Creates Art](./img/hero.png)
 
-<!-- truncate -->
+![如何人工智能创造艺术](./img/hero.png)
 
-One of the major developments this past year were the advancements made in machine learning models that can create beautiful and novel images such as the ones below. Though machine learning models with the capability to create images have existed for a while, this previous year we saw a marked improvement in the quality and photo-realism of the images created by these models.
+<!-- 截断 -->
 
-![Perception of the world](./img/perception_of_the_world.jpg)
+在过去的一年里，机器学习模型在创建美丽而新颖的图像方面取得了重大突破，如下所示。虽然具备创建图像能力的机器学习模型已经存在一段时间了，但是在过去的一年中，我们看到这些模型创建的图像的质量和逼真度有了显著提高。
 
-Models like [DALL·E 2](https://openai.com/product/dall-e-2), [Stable Diffusion](https://github.com/Stability-AI/stablediffusion) and others which are the technologies underlying many platforms such as Lensa and Midjourney are being used by millions of people and are quickly becoming main stream as people realize their potential.
+![对世界的感知](./img/perception_of_the_world.jpg)
 
-These models not only have the ability to dream up photo-realistic images when prompted with text input but can also modify given images to add details, replace objects or even paint in a given artists style. See below for the Mona Lisa drip painted in the style of Jackson Pollock!
+像[DALL·E 2](https://openai.com/product/dall-e-2)，[稳定扩散](https://github.com/Stability-AI/stablediffusion)和其他一些技术正在被数百万人使用，并且随着人们认识到它们的潜力，它们正在迅速成为主流平台，如Lensa和Midjourney。
 
-![Mona lisa drip painting](./img/the_mona_lisa_drip_painted.jpg)
+这些模型不仅可以根据文本输入生成逼真的图像，还可以修改给定的图像以添加细节、替换物体，甚至以特定艺术家的风格进行绘画。请看下面用杰克逊·波洛克的风格涂抹的蒙娜丽莎滴漆绘画！
 
-The technology behind these images is called **diffusion models**. In this post I aim to provide a gentle introduction to diffusion models so that even someone with minimal understanding of machine learning or the underlying statistical algorithms will be able to build a general intuition of how they work. Additionally I’ll also provide some external resources that you can use to access pre-trained diffusion models so you can start to generate your own art!
+![蒙娜丽莎滴漆绘画](./img/the_mona_lisa_drip_painted.jpg)
 
-These are the points that we’ll expand on in this article:
+这些图像背后的技术被称为**扩散模型**。在本文中，我旨在对扩散模型进行简要介绍，以便即使对机器学习或底层统计算法了解很少的人也能够建立起它们工作原理的基本直觉。此外，我还将提供一些外部资源，您可以使用这些资源来获取预训练的扩散模型，从而开始生成您自己的艺术作品！
 
-- How diffusion models can create realistic images
-- How and why we can control and influence the images these models create using text prompts
-- Access to some resources you can use to generate your own images.
+这篇文章将会扩展以下几点内容：
 
+- 扩展模型如何创建逼真的图像
+- 如何以及为什么可以使用文本提示来控制和影响这些模型创建的图像
+- 提供一些资源，可以用来生成自己的图像。
 
-## How Diffusion Models Work
+## 扩展模型的工作原理
 
-Diffusion models are a type of generative model - which means that they can generate data points that are similar to the data points they’ve been trained on(the training set). So when we ask Stable Diffusion to create an image it starts to dream up images that are similar to the billions of images from the internet that it was trained on - it’s important to note that it doesn’t simply copy an image from the training set(which would be no fun!) but rather creates a new image that is similar to the training set. Generative models are not limited to just generating images; they can also generate songs, written language or any other modality of data - however to make it easier for us to understand we will only consider generative models that for image data.
+扩散模型是一种生成模型，这意味着它们可以生成与它们所训练的数据点（训练集）相似的数据点。因此，当我们要求稳定扩散创建一张图片时，它会开始生成与它所训练的互联网上数十亿张图片相似的图片。需要注意的是，它并不简单地复制训练集中的图片（这样就没意思了！），而是创建一张与训练集相似的新图片。生成模型不仅局限于生成图片，它们还可以生成歌曲、书面语言或任何其他形式的数据。然而，为了更容易理解，我们只考虑用于图像数据的生成模型。
 
-The core idea behind all generative models is that they try to learn and understand what the training set “looks” like. In other words they try to learn the underlying distribution of the training set - which just means that they want to know how likely a datapoint is to be observed in the training set. For example, if you are training a generative model on images of beautiful landscapes then, for that generative model, images of trees and mountains are going to be much more common then images of someones kitchen. Furthering this line of reasoning, for that same generative model, an image of static noise would also be quite unlikely since we don’t see that in the training set. This seems like a weird point to make but it will be very important later on!
+所有生成模型背后的核心思想是它们试图学习和理解训练集的“外观”。换句话说，它们试图学习训练集的潜在分布——这意味着它们想知道在训练集中观察到某个数据点的可能性有多大。例如，如果你正在训练一个生成模型来生成美丽风景的图像，那么对于这个生成模型来说，树木和山脉的图像要比某人的厨房的图像更常见。进一步推理，对于这个相同的生成模型来说，静态噪声的图像也是相当不太可能的，因为在训练集中我们并没有看到这样的图像。这似乎是一个奇怪的观点，但它以后会非常重要！
 
-![three images](./img/three_images.png)
+![三张图片](./img/three_images.png)
 
-Learning the true underlying distribution of any set of images is not computationally feasible  because it requires you to consider every pixel of every image. However, if our model could learn the underlying distribution of the training set of images it could calculate the likelihood that any new image came from that set. It could also generate novel images that it thinks are most likely to belong to the training set. One way to do this, using the underlying distribution, would be to start off with static noise (an image with random pixel values) and then slightly alter pixel values over and over again while making sure each time you alter the pixel values it increases the likelihood of the overall image coming from the dataset - this is indeed what diffusion models do!
+学习任何一组图像的真实潜在分布在计算上是不可行的，因为它需要考虑每个图像的每个像素。然而，如果我们的模型能够学习训练集图像的潜在分布，它可以计算任何新图像来自该集合的可能性。它还可以生成它认为最有可能属于训练集的新颖图像。一种使用潜在分布来实现这一点的方法是从静态噪声开始（具有随机像素值的图像），然后反复微调像素值，确保每次微调像素值时，整体图像来自数据集的可能性增加 - 这正是扩散模型所做的！
 
-The question then becomes how diffusion models can learn (or even approximate) the underlying distribution of the images in your training set? The main insight behind how this happens is: if you take any image from your training set and add a small amount of random static noise to it you will create a new image that is slightly less likely - since images with random noise are unlikely to be seen in the training set. Thus you could take any image from your training set, and step by step, add increasing levels of random noise to it and generate incrementally more noisy versions of that image as shown below.
+问题是如何使扩散模型能够学习（甚至是近似）训练集中图像的潜在分布？这个过程的主要洞察力是：如果你从训练集中选择任何一张图像，并向其添加一小部分随机静态噪声，你将创建一个稍微不太可能出现的新图像 - 因为带有随机噪声的图像在训练集中不太可能出现。因此，你可以选择训练集中的任何一张图像，并逐步增加随机噪声的水平，生成越来越多带有噪声的图像版本，如下所示。
 
 ![noising gif](./img/noise.gif)
-*[Source](https://yang-song.net/blog/2021/score/)*
+*[来源](https://yang-song.net/blog/2021/score/)*
 
 ![noising images](./img/noisingimage.png)
-*[Source](https://huggingface.co/blog/annotated-diffusion)*
+*[来源](https://huggingface.co/blog/annotated-diffusion)*
 
-This “noising” process, shown in the images above allows us to take training set images and add known quantities of noise to it until it becomes completely random noise. This process takes images from a state of having high probability of being found in the training set to having a low probability of existing in the training set.
+这个“加噪”过程，如上图所示，使我们能够将训练集图像添加已知量的噪声，直到它变成完全随机的噪声。这个过程将图像从在训练集中高概率存在的状态转变为在训练集中存在的概率较低的状态。
 
-Once the “noising” step is completed, then we can use these clean and noisy image combinations during the training phase of the diffusion model. In order to train a diffusion model we ask it to remove the noise from the noised images step by step until it recovers something as close as possible to the original image. This process is known as “de-noising”, is illustrated below and, is carried out for each image in the training set with multiple levels of random noise added. Once the diffusion model is trained in this way it becomes an expert at taking images that are less likely to be seen in the dataset (noisy images) and incrementally turning them into something that is more likely to be seen in the training set. By teaching the model to “de-noise” images we have developed a way to alter images to make them more like images from the training set.
+完成“加噪”步骤后，我们可以在扩散模型的训练阶段使用这些干净和有噪声的图像组合。为了训练扩散模型，我们要求它逐步从加噪图像中去除噪声，直到恢复到尽可能接近原始图像的状态。这个过程被称为“去噪”，如下图所示，并且对训练集中的每个图像都会进行多个级别的随机噪声添加。一旦以这种方式训练好了扩散模型，它就能够熟练地将那些在数据集中不太可能出现的图像（有噪声的图像）逐渐转化为更容易在训练集中出现的图像。通过教导模型“去噪”图像，我们开发出了一种改变图像使其更接近训练集图像的方法。
 
-![denoising gif](./img/denoise.gif)
-*[Source](https://yang-song.net/blog/2021/score/)*
+![去噪gif](./img/denoise.gif)
+*[来源](https://yang-song.net/blog/2021/score/)*
 
-![denoising images](./img/denoisingimage.png)
-*[Source](https://huggingface.co/blog/annotated-diffusion)*
+![去噪图像](./img/denoisingimage.png)
+*[来源](https://huggingface.co/blog/annotated-diffusion)*
 
-Now if we take this trained diffusion model and just give it a random static image and run the de-noising process it will transform the static image into an image that resembles images in the training set!
+现在，如果我们将训练好的扩散模型应用于一个随机的静态图像，并运行去噪过程，它将把静态图像转化为与训练集中的图像类似的图像！
 
-![noising denoising images](./img/noising_denoising.png)
+![加噪去噪图像](./img/noising_denoising.png)
 
-## How Text Prompts Control the Image Generation Process
+## 文本提示如何控制图像生成过程
 
-So far we have explained the general idea behind how diffusion models can start off from static noise and incrementally alter the pixel values so that the picture all together gains meaning and follows the distribution of the training set. However, another important detail is that most diffusion models don’t just spit out random images that look like training set images, they allow us to add a text prompt that can control the specific types of images are generated. The idea behind conditioning the images on a text prompt requires another model, one that is trained on images along with their captions. Examples of this data are shown below:
+到目前为止，我们已经解释了扩散模型的一般思想，即如何从静态噪声开始，逐渐改变像素值，使整个图像获得意义，并遵循训练集的分布。然而，另一个重要的细节是，大多数扩散模型不仅仅生成看起来像训练集图像的随机图像，还允许我们添加一个文本提示，以控制生成的特定类型的图像。在图像与其标题一起训练的条件下生成图像的思想需要另一个模型。以下是这种数据的示例:
 
-![MS COCO Image Caption Dataset](./img/mscoco.png)
+![MS COCO图像字幕数据集](./img/mscoco.png)
 
-This model learns to relate descriptions of an image in text format with the image representation itself. In doing so it gives us a way to represent our written prompts as vectors that also capture the visual meaning behind the prompt. We can then pass these prompt vectors into our diffusion model along with the noised images during the training process. This allows us to tame the image generation process of the diffusion model by specifying to the model what types of images in the training set to resemble as it alters the pixels step by step.
+该模型通过将图像的文本描述与图像表示本身进行关联学习。通过这样做，我们可以将书面提示表示为向量，同时捕捉提示背后的视觉含义。然后，在训练过程中，我们可以将这些提示向量与噪声图像一起传入扩散模型中。这样，我们就可以通过指定模型在逐步更改像素的过程中应该与训练集中的哪些类型的图像相似来控制扩散模型的图像生成过程。
 
-The amount of control you have over exactly what is generated is quite fascinating, you can even engineer a paragraph length prompt to describe exactly what you want the diffusion model to create and watch as it brings multiple variations of your description to life.
+您对生成的内容有很大的控制权，甚至可以设计一个段落长度的提示，准确描述您希望扩散模型创建的内容，并观察它将多个变化的描述带入生活。
 
-## Diffusion Model Resources to Create Art
+## 使用扩散模型创建艺术的资源
 
-Here are some diffusion models that you can use to generate images:
+以下是一些可以用于生成图像的扩散模型：
 
-- [Stable Diffusion on Hugging Face](https://huggingface.co/CompVis/stable-diffusion-v1-4)
-- A [notebook](https://colab.research.google.com/github/huggingface/notebooks/blob/main/diffusers/stable_diffusion.ipynb) that uses the same Stable Diffusion model as above if you’d like to tinker with the code.
-- Midjourney - allows you to create images by submitting prompts as discord messages
-- A [Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) for Stable Diffusion
+- [Hugging Face上的稳定扩散模型](https://huggingface.co/CompVis/stable-diffusion-v1-4)
+- 如果您想要尝试代码，请使用与上述相同的稳定扩散模型的[笔记本](https://colab.research.google.com/github/huggingface/notebooks/blob/main/diffusers/stable_diffusion.ipynb)。
+- Midjourney - 允许您通过提交Discord消息来创建图像
+- Stable Diffusion的[Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui)
 
-![searching through vector spaces](./img/searching_through_multi_dimensional_vector_space.jpg)
-*“Searching through a high dimensional vector space”*
-## Sources and Further Reading
+![在向量空间中搜索](./img/searching_through_multi_dimensional_vector_space.jpg)
+*“在高维向量空间中进行搜索”*
+## 参考资料和进一步阅读
 
-Here I’ve attempted to provide a general intuition of how diffusion models work, there are many many more details that are involved in this process. If you enjoyed this introduction to diffusion models and would like to dive in deeper to get a better understanding of the code and algorithms involved I would recommend the following blog posts and courses in the following order or increasing complexity:
+在这里，我尝试提供了对扩散模型工作原理的一般直觉，这个过程涉及到许多更多的细节。如果您对扩散模型的介绍感兴趣，并且希望深入了解涉及的代码和算法，我建议按照以下顺序阅读以下博客文章和课程，这些内容的复杂度逐渐增加：
 
 - [The Illustrated Stable Diffusion](https://jalammar.github.io/illustrated-stable-diffusion/)
-- [Generative Modeling by Estimating Gradients of the Data Distribution](https://yang-song.net/blog/2021/score/)
-- [The Annotated Diffusion Model](https://huggingface.co/blog/annotated-diffusion)
+- [通过估计数据分布的梯度进行生成建模](https://yang-song.net/blog/2021/score/)
+- [带注释的扩散模型](https://huggingface.co/blog/annotated-diffusion)
 
 import WhatNext from '/_includes/what-next.mdx'
 

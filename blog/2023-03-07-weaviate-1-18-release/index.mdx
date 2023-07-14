@@ -1,92 +1,99 @@
 ---
-title: Weaviate 1.18 release
-slug: weaviate-1-18-release
-authors: [jp, erika, zain, dan]
+authors:
+- jp
+- erika
+- zain
+- dan
 date: 2023-03-07
-tags: ['release']
+description: Weaviate 1.18 introduces Faster Filtering through Bitmap Indexing, HNSW-PQ,
+  Cursor API, and more! Learn all about it.
 image: ./img/hero.png
-description: "Weaviate 1.18 introduces Faster Filtering through Bitmap Indexing, HNSW-PQ, Cursor API, and more! Learn all about it."
+slug: weaviate-1-18-release
+tags:
+- release
+title: Weaviate 1.18 release
 ---
+
 ![Weaviate 1.18](./img/hero.png)
 
 <!-- truncate -->
-We are happy to announce the release of Weaviate `1.18`, which brings a set of great features, performance improvements, and fixes.
+我们很高兴地宣布 Weaviate `1.18` 的发布，带来了一系列出色的功能、性能改进和修复。
 
-## The Brief
-If you like your content brief and to the point, here is the TL;DR of this release:
+## 简介
+如果您喜欢简洁明了的内容，请看这个版本的 TL;DR：
 
-1. [Faster Filtering with Roaring Bitmaps](#faster-filtering-with-roaring-bitmaps) – modern data structure that dramatically boosts the speed for filtered searches
-1. [HNSW-PQ](#hnsw-pq) – enables great performance at a fraction of the previous RAM requirements
-1. [Improvements to BM25 and Hybrid Search](#improvements-to-bm25-and-hybrid-search) – faster scoring with the WAND implementation and added filter support
-1. [Replication](#replication) – two new replication features: tunable consistency for all read and write REST operations, and repair on read
-1. [Cursor API](#cursor-api) – simple way to export every object from Weaviate
-1. [Azure Storage backup module](#azure-storage-backup-module) – extends our cloud-native backup capabilities further by introducing the `backup-azure` module.
+1. [使用 Roaring Bitmaps 更快速的过滤](#faster-filtering-with-roaring-bitmaps) - 使用现代数据结构，大大提升了过滤搜索的速度
+1. [HNSW-PQ](#hnsw-pq) - 在之前的内存要求的一小部分上实现了出色的性能
+2. [BM25和Hybrid Search的改进](#improvements-to-bm25-and-hybrid-search) - 通过WAND实现和添加过滤器支持实现更快的评分
+3. [复制](#replication) - 两个新的复制功能：可调一致性的所有读写REST操作和读时修复
+4. [Cursor API](#cursor-api) - 一种从Weaviate导出每个对象的简单方法
+1. [Azure存储备份模块](#azure-storage-backup-module) - 通过引入`backup-azure`模块，进一步扩展了我们的云原生备份功能。
 
-Read below to learn more about each of these points in more detail.
+请继续阅读，以了解更多关于这些要点的详细信息。
 
-## Faster Filtering with Roaring Bitmaps
+## 使用Roaring Bitmaps进行更快的过滤
 
 ![roaring bitmaps](./img/roaring-bitmaps.png#gh-light-mode-only)
 ![roaring bitmaps](./img/roaring-bitmaps-dark.png#gh-dark-mode-only)
 
-This release introduces a compact, modern data structure to Weaviate called [“Roaring bitmaps”](http://roaringbitmap.org/about/) that will replace the internals of the inverted index. The new Roaring bitmap indexing dramatically speeds up filtered searches, and we’ve seen it provide up to 1000(!) times faster performance in some cases.
+本次发布引入了一个紧凑、现代的数据结构到Weaviate，称为“Roaring bitmaps”，它将取代倒排索引的内部结构。新的Roaring bitmap索引极大地加速了过滤搜索，并且在某些情况下，我们已经看到它提供了高达1000倍的性能提升。
 
-### Motivation
-At Weaviate, we've been on a journey to keep up with the growing needs of our users. As more and more vectors are added to Weaviate instances, the "allow list" of pre-filtered items can reach tens, or hundreds of millions of objects. This can result in long retrieval times that are far from ideal from a user perspective. The introduction of Roaring Bitmaps is another step that will help us and our users scale to the next level.
+### 动机
+在Weaviate中，我们一直在努力满足用户日益增长的需求。随着越来越多的向量被添加到Weaviate实例中，预过滤项的“允许列表”可能会达到数千万甚至上亿个对象。这可能导致从用户角度来看，检索时间过长，远非理想。Roaring Bitmaps的引入是帮助我们和用户实现更高级别扩展的又一步。
 
-### Roaringly fast filtering
-With the introduction of the natively-implemented `RoaringSet` data type in `1.18`, speeds will be dramatically improved, especially for large allow lists. In our internal testing, we've seen queries that used to take 3-4 seconds execute in just 3-4 milliseconds.
+### 迅速过滤
+随着`1.18`版本中原生实现的`RoaringSet`数据类型的引入，速度将得到显著提升，特别是对于大型允许列表。在我们的内部测试中，我们发现原先需要3-4秒的查询现在只需要3-4毫秒即可执行。
 
-The extra efficiencies are due to various strategies that Roaring Bitmaps employ, where it divides data into chunks and applies an appropriate storage strategy to each one. This enables high data compression and set operations speeds, resulting in much improved filtering speeds for Weaviate.
+Roaring Bitmaps采用了各种策略，将数据分成多个块，并对每个块应用适当的存储策略，从而实现额外的效率。这样可以实现高度的数据压缩和集合操作速度，从而大大提高了Weaviate的过滤速度。
 
-Weaviate version `1.18` and onwards will include this feature, and our team will be maintaining our underlying Roaring Bitmap library to address any issues and make improvements as needed. To read more about pre-filtering read the documentation [here](/developers/weaviate/concepts/prefiltering)
+Weaviate版本`1.18`及以上将包含此功能，并且我们的团队将维护我们的底层Roaring Bitmap库以解决任何问题并进行改进。要了解更多关于预过滤的信息，请阅读文档[这里](/developers/weaviate/concepts/prefiltering)
 
-### What this means for you
-From your perspective, the only visible change will be the a one-time process to create the new index. Once your Weaviate instance creates the Roaring Bitmap index, it will operate in the background to speed up your work.
+### 对您的影响是什么
+从您的角度来看，唯一可见的变化将是创建新索引的一次性过程。一旦您的Weaviate实例创建了Roaring Bitmap索引，它将在后台运行以加快您的工作速度。
 
-We note that the current implementation is not yet applicable to filtering `text` and `string` datatypes, which is an area that we aim to tackle in the future.
+我们注意到当前的实现还不能适用于过滤“text”和“string”数据类型，这是我们未来要解决的一个领域。
 
-If you are already dealing with a large dataset, this will likely improve your performance significantly. And if you are dealing with a growing dataset, you can be assured that Weaviate will stay performant even as your dataset grows.
+如果您已经处理的是一个大型数据集，这很可能会显著提高您的性能。如果您正在处理一个不断增长的数据集，您可以放心，即使您的数据集增长，Weaviate 仍然能够保持高性能。
 
 ## HNSW-PQ
 
 ![hnsw-pq](./img/hnsw-pq.png#gh-light-mode-only)
 ![hnsw-pq](./img/hnsw-pq-dark.png#gh-dark-mode-only)
 
-Weaviate is a very performant and robust vector database but it does require RAM to perform well and with `1.18` we are introducing a new feature that aims to give users the same performance they have come to expect from Weaviate but at a fraction of the previous RAM requirements! Currently, the two big RAM costs of Weaviate come, firstly, from needing to store neighborhood graphs which allow us to conduct approximate nearest neighbors search algorithms like HNSW, and secondly from having to store the entire vectors themselves in memory.
+Weaviate是一个非常高性能和稳定的向量数据库，但它需要大量的RAM来表现良好。在1.18版本中，我们引入了一个新功能，旨在为用户提供与之前相同的性能，但所需的RAM要少得多！目前，Weaviate的两个主要RAM成本包括：首先，需要存储邻域图，使我们能够进行近似最近邻搜索算法（如HNSW）；其次，需要将整个向量本身存储在内存中。
 
-### Introduction of Product Quantization
+### 产品量化介绍
 
-With Weaviate `1.18` we are alleviating these high RAM requirements by now allowing users to keep a compressed representation of the vectors in memory. This allows users to maintain a similar performance but at a fraction of the RAM requirements of previous versions.
+通过Weaviate `1.18`，我们现在允许用户在内存中保持向量的压缩表示，从而减轻了高内存需求的问题。这使得用户能够在相似的性能下，只需使用以前版本的一小部分内存。
 
-More specifically, in `1.18` we implemented the solution proposed in [DiskANN](https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf) whereby we combined our HNSW indexing with vectors that have been compressed using product quantization (PQ). PQ is a lossy compression algorithm that allows us to significantly reduce vector representation size at the cost of a bit of recall. But how does it actually work, you ask !?
+更具体地说，在`1.18`版本中，我们实现了[DiskANN](https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf)中提出的解决方案，将我们的HNSW索引与使用产品量化（PQ）进行压缩的向量相结合。PQ是一种有损压缩算法，可以显著减小向量表示的大小，但会略微降低召回率。那么，PQ是如何工作的呢？
 
-### How does PQ work?
+### PQ是如何工作的？
 
-![pq compression](./img/pq-compression.png#gh-light-mode-only)
-![pq compression](./img/pq-compression-dark.png#gh-dark-mode-only)
+![pq压缩](./img/pq-compression.png#gh-light-mode-only)
+![pq压缩](./img/pq-compression-dark.png#gh-dark-mode-only)
 
-To understand how PQ compression works, imagine every vector you want to store is a unique house address. A unique house address allows you to precisely locate where someone lives including country, state, neighborhood, street number, and even the house number details. The price you pay for this pin-point accuracy is that each address takes up more storage space. Now, imagine instead of storing a unique address for each house we store just the neighborhood name the house is located in. With this representation, you can no longer precisely differentiate between houses that are all in the same neighborhood but you know approximately where the houses are. The advantage however is that you require less memory to store the neighborhood data - this is why it’s a lossy algorithm, we lose information as a result of the compression. You trade accuracy for storage space. Want to save more space? Zoom out further and represent each house instead with the state it’s located in. Require more recall? Zoom in and represent the address on a more accurate scale.
+要理解PQ压缩的工作原理，可以想象每个要存储的向量都是一个独特的住址。一个独特的住址可以精确地定位某人的居住地，包括国家、州、社区、街道号码，甚至是房屋号码的详细信息。为了获得这种准确性，您需要付出更多的存储空间。现在，想象一下，我们不是为每座房屋存储一个独特的地址，而是只存储房屋所在的社区名称。通过这种表示方式，您无法准确区分位于同一社区的多座房屋，但是您大致知道房屋的位置。然而，优点是您需要更少的内存来存储社区数据 - 这就是为什么它是一种有损算法，我们因为压缩而丢失了信息。您以准确性为代价换取存储空间。想要节省更多空间吗？将视野进一步缩小，以所在州来表示每座房屋。需要更多的回忆吗？放大并在更准确的尺度上表示地址。
 
-Similarly in PQ compression instead of storing the exact vectors, we replace them in memory with a code that represents the general region in which the vector can be found. Now imagine you conduct this compression for millions or even billions of vectors and the memory savings become quite significant. Using these PQ compressed vectors stored in RAM we now start our search from our root graph quickly conducting broad searches over PQ compressed vector representations to filter out the best nearest neighbor candidates in memory and then drill down by exploring these best candidates when needed. Read more about HNSW+PQ in the documentation [here](/developers/weaviate/concepts/vector-index#hnsw-with-product-quantizationpq). If you want to learn how to configure Weaviate to use PQ refer to the docs [here](/developers/weaviate/configuration/indexes#how-to-configure-hnsw).
+类似地，在PQ压缩中，我们不会存储精确的向量，而是用代表向量所在一般区域的代码替换它们。现在想象一下，如果您对数百万甚至数十亿个向量进行这种压缩，那么内存节省将会非常显著。使用存储在RAM中的这些PQ压缩向量，我们现在可以从根图开始进行搜索，快速进行广泛的PQ压缩向量表示的搜索，以在内存中过滤出最佳的最近邻候选项，然后在需要时通过探索这些最佳候选项进行深入挖掘。在文档中可以了解有关HNSW+PQ的更多信息[here](/developers/weaviate/concepts/vector-index#hnsw-with-product-quantizationpq)。如果您想了解如何配置Weaviate使用PQ，请参阅文档[here](/developers/weaviate/configuration/indexes#how-to-configure-hnsw)。
 
-## Improvements to BM25 and Hybrid Search
+## BM25和混合搜索的改进
 
 ![wand](./img/wand.png#gh-light-mode-only)
 ![wand](./img/wand-dark.png#gh-dark-mode-only)
 
-In Weaviate `1.17` we introduced BM25, which  was great for small to medium-scale use cases. However, the initial implementation was not optimal for large-scale use cases due to high query-time latencies. We have identified and implemented a solution to this problem, the WAND algorithm!
+在Weaviate `1.17`版本中，我们引入了BM25算法，这对于小规模到中等规模的用例非常好。然而，由于查询时间延迟较高，初始实现对于大规模用例来说并不理想。我们已经找到并实施了一个解决方案，即WAND算法！
 
-The [WAND](https://www.researchgate.net/publication/221613425_Efficient_query_evaluation_using_a_two-level_retrieval_process) algorithm reduces the number of required distance calculations when running a BM25 query. In short, the algorithm retrieves the best top-k scoring documents without scoring all documents. This dramatically improves latency time for BM25 queries in large-scale use cases.
+[WAND](https://www.researchgate.net/publication/221613425_Efficient_query_evaluation_using_a_two-level_retrieval_process)算法在运行BM25查询时减少了所需的距离计算次数。简而言之，该算法在不对所有文档进行评分的情况下，检索出最佳的前k个得分文档。这在大规模使用情况下显著提高了BM25查询的延迟时间。
 
-To use WAND for your application, upgrade your Weaviate instance to `1.18`. No other changes are necessary for you to see the speed up.
+要在您的应用程序中使用WAND，请将您的Weaviate实例升级到`1.18`版本。您无需进行其他更改即可看到速度的提升。
 
-### Filters for BM25 and Hybrid Search
-The [`where` filter](/developers/weaviate/api/graphql/filters#where-filter) allows you to narrow down your data based on specified conditions. [Vector search parameters](/developers/weaviate/api/graphql/vector-search-parameters) are applied to GraphQL queries on the class level. We have added `where` filters to BM25 and hybrid search!
+### BM25和混合搜索的筛选器
+[`where`过滤器](/developers/weaviate/api/graphql/filters#where-filter)允许您根据指定的条件缩小数据范围。[矢量搜索参数](/developers/weaviate/api/graphql/vector-search-parameters)应用于类级别的GraphQL查询。我们已经为BM25和混合搜索添加了`where`过滤器！
 
-The implementation is the same as how you would add a filter to any other vector search parameter. To begin using filters with BM25 and hybrid, simply upgrade your Weaviate instance to `1.18`.
+实现方式与向任何其他向量搜索参数添加过滤器的方式相同。要开始在BM25和混合搜索中使用过滤器，只需将您的Weaviate实例升级到`1.18`。
 
-An example of adding a filter to your hybrid search looks like this:
+将过滤器添加到混合搜索的示例如下所示：
 
 ```graphql
 {
@@ -104,16 +111,16 @@ An example of adding a filter to your hybrid search looks like this:
 
 ```
 
-Check out the documentation for more information on how to add filters to [BM25](/developers/weaviate/api/graphql/vector-search-parameters#bm25-with-where-filter) and [hybrid](/developers/weaviate/api/graphql/vector-search-parameters#hybrid-with-where-filter).
+查看文档以获取有关如何向[BM25](/developers/weaviate/api/graphql/vector-search-parameters#bm25-with-where-filter)和[混合](/developers/weaviate/api/graphql/vector-search-parameters#hybrid-with-where-filter)添加过滤器的更多信息。
 
-### Stopword Removal
-In `1.17`, stopwords were not indexed, which led to zero results if you were searching for "the" or “us.” Now with `1.18`, stopwords are indexed, but are skipped in BM25. Meaning, stopwords are included in the inverted index, but when the BM25 algorithm is applied, they are not considered for relevance ranking.
+### 停用词去除
+在 `1.17` 版本中，停用词不会被索引，这导致搜索 "the" 或 "us" 时没有结果。现在在 `1.18` 版本中，停用词会被索引，但在 BM25 中会被跳过。也就是说，停用词会被包含在倒排索引中，但在应用 BM25 算法时，不会考虑它们的相关性排序。
 
-For example, take the query: "Where is the nearest fast food chain?" This query has the following stopwords: [“where”, “is”, “the”]. The query is then treated the same as: "Nearest fast food chain".
+例如，考虑以下查询："最近的快餐连锁店在哪里？" 这个查询包含以下停用词：["在哪里", "最近的"]。该查询可以被处理为："最近的快餐连锁店"。
 
-Stopwords can now be configured at runtime, whereas previously this could only be done at import time. You can update your class after your data has been indexed by using the RESTful API.
+停用词现在可以在运行时进行配置，之前只能在导入时进行配置。您可以在数据被索引后使用 RESTful API 更新您的类。
 
-Below is an example request for updating the list of stopwords:
+下面是更新停用词列表的示例请求：
 
 ```python
 import weaviate
@@ -132,82 +139,82 @@ class_obj = {
 client.schema.update_config("Article", class_obj)
 ```
 
-For more information on how to update a class using the RESTful API, check out the [documentation](/developers/weaviate/api/rest/schema#update-a-class).
+有关如何使用RESTful API更新类的更多信息，请参阅[文档](/developers/weaviate/api/rest/schema#update-a-class)。
 
-### Ongoing Fixes and Improvements
-Although [BM25](/developers/weaviate/api/graphql/vector-search-parameters#bm25) and [Hybrid Search](/developers/weaviate/api/graphql/vector-search-parameters#hybrid) were released in Weaviate `1.17`, we continued to make fixes and improvements. Here are a list of the patch releases related to BM25/Hybrid:
+### 持续修复和改进
+尽管[BM25](/developers/weaviate/api/graphql/vector-search-parameters#bm25)和[Hybrid Search](/developers/weaviate/api/graphql/vector-search-parameters#hybrid)已在Weaviate `1.17`中发布，我们仍在进行修复和改进。以下是与BM25/Hybrid相关的补丁版本的列表:
 
 * `1.17.1`:
-  * Fix BM25/Hybrid over-fetching issue
-    * This patch corrected hybrid search from returning too many results
+  * 修复了BM25/Hybrid过度获取的问题
+    * 该补丁修正了混合搜索返回过多结果的问题
 
 * `1.17.2`:
-  * Resolve hybrid search cross-references
-    * Enhance the `Get{ }` query hybrid searches by resolving the cross-references found in the result set.
-  * Use different tokenization for text and string
-    * This patch ensures the correct tokenization is used for each property
+  * 解决混合搜索交叉引用的问题
+    * 通过解析结果集中的交叉引用，增强了`Get{ }`查询的混合搜索功能。
+  * 对文本和字符串使用不同的分词方式
+    * 该补丁确保每个属性都使用了正确的分词方式
 
 * `1.17.4`:
-  * Fixes searching in multi-node setups where sometimes empty results were returned.
-  * Fixes wrong scores when one of the searched properties was empty.
+  * 修复了在多节点设置中搜索时有时会返回空结果的问题。
+  * 修复了当搜索属性之一为空时得分错误的问题。
 
-For more detailed information on the patch releases, you can check out the [release notes](https://github.com/weaviate/weaviate/releases) for `1.17.1`, `1.17.2`, and `1.17.4`.
+有关补丁版本的详细信息，您可以查看 `1.17.1`、`1.17.2` 和 `1.17.4` 的 [发布说明](https://github.com/weaviate/weaviate/releases)。
 
-## Replication
+## 复制
 
-![replication](./img/replication.png#gh-light-mode-only)
-![replication](./img/replication-dark.png#gh-dark-mode-only)
+![复制](./img/replication.png#gh-light-mode-only)
+![复制](./img/replication-dark.png#gh-dark-mode-only)
 
-Weaviate version 1.18 introduces two new [replication](/developers/weaviate/concepts/replication-architecture) features: [tunable consistency](#tunable-consistency) for all read and write REST endpoints, and [repair-on-read](#repair-on-read).
+Weaviate 1.18版本引入了两个新的[复制](/developers/weaviate/concepts/replication-architecture)功能：[可调整一致性](#可调整一致性)适用于所有的读写REST端点，以及[读取时修复](#读取时修复)。
 
-### Tunable consistency
-As a distributed database subject to the [CAP theorem](/developers/weaviate/concepts/replication-architecture/consistency), Weaviate favors availability over consistency for data, and is strictly consistent when it comes to schema operations. **Tunable consistency** allows you to decide between three levels of consistency vs. availability:
-* `ONE` - reads/writes return the result from the first node that responds
-* `QUORUM` - reads/writes succeed after a majority of nodes (`replication_factor/2 + 1`) respond
-* `ALL` - all replicas must respond
+### 可调整一致性
+作为一个分布式数据库，受[CAP定理](/developers/weaviate/concepts/replication-architecture/consistency)的影响，Weaviate在数据方面更偏向可用性而非一致性，并且在模式操作方面严格保持一致性。**可调整一致性**允许您在一致性和可用性之间选择三个级别：
+* `ONE` - 从第一个响应的节点返回读取/写入结果
+* `QUORUM` - 当大多数节点（`replication_factor/2 + 1`）响应后，读/写操作成功
+* `ALL` - 所有副本必须响应
 
-Depending on the desired tradeoff between consistency and speed, below are three common consistency level pairings for write / read operations. These are _minimum_ requirements that guarantee eventually consistent data:
-* `QUORUM` / `QUORUM` => balanced write and read latency
-* `ONE` / `ALL` => fast write and slow read (optimized for write)
-* `ALL` / `ONE` => slow write and fast read (optimized for read)
+根据一致性和速度之间的期望权衡，以下是三种常见的写操作/读操作的一致性级别配对。这些是保证最终一致性数据的_最低_要求：
+* `QUORUM` / `QUORUM` => 平衡的写入和读取延迟
+* `ONE` / `ALL` => 快速写入和较慢的读取（针对写入进行优化）
+* `ALL` / `ONE` => 写入速度较慢，读取速度较快（针对读取进行优化）
 
-Read operations with the consistency level set to `QUORUM` or `ALL` return the most recent objects out of those returned by the majority of nodes, based on timestamps.
+使用一致性级别设置为 `QUORUM` 或 `ALL` 的读取操作，将返回基于时间戳最新对象中大多数节点返回的对象。
 
-Version `1.17` supported tunable consistency for [fetching by id](/developers/weaviate/api/rest/objects#get-a-data-object). Weaviate `1.18` adds tunable consistency support for all read and write REST operations, including [batching](/developers/weaviate/api/rest/batch) and [cross-references](/developers/weaviate/api/rest/objects#cross-references). GraphQL queries do not support tunable consistency yet.
+版本 `1.17` 支持根据id进行获取的可调一致性。Weaviate `1.18` 添加了对所有读写REST操作的可调一致性支持，包括批处理和交叉引用。GraphQL查询尚不支持可调一致性。
 
-This version also ships with an optimization for fetching multiple objects: the coordinator node only waits to receive a full result set from one of the nodes, and verifies it has the correct objects using digest responses sent by the other nodes. Since Weaviate uses a leaderless setup, the coordinator itself sends a response, which most often will arrive before the full responses sent by the other nodes, but the digests will confirm it is the correct result set.
+这个版本还提供了一种优化多个对象获取的方法：协调节点只等待从其中一个节点接收到完整的结果集，并使用其他节点发送的摘要响应来验证它是否具有正确的对象。由于Weaviate使用无领导者的设置，协调节点本身发送响应，通常会在其他节点发送的完整响应之前到达，但摘要将确认它是正确的结果集。
 
-### Repair-on-read
-Weaviate `1.18` introduces a **repair-on-read** feature that uses the "last write wins" policy for conflict resolution.
+### 读修复（Repair-on-read）
+Weaviate `1.18` 引入了一个名为**repair-on-read**的功能，它使用“最后写入优先”策略来解决冲突。
 
-When the replication coordinator node receives different versions of objects for a read request from the nodes in the replica set, that means that at least one node has old (stale) objects. The repair-on-read feature means that the coordinator node will update the affected node(s) with the latest version of the object(s). If a node was lacking an object entirely (e.g. because a create request was only handled by a subset of the nodes due to a network partition), the object will be replicated on that node.
+当复制协调节点从副本集中的节点接收到不同版本的对象用于读取请求时，这意味着至少有一个节点具有旧的（过时的）对象。修复读取功能意味着协调节点将使用最新版本的对象更新受影响的节点。如果一个节点完全缺少一个对象（例如，因为由于网络分区，创建请求仅由节点的子集处理），则该对象将被复制到该节点上。
 
-Consider a scenario in which a request to delete objects was only handled by a subset of nodes in the replica set. On the next read that involves such a deleted object, the replication coordinator may determine that some nodes are missing that object - i.e. it doesn’t exist on all replicas. `v1.18` introduces changes that enable the replication coordinator to determine the reason why an object was not found (i.e. it was deleted, or it never existed), along with the object itself. Thus, the coordinator can determine if the object:
+考虑这样一种情况：只有副本集中的一部分节点处理了删除对象的请求。在下一次涉及到被删除的对象的读取操作中，复制协调器可能会确定某些节点缺少该对象 - 即在所有副本中都不存在。`v1.18` 引入了一些改变，使得复制协调器能够确定为什么找不到对象（即对象被删除了还是从未存在过），以及对象本身。因此，协调器可以确定对象是否满足以下情况：
 
-* never existed in the first place (so it should be propagated to the other nodes), or
+* 从一开始就不存在（因此应传播到其他节点），或者
 
-* was deleted from some replicas but still exists on others. In this latter case, the coordinator returns an error because it doesn’t know if the object has been created again after it was deleted, which would lead to propagating the deletion to cause data loss.
+* 从某些副本中删除，但仍存在于其他副本中。在后一种情况下，协调者返回错误，因为它不知道对象在删除后是否重新创建，这将导致传播删除以导致数据丢失。
 
-## Cursor API
+## 光标 API
 
-![cursor api](./img/cursor-api.png#gh-light-mode-only)
-![cursor api](./img/cursor-api-dark.png#gh-dark-mode-only)
+![光标 API](./img/cursor-api.png#gh-light-mode-only)
+![光标 API](./img/cursor-api-dark.png#gh-dark-mode-only)
 
-We have added an object ID-based `after` cursor to both the REST and GraphQL APIs in this release. This enhancement makes it easy for you to systematically retrieve all objects in a class from Weaviate.
+在此版本中，我们为REST和GraphQL API添加了基于对象ID的`after`游标。这个增强功能使得您可以轻松地从Weaviate中按类别有序地检索所有对象。
 
-### How to use
-To use cursors with the `objects` REST endpoint, provide an object uuid via the `after` parameter in the GET request. The syntax looks like this:
+### 如何使用
+要在`objects` REST端点中使用游标，可以通过GET请求的`after`参数提供一个对象UUID。语法如下：
 
 `<WEAVIATE_INSTANCE>/v1/objects?class=<CLASS_NAME>&limit=<N_OBJECTS>&after=<UUID>`
 
-Where:
+其中：
 
-- `<WEAVIATE_INSTANCE>` is the Weaviate URL (e.g. `https://yoursandbox.weaviate.io`),
-- `<CLASS_NAME>` is the class (e.g. `Article`) being retrieved (this MUST be set),
-- `<N_OBJECTS>` is the number of objects to be retrieved in that request, and
-- `<UUID>` is the last object ID retrieved (e.g. `f81bfe5e-16ba-4615-a516-46c2ae2e5a80`) (optional; without it, the results will be from the first object).
+- `<WEAVIATE_INSTANCE>`是Weaviate的URL（例如`https://yoursandbox.weaviate.io`），
+- `<CLASS_NAME>`是要检索的类（例如`Article`）（必须设置），
+- `<N_OBJECTS>`是要在该请求中检索的对象数量，以及
+- `<UUID>`是最后一个对象的ID（例如`f81bfe5e-16ba-4615-a516-46c2ae2e5a80`）（可选；如果没有提供，结果将来自第一个对象）。
 
-Or, you can use the cursor API with the `GET` function in a GraphQL query.
+或者，您可以在GraphQL查询中使用`GET`函数来使用游标API。
 
 ```graphql
 {
@@ -222,32 +229,31 @@ Or, you can use the cursor API with the `GET` function in a GraphQL query.
 }
 ```
 
-All parameters here are the same as in the above REST request example, and the only additional parameter is `<PROPERTIES>` to specify the properties to be retrieved.
+这里的所有参数与上面的 REST 请求示例中的参数相同，唯一的附加参数是 `<PROPERTIES>`，用于指定要检索的属性。
 
-### Notes
-- The `after` cursor relies on the order of object IDs as stored in Weaviate. Accordingly, it is not applicable to any queries involving a search or a filter. In other words, if the query involves operators such as `where`, `near<Media>`, `bm25`, `hybrid`, etc., `after` cannot be used. You should use the  [`offset` parameter](/developers/weaviate/api/graphql/filters#pagination-with-offset) for these.
-- The `after` cursor cannot be used in conjunction with `offset`.
-- The `after` cursor is available on both single-shard and multi-shard set-ups.
+### 注意事项
+- `after`游标依赖于Weaviate中存储的对象ID的顺序。因此，在涉及搜索或筛选的任何查询中，它都不适用。换句话说，如果查询涉及到`where`、`near<Media>`、`bm25`、`hybrid`等操作符，就不能使用`after`。对于这些情况，应该使用[`offset`参数](/developers/weaviate/api/graphql/filters#pagination-with-offset)。
+- `after`游标不能与`offset`同时使用。
+- `after` 游标在单片和多片设置上都可用。
 
-Learn about the Cursor API in the [documentation](/developers/weaviate/api/graphql/additional-operators#cursor-with-after).
+在[文档](/developers/weaviate/api/graphql/additional-operators#cursor-with-after)中了解有关游标 API 的更多信息。
 
-## Azure Storage backup module
+## Azure 存储备份模块
 
 ![backups](./img/backups.png#gh-light-mode-only)
 ![backups](./img/backups-dark.png#gh-dark-mode-only)
 
-This releases extends our cloud-native backup capabilities ([added in the 1.15 release](/blog/weaviate-1-15-release#cloud-native-backups)) further by introducing the `backup-azure` module.
+此版本通过引入`backup-azure`模块进一步扩展了我们的云原生备份能力（[在1.15版本中添加](/blog/weaviate-1-15-release#cloud-native-backups)）。 
 
-### Backup options
-Now Weaviate users can enjoy even more choice for cloud-native backup providers with Azure Storage joining the ranks of S3-compatible storage as well as Google Cloud Storage. This new module will be especially convenient for our users who are in the Azure ecosystem already.
+### 备份选项
+现在，Weaviate用户可以选择更多的云原生备份提供商，Azure Storage加入了S3兼容存储和Google Cloud Storage的行列。对于已经在Azure生态系统中的用户来说，这个新模块将特别方便。
 
-### Supported authentication methods
-The module supports Azure’s Storage Connections strings, as well as name-and-key based authentication into the storage box. Please refer to [our documentation here](/developers/weaviate/configuration/backups#azure-storage) for information on how to configure it.
+### 支持的身份验证方法
+该模块支持Azure的存储连接字符串，以及基于名称和密钥的身份验证。请参考[我们的文档](/developers/weaviate/configuration/backups#azure-storage)了解如何进行配置。
 
+## 祝您使用愉快
 
-## Enjoy
-
-We hope you enjoy the replication features, the Cursor API, the Azure module, the performance improvements, and the fixes that made this the best Weaviate release yet!🔥
+我们希望您享受复制功能、Cursor API、Azure模块、性能改进以及修复问题，这使得这个版本成为迄今为止最好的Weaviate版本！🔥
 
 import ShareFeedback from '/_includes/share-feedback.md';
 

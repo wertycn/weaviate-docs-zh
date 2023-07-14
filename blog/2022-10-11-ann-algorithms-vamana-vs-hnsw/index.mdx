@@ -1,80 +1,83 @@
 ---
-title: Vamana vs. HNSW - Exploring ANN algorithms Part 1
-slug: ann-algorithms-vamana-vs-hnsw
-authors: [abdel]
+authors:
+- abdel
 date: 2022-10-11
-tags: ['research']
+description: 'Vector search on disks: How does Vamana compare to HNSW?'
 image: ./img/hero.png
-description: "Vector search on disks: How does Vamana compare to HNSW?"
+slug: ann-algorithms-vamana-vs-hnsw
+tags:
+- research
+title: Vamana vs. HNSW - Exploring ANN algorithms Part 1
 ---
-![Vamana vs HNSW - Exploring ANN algorithms Part 1](./img/hero.png)
 
-<!-- truncate -->
+![Vamana vs HNSW - 探索ANN算法第一部分](./img/hero.png)
 
-Vector databases must be able to search through a vast number of vectors at speed. This is a huge technical challenge that is only becoming more difficult over time as the vector dimensions and dataset sizes increase.
+<!-- 省略部分 -->
 
-Like many others, our current prevailing solution is to use Approximate Nearest Neighbor (ANN) algorithms to power Weaviate. But the key question is - which ones to use? There are many different ANN algorithms, each with different advantages and limitations.
+矢量数据库必须能够快速搜索大量的向量。随着向量维度和数据集大小的增加，这是一个巨大的技术挑战，难度还在不断增加。
 
-### Large Scale
-When we talk about a vast number of objects, today we often see use cases with hundreds of millions of vectors, but it won't take long until billions, or even trillions, will be a pretty standard use case.
+像许多其他解决方案一样，我们目前主要使用近似最近邻（ANN）算法来支持Weaviate。但关键问题是 - 应该使用哪种算法？有许多不同的ANN算法，每种算法都有不同的优点和限制。
 
-To get vector databases to that kind of scale, we need to constantly evolve and look for more efficient solutions. A big part of this search is to explore ANN algorithms that would let us go beyond the available RAM (which is a bit of a bottleneck) without sacrificing the performance and the UX.
+### 大规模应用
+当我们谈论大量对象时，如今我们经常看到使用数亿个向量的用例，但很快会出现数十亿甚至数万亿的标准用例。
 
-### What to expect
-In this series of blog posts, we will take you on a journey with us as we research and implement new ANN algorithms in our quest to reach the 1T goal.
+要实现这种规模的向量数据库，我们需要不断发展并寻找更高效的解决方案。在这个搜索过程中，我们的一大部分工作是探索ANN算法，以便在不牺牲性能和用户体验的情况下突破可用的RAM（这是一个瓶颈）。
 
-In this article, we will cover the need for disk-based solutions, explore Vamana (how it works and contrast it against HNSW), and present the result of Vamana implementation.
+### 期望的结果
+在这一系列的博客文章中，我们将带领您与我们一同进行研究和实现新的ANN算法，以实现我们达到1T目标的愿景。
 
-> If you are new to vector databases and ANN, I recommend you to read "[Why is Vector Search so Fast?](/blog/why-is-vector-search-so-fast)"<br/>
-> The article explains what vector databases are and how they work.
+在本文中，我们将介绍磁盘解决方案的需求，探讨Vamana（它的工作原理并与HNSW进行对比），并呈现Vamana实现的结果。
 
-## Need for approximation
-In order for a vector database to efficiently search through a vast number of vectors, the database needs to be smart about it. A brute-force approach would calculate the distance between the query vector and every data vector in the queried collection, but this is computationally very expensive. For a database with millions of objects and thousands of high-dimensional vectors, this would take far too long.
+> 如果您对向量数据库和ANN还不熟悉，我建议您阅读"[为什么向量搜索如此快？](/blog/why-is-vector-search-so-fast)"。<br/>
+> 这篇文章解释了什么是向量数据库以及它们的工作原理。
 
-[Weaviate](/developers/weaviate/), an open-source vector database written in Go, can serve thousands of queries per second. Running Weaviate on [Sift1M](https://www.tensorflow.org/datasets/catalog/sift1m) (a 128-dimensional representation of objects) lets you serve queries in single-digit milliseconds. But how is this possible?
+## 近似搜索的需求
+为了使向量数据库能够高效地搜索大量向量，数据库需要具备智能化的能力。一种蛮力的方法是计算查询向量与查询集合中每个数据向量之间的距离，但这在计算上非常昂贵。对于具有数百万个对象和成千上万个高维向量的数据库来说，这将花费太长时间。
 
-![SIFT1M Benchmark example](./img/SIFT1M-benchmark.png)
-*See the [benchmark](/developers/weaviate/benchmarks/ann) page for more stats.*
+[Weaviate](/developers/weaviate/)是一个用Go语言编写的开源向量数据库，可以每秒处理数千个查询。在[Sift1M](https://www.tensorflow.org/datasets/catalog/sift1m)上运行Weaviate（一个128维对象表示）可以让您以个位数毫秒的速度处理查询。但是这是如何实现的呢？
 
-Weaviate does not look for the exact closest vectors in the store. Instead, it looks for approximate (close enough) elements. This means you could have a much faster reply, but there is no guarantee that you will actually have the closest element from your search. In the vector search space, we use [recall](https://en.wikipedia.org/wiki/Precision_and_recall) to measure the rate of the expected matches returned. The trade-off between recall and latency can be tuned by adjusting indexing parameters. Weaviate comes with reasonable defaults, but also it allows you to adjust build and query-time parameters to find the right balance.
+![SIFT1M基准测试示例](./img/SIFT1M-benchmark.png)
+*请参阅[基准测试](/developers/weaviate/benchmarks/ann)页面获取更多统计信息。*
 
-Weaviate incrementally builds up an index (graph representation of the vectors and their closest neighbors) with each incoming object. Then when a query arrives, Weaviate traverses the index to obtain a good approximated answer to the query in a fraction of the time that a brute-force approach would take.
+Weaviate在存储中不会寻找完全最近的向量。相反，它寻找近似（足够接近）的元素。这意味着您可能会得到更快的回复，但不能保证您实际上会得到与搜索最接近的元素。在向量搜索空间中，我们使用[召回率](https://en.wikipedia.org/wiki/Precision_and_recall)来衡量返回预期匹配的比率。召回率和延迟之间的权衡可以通过调整索引参数来进行调整。Weaviate具有合理的默认值，但也允许您调整构建和查询时间参数以找到合适的平衡点。
 
-[HNSW](/developers/weaviate/concepts/vector-index#hnsw) is the first production-ready indexing algorithm we implemented in Weaviate. It is a robust and fast algorithm that builds a hierarchical representation of the index **in memory** that could be quickly traversed to find the k nearest neighbors of a query vector.
+Weaviate会逐步建立一个索引（向量及其最近邻的图表示），每当有新的对象进入时。然后当查询到达时，Weaviate会遍历索引，在比暴力方法更短的时间内获得对查询的良好近似答案。
 
-## Need for disk solutions
-There are other challenges to overcome. Databases have grown so fast that even the above-described algorithms will not be enough. We no longer talk about thousands of vectors but **hundred of millions** or **even billions**! Keeping all the vectors in memory and adding a graph representation of vector connections **requires a lot of RAM**. This sparked the emergence of a new set of algorithms that allow vectors to reside on disk instead of in memory whilst retaining high performance.
+[HNSW](/developers/weaviate/concepts/vector-index#hnsw) 是我们在 Weaviate 中实现的第一个可用于生产的索引算法。它是一种稳健且高效的算法，可以在内存中构建索引的分层表示，以便快速查找查询向量的 k 个最近邻居。
 
-Some prominent examples of disk-based solutions include [DiskANN](https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf) and [SPANN](https://arxiv.org/abs/2111.08566).
+## 对磁盘解决方案的需求
+还有其他需要克服的挑战。数据库增长如此之快，以至于即使使用上述描述的算法也不足够。我们不再谈论成千上万的向量，而是**亿计甚至十亿计**！将所有向量保存在内存中，并添加一个向量连接的图形表示，**需要大量的内存**。这促使出现了一组新的算法，可以使向量存储在磁盘而不是内存中，同时保持高性能。
 
-## The future of Weaviate
-Today, users use Weaviate in production to serve large-scale use cases with single-digit millisecond latencies and massive throughput. But not every use case requires such a high throughput that the cost of keeping all indexes in memory is justified. What if you have a case where you have a large-scale dataset but very few queries? What if cost-effectiveness is more of a priority than the lowest possible latencies?
+一些著名的基于磁盘的解决方案包括[DiskANN](https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf)和[SPANN](https://arxiv.org/abs/2111.08566)。
 
-We believe there is a need for other index types besides the battle-tested HNSW implementation. But cost-effectiveness can never justify sacrificing the user experience. As a result, we are working on establishing a new type of vector index that combines the low operating cost of SSD-based solutions with the ease of use of existing in-memory solutions.
+## Weaviate的未来
+如今，用户在生产环境中使用Weaviate为大规模用例提供服务，具有以个位数毫秒的延迟和大规模吞吐量。但并非每个用例都需要如此高的吞吐量，以至于保持所有索引在内存中的成本是合理的。如果您有一个大规模的数据集，但查询非常少，如果成本效益更重要而不是最低可能的延迟，那该怎么办呢？
 
-At Weaviate, we pride ourselves on our research acumen and on providing state-of-the-art solutions. So we took time to explore these solutions to identify and evaluate the right building blocks for Weaviate's future.  Here we share some of our findings from this research.
+我们相信除了经过实践验证的HNSW实现之外，还需要其他类型的索引。但是，成本效益永远不能成为牺牲用户体验的理由。因此，我们正在努力建立一种新型的向量索引，将基于SSD的解决方案的低运营成本与现有内存解决方案的易用性相结合。
 
-## On the HNSW vs. Vamana comparison
-As the first step to disk-based vector indexing, we decided to explore Vamana – the algorithm behind the DiskANN solution. Here are some key differences between Vamana and HNSW:
+在Weaviate，我们以我们的研究能力和提供最先进的解决方案为荣。因此，我们花费了时间来探索这些解决方案，以识别和评估Weaviate未来的正确构建模块。在这里，我们分享了我们从这项研究中得出的一些发现。
 
-### Vamana indexing - in short:
-* Build a random graph.
-* Optimize the graph, so it only connects vectors close to each other.
-* Modify the graph by removing some short connections and adding some long-range edges to speed up the traversal of the graph.
+## 关于HNSW和Vamana的比较
+作为基于磁盘的向量索引的第一步，我们决定探索Vamana - DiskANN解决方案背后的算法。以下是Vamana和HNSW之间的一些关键区别：
 
-### HNSW indexing - in short:
-* Build a hierarchy of layers to speed up the traversal of the nearest neighbor graph.
-* In this graph, the top layers contain only long-range edges.
-* The deeper the search traverses through the hierarchy, the shorter the distance between vectors captured in the edges.
+### Vamana索引 - 简介:
+* 构建一个随机图形。
+* 优化图形，使其仅连接彼此接近的向量。
+* 通过删除一些短连接并添加一些长距离边缘来修改图形，以加快图形的遍历。
 
-Put simply, Vamana can build a flat graph, in contrast to HNSW, which uses a hierarchical representation. And a flat graph may suffer less performance degradation from being stored on disk than a hierarchical representation might. The reason is that since the outgoing connections from each node are known, it is possible to store the information in such a way that we can calculate the exact position on the file to read when retrieving information on the neighbors of a given node. This makes the information retrieval process very efficient, and thus the lower speed imposed by disk storage becomes less of a problem.
+### HNSW索引 - 简介:
+* 构建一个层次结构，以加快最近邻图的遍历。
+* 在该图中，顶层仅包含长距离边缘。
+* 搜索在层次结构中深入遍历的程度越深，边缘捕获的向量之间的距离就越短。
 
-The main advantage of the hierarchical representation used in HNSW is that the traversal of the graph is accelerated. This is solved in the Vamana implementation by hosting long-range connections with a similar function.
+简单来说，Vamana可以构建一个扁平的图形，与使用分层表示的HNSW相对应。而扁平图形在存储在磁盘上时可能遭受的性能降低较少，而分层表示可能会遭受较多。原因是由于我们可以知道每个节点的出站连接，所以可以以一种可以在检索给定节点的邻居信息时计算出精确位置的方式存储信息。这使得信息检索过程非常高效，因此磁盘存储所带来的较低速度问题变得不那么严重。
 
-### Traversing a graph
-Traversing a graph is a bit like planning international travel. First, we could take a long-distance flight (akin to a fast jump), taking us to a city closer to our destination. Then we could take a train (a lot better for the environment 😉) to get to the town of our choice. Finally, we can jump on a bike to reach our local destination.
+HNSW使用的层次表示的主要优势是加速图的遍历。Vamana实现通过使用类似的功能来托管长距离连接来解决这个问题。
 
-For a better understanding, consider the below graphic, which shows a graph with all the connections generated using 1000 objects in two dimensions.
+### 遍历图
+遍历图形有点像计划国际旅行。首先，我们可以乘坐长途飞机（类似于快速跳跃），将我们带到离目的地更近的城市。然后，我们可以乘坐火车（对环境更友好😉）到达我们选择的小镇。最后，我们可以骑自行车到达我们的目的地。
+
+为了更好地理解，考虑下面的图形，它显示了一个包含1000个二维对象的图形中生成的所有连接。
 
 <img
     src={require('./img/vamana-graph.png').default}
@@ -82,7 +85,7 @@ For a better understanding, consider the below graphic, which shows a graph with
     style={{ maxWidth: "50%" }}
 />
 
-If we iterate over it in steps – we can analyze how Vamana navigates through the graph.
+如果我们按步骤迭代它，我们可以分析Vamana如何在图中导航。
 
 <img
     src={require('./img/vamana-graph-animated.gif').default}
@@ -90,81 +93,79 @@ If we iterate over it in steps – we can analyze how Vamana navigates through t
     style={{ maxWidth: "50%" }}
 />
 
-In the **first step**, you can see that the entry point for the search is in the center, and then the long-range connections allow jumping to the edges. This means that when a query comes, it will quickly move in the appropriate direction.<br/>
-The **second**, **third**, and **final steps** highlight the nodes reachable within **three**, **six**, and **nine** hops from the entry node.
+在**第一步**中，您可以看到搜索的入口点位于中心，然后通过长距离连接可以跳转到边缘。这意味着当查询到来时，它会快速朝着适当的方向移动。<br/>
+**第二步**，**第三步**和**最后一步**突出显示了从入口节点可达的**三个**、**六个**和**九个**跳的节点。
 
-HNSW, on the other hand, implements the same idea a bit differently. Instead of having all information together on a flat graph, it has a hierarchical representation distributed across multiple layers. The top layers only contain long-range connections, and as you dive deeper into the layers, your query is routed to the appropriate region where you can look more locally for your answer. So your search starts making only big jumps across the top layers until it finally looks for the closest points locally in the bottom layers.
+HNSW则以稍微不同的方式实现了相同的思想。它不是将所有信息放在一个平面图上，而是将信息分布在多个层次结构中。顶层只包含长距离连接，当您深入到更深层次时，您的查询会被路由到适当的区域，在那里您可以在更局部的范围内查找答案。因此，您的搜索从顶层开始只进行大幅度的跳跃，直到最后在底层局部区域查找最接近的点。
 
-## Performance comparison
-So, how do they perform? Let's take a look in terms of speed as well as recall.
+## 性能比较
+那么，它们的性能如何？让我们从速度和召回率两方面来看一下。
 
-The chart below illustrates a comparison of the C++ Vamana [reference code](https://github.com/microsoft/DiskANN) provided by Microsoft and our [HNSW implementation](https://github.com/weaviate/weaviate/tree/master/adapters/repos/db/vector/hnsw) when using Sift1M. Following Microsoft’s experiments, we have used sift-query.fvecs (100,000 vectors sample) for building the index and sift-query.fvecs (1,000 vectors sample) for querying. We are retrieving 10 **(fig. 1)** and 100 **(fig. 2)** objects per query. The chart shows the recall vs. latency on the same Google Cloud setup Microsoft used. In both cases, you might notice that both Vamana and HNSW implementations are performing similarly.
+下面的图表对比了使用Sift1M数据集时，微软提供的C++ Vamana[参考代码](https://github.com/microsoft/DiskANN)和我们的[HNSW实现](https://github.com/weaviate/weaviate/tree/master/adapters/repos/db/vector/hnsw)。根据微软的实验，我们使用了sift-query.fvecs（100,000个向量样本）来构建索引，使用sift-query.fvecs（1,000个向量样本）进行查询。我们每次查询检索10个**(图1)**和100个**(图2)**对象。图表显示了在微软使用的相同Google Cloud环境下的召回率与延迟之间的关系。在这两种情况下，您可能会注意到Vamana和HNSW实现的性能相似。
 
-*Keep in mind that – while Vamana is the algorithm that powers DiskANN – at this stage, we are comparing both solutions in memory.*
+*请记住，在DiskANN中使用的是Vamana算法，但在此阶段，我们将在内存中比较这两种解决方案。*
 
-![Recall vs. Latency when retrieving the ten approximate nearest neighbors](./img/fig-1.png)
-*Fig. 1: Recall vs. Latency when retrieving the ten approximate nearest neighbors.*
+![检索十个近似最近邻时的召回率与延迟](./img/fig-1.png)
+*图1：检索十个近似最近邻时的召回率与延迟。*
 
+![检索一百个近似最近邻时的召回率与延迟](./img/fig-2.png)
+*图2：检索一百个近似最近邻时的召回率与延迟。*
 
-![Recall vs. Latency when retrieving the hundred approximate nearest neighbors](./img/fig-2.png)
-*Fig. 2: Recall vs. Latency when retrieving the hundred approximate nearest neighbors.*
+## Vamana实现细节
+我们在Weaviate中还包含了Vamana索引算法的开发实现。为了使算法能够良好运行，这样的实现需要仔细注意代码的优化。来自Microsoft的原始算法基于贪婪搜索和强大的修剪方法，在[DiskANN论文](https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf)中描述如下:
 
-## Vamana implementation details
-We have also included a development implementation of the Vamana indexing algorithm in Weaviate. For the algorithm to perform well, such an implementation needs careful attention to the optimization of the code. The original algorithm from Microsoft rests upon the greedy search and the robust prune methods, which are described in the [DiskANN paper](https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf) as follows:
+![Vamana算法](./img/vamana-algorithm.png)
 
-![Vamana algorithm](./img/vamana-algorithm.png)
+### 用简单的英语解释
+这些伪代码片段通常很难阅读，所以这里用简单的英语解释一下Vamana算法的工作原理。
 
-### In plain English
-These pseudo-code snippets are notoriously difficult to read, so here's a plain-English explanation of how Vamana works.
+贪婪搜索算法用于查找查询的解决方案。主要思想是从入口点开始迭代地寻找最佳点。算法通过维护一个结果集合来保存点，从入口点开始。
 
-The greedy search algorithm is used to find the solution for a query. The main idea is to start looking for the best points iteratively from the entry point. The algorithm keeps a result set of points, starting with the entry point.
+在每次迭代中，它会检查尚未访问过的结果集中的点，并从中选择最佳候选点（最接近查询点的点），然后对其进行探索。在这个上下文中，探索的意思是将候选点（邻居节点）从图中添加到结果集，并将其标记为已访问。请注意，结果集的大小必须保持有界，所以每当它增长得太多时，我们只保留那些距离查询点更近的L个点。结果集的最大大小越大，结果越准确，搜索速度越慢。当当前集合中的所有点都被访问并返回前k个结果时，我们停止搜索。
 
-On every iteration, it checks what points are in the result set that has not been visited yet and, from them, takes the best candidate (the one closest to the query point) and explores it. Exploring in this context means adding the candidate (out neighbors) from the graph to the result set and marking it as visited. Notice the size of the result set has to stay bounded, so every time it grows too much, we only keep those L points closer to the query. The bigger the maximum size of the result set, the more accurate the results and the slower the search. We stop searching when all points in the current set are visited and return the top k results.
+另一方面，鲁棒修剪方法在特定点p上优化图形，以使贪婪搜索运行更快。为此，它检查一个已访问节点的列表，并在每次迭代中选择一个点，该点使得与p（我们当前正在优化图形的节点）的距离最小，并将其添加到节点p的出邻居中。它还删除可以从新添加的节点到达的节点，其距离比从p到达的距离短（通过alpha放大以保持长程连接）。
 
-On the other hand, the robust prune method optimizes the graph on a particular point p so that the greedy search will run faster. For that, it checks a list of visited nodes and selects on each iteration a point that minimizes the distance from p (the node for which we are currently optimizing the graph) and adds it to the out neighbors of the node p. It also removes the nodes that could be reached from the newly added node with a shorter distance than from p (amplifying the former distance by alpha to keep long-range connections).
+这两个算法的结合应该能够实现高召回率的快速搜索。
 
-Together, these two algorithms should enable fast searches with high recall.
+### 实现观察
 
-### Implementation observations
+我们最初按照描述实现了Vamana算法，得到了非常好的召回结果。然而，延迟并不理想。我们后来意识到性能下降是由于许多集合操作导致算法的性能不佳。
 
-We initially implemented the Vamana algorithm as described, resulting in very good recall results. Yet the latency was not good at all. We have since realized that the performance decay was due to many set operations making the algorithm perform poorly as is.
+在我们的改进实现中，我们对算法进行了一些修改，将访问过的节点和当前节点的副本保存在一个单一的排序列表中。此外，随着参数L的增长，对集合的搜索变得更加昂贵，因此我们已经决定将集合中的向量采用基于位的表示方式，这在性能方面产生了巨大的影响。仅凭这些改变，我们就实现了接近于微软实现的性能，如**(图3)**和**(图4)**所示。请注意，微软的实现是用C++编写的，而我们的实现是用Go语言编写的。
 
-In our revised implementation, we have modified the algorithm a bit to keep a copy of visited and current nodes on a single sorted list. Also, as the parameter L grows, the search on the sets becomes more expensive, so we already decided to keep a bit-based representation of the vectors residing on the sets, which made a huge impact performance-wise. With these changes alone, we achieved performance close to Microsoft's implementation, as shown in **(fig. 3)** and **(fig. 4)**. Note that the implementation from Microsoft is in C++, and our implementation is in Go.
+我们评估了不同的数据结构，并通过以下方式实现了最佳性能：
+* 保持一个基于排序的数组集合。
+* 使插入操作使用二分搜索。
+* 使从Go到内存的复制函数移动完整的内存部分。
 
-We evaluated different data structures and achieved the best performance by:
-* Keeping a sorted array-based set.
-* Making insertions use binary search.
-* Making the copy function from Go to move full memory sections.
+![检索十个近似最近邻居时的召回率与延迟](./img/fig-3.png)
+*图3：检索十个近似最近邻居时的召回率与延迟。*
 
-![Recall vs. Latency when retrieving the ten approximate nearest neighbors](./img/fig-3.png)
-*Fig. 3: Recall vs. Latency when retrieving the ten approximate nearest neighbors.*
+![检索一百个近似最近邻居时的召回率与延迟](./img/fig-4.png)
+*图4：检索100个近似最近邻时的召回率与延迟对比。*
 
-![Recall vs. Latency when retrieving the hundred approximate nearest neighbors](./img/fig-4.png)
-*Fig. 4: Recall vs. Latency when retrieving the hundred approximate nearest neighbors.*
-
-## So, when do SSDs come into play?
-But wait, is this the end of it? Was moving to disk, not the final goal? We are still on memory, are we not?
-Don't worry. This was just the first step toward our goal. We want to ensure that we have a solid implementation in memory before we move to disk, and this milestone ends here.
+## 那么，SSD何时起作用？
+但是，请等一下，这就是结局吗？迁移到磁盘不是最终目标吗？我们还在内存中，不是吗？
+不用担心。这只是向目标迈出的第一步。我们希望在迁移到磁盘之前，确保我们在内存中有一个稳定的实现，而这个里程碑就到此为止。
 
 :::note
 !Spoilers alert, as you read this article, we are evaluating our implementation on disk.<br/>
 We will prepare a similar article to outline; how we moved everything to disk and what the price was performance-wise.
 :::
 
-## Conclusions
-We've managed to implement the indexing algorithm on DiskANN, and the resulting performance is good.
+## 结论
+我们已经成功在DiskANN上实现了索引算法，并且性能表现良好。
 
-From years of research & development, Weaviate has a highly optimized implementation of the HNSW algorithm. With the Vamana implementation, we achieved comparable in-memory results.
+经过多年的研究和开发，Weaviate拥有高度优化的HNSW算法实现。通过Vamana实现，我们获得了可比较的内存结果。
 
-There are still some challenges to overcome and questions to answer. For example:
-* How do we proceed to the natural disk solution of Weaviate?
-* Should it be just an implementation of DiskANN?
-* Or should we explore the capabilities of HNSW and adjust it to work on disk?
-* How can we guarantee the excellent database UX – so valuable to many Weaviate users – while reaping the benefits of a disk-based solution?
+还有一些挑战需要克服和问题需要回答。例如：
+* 我们应该如何继续进行Weaviate的自然磁盘解决方案？
+* 应该只是实现DiskANN吗？
+* 或者我们应该探索HNSW的能力并调整它以在磁盘上工作？
+* 我们如何在享受基于磁盘的解决方案的好处的同时，确保卓越的数据库用户体验，这对许多Weaviate用户来说非常宝贵？
 
-Stay tuned as we explore these challenges and questions. We will share our insights as we go. 😀 <br/>
-Keep in touch and check [our blog](/blog) from time to time.
-
+请继续关注，我们将探索这些挑战和问题。我们将在探索过程中分享我们的见解。 😀 <br/>
+保持联系，并定期查看[我们的博客](/blog)。
 
 import WhatNext from '/_includes/what-next.mdx'
 

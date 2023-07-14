@@ -1,90 +1,91 @@
 ---
-title: Try Google's newly announced PaLM API with Weaviate
-slug: announcing-palm-modules
-authors: [jp]
+authors:
+- jp
 date: 2023-05-10
+description: Weaviate now supports the PaLM models for embeddings and generative search
+  through two new modules.
 image: ./img/hero.png
-tags: ['integrations']
-description: "Weaviate now supports the PaLM models for embeddings and generative search through two new modules."
-
+slug: announcing-palm-modules
+tags:
+- integrations
+title: Try Google's newly announced PaLM API with Weaviate
 ---
 
-![Weaviate v1.19.1 introduces modules for use with Google's Vertex PALM API](./img/hero.png)
+![Weaviate v1.19.1 引入了与 Google 的 Vertex PALM API 配套使用的模块](./img/hero.png)
 
 <!-- truncate -->
 
-We are thrilled to announce two brand new Weaviate modules that will help you to get the most out Google's new PaLM large language model (LLM).
+我们非常激动地宣布了两个全新的 Weaviate 模块，这些模块将帮助您充分利用 Google 的新 PaLM 大型语言模型（LLM）。
 
-These new modules are:
-- [`text2vec-palm`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-palm) for generating vector embeddings and running semantic (`nearText`) queries, and
-- [`generative-palm`](/developers/weaviate/modules/reader-generator-modules/generative-palm) for generative search.
+这两个新模块是：
+- [`text2vec-palm`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-palm) 用于生成向量嵌入和运行语义（`nearText`）查询，以及
+- [`generative-palm`](/developers/weaviate/modules/reader-generator-modules/generative-palm) 用于生成式搜索。
 
-<!-- TODO - check Weaviate version number before merging. -->
-These modules are available to all Weaviate users as of **today**, with the release of Weaviate version `v1.19.1`. They integrate the new Vertex PaLM API with Weaviate, allowing you to hit the ground running straight away with the latest in LLM and vector database technologies.
+<!-- TODO - 在合并之前检查Weaviate版本号。 -->
+这些模块从**今天**开始对所有Weaviate用户可用，与Weaviate版本 `v1.19.1` 的发布一同推出。它们将新的Vertex PaLM API与Weaviate集成在一起，让您可以立即使用最新的LLM和向量数据库技术。
 
-## <i class="fa-solid fa-face-thinking"></i> What is PaLM?
+## <i class="fa-solid fa-face-thinking"></i> 什么是PaLM？
 
-The Pathways Language Model (or `PaLM`) is Google’s own LLM. According to Google, PaLM was designed to generalize across domains and tasks while being highly efficient.
+Pathways Language Model（或称为`PaLM`）是Google自己的LLM。据Google介绍，PaLM被设计为能够在不同领域和任务中进行泛化，并具有高效性。
 
-You can read more about in [this blog](https://ai.googleblog.com/2022/04/pathways-language-model-palm-scaling-to.html) or [this paper](https://arxiv.org/abs/2204.02311), but some of the highlights from these articles are that PaLM:
-- Contains 540-billion 🤯 parameters,
-- Is a dense decoder-only Transformer model, and
-- Was trained using a combination of English and multilingual datasets.
+您可以在[这篇博客](https://ai.googleblog.com/2022/04/pathways-language-model-palm-scaling-to.html)或[这篇论文](https://arxiv.org/abs/2204.02311)中了解更多信息，但这些文章的一些亮点是：
+- 包含5400亿🤯个参数，
+- 是一个密集的仅解码Transformer模型，且
+- 是使用英文和多语言数据集的组合进行训练的。
 
-Don't take our word for it - take a look at these [demo snippets from Google's blog](https://ai.googleblog.com/2022/04/pathways-language-model-palm-scaling-to.html).
+不要轻信我们的话 - 快来查看一下[来自Google博客的演示代码片段](https://ai.googleblog.com/2022/04/pathways-language-model-palm-scaling-to.html)。
 
-![Image](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhLmQjS3gOQ2x7ru3xovYjVw-Yr2fKDCqhDHByQZitD92Yu4L-v2BBa5f_VMfpWM4D0930Dmk35EY1TqGrYUtMQqJO41hkLqXuu51eOpXZ3PvYPSjf5stfEJNJn2idWnRYCCEgBiJuLDTXX5Fgt-Mk13kCKdO12JShGvDO_cArtLKv8U8obJaHiL5ASQg/s16000/Big%20Bench%20Sped%20Up%20Cropped.gif)
+![图片](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhLmQjS3gOQ2x7ru3xovYjVw-Yr2fKDCqhDHByQZitD92Yu4L-v2BBa5f_VMfpWM4D0930Dmk35EY1TqGrYUtMQqJO41hkLqXuu51eOpXZ3PvYPSjf5stfEJNJn2idWnRYCCEgBiJuLDTXX5Fgt-Mk13kCKdO12JShGvDO_cArtLKv8U8obJaHiL5ASQg/s16000/Big%20Bench%20Sped%20Up%20Cropped.gif)
 
-> Edit: We now have more details on the PaLM 2 family of models, which the API is based on! [Read about it here](https://blog.google/technology/ai/google-palm-2-ai-large-language-model/). In the blog, Google especially highlights improvements in multilingual, reasoning and coding capabilities.
+> 编辑：现在我们对基于PaLM 2模型的API有更多的细节！[在这里阅读更多](https://blog.google/technology/ai/google-palm-2-ai-large-language-model/)。在博客中，Google特别强调了在多语言、推理和编码能力方面的改进。
 
-### <i class="fa-solid fa-screwdriver-wrench"></i> What can the Vertex PaLM API do?
+### <i class="fa-solid fa-screwdriver-wrench"></i> Vertex PaLM API可以做什么？
 
-Being an LLM, PaLM can perform numerous tasks, from question-answering, sentence-completion, reading comprehension tasks, common-sense reasoning tasks and more.
+作为LLM，PaLM能够执行多种任务，包括问答、句子补全、阅读理解任务、常识推理任务等等。
 
-Additionally, it can perform multi-lingual NLP tasks reflecting its dataset. What's more, you can use Google's Vertex AI PaLM API to test, customize, and deploy instances of Google's LLMs.
+此外，它还可以执行反映其数据集的多语言自然语言处理任务。更重要的是，您可以使用Google的Vertex AI PaLM API来测试、定制和部署Google的LLM实例。
 
-In other words, you can not only use PaLM off-the-shelf, but also customize the foundation model to suit **your** needs.
+换句话说，您不仅可以直接使用PaLM，还可以定制基础模型以满足**您**的需求。
 
 ## PaLM <i class="fa-solid fa-handshake"></i> Weaviate
 
-![You can use Weaviate with the Vertex PALM API](./img/highlight.png)
+![您可以使用Weaviate与Vertex PALM API](./img/highlight.png)
 
-And we are excited to tell you about the ['text2vec-palm`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-palm) and ['generative-palm'](/developers/weaviate/modules/reader-generator-modules/generative-palm) modules. These modules will help you to bring the power of the newest LLM on the block to the, *ahem*, `PaLM` of your hand - or at least, to your Weaviate instance.
+我们很高兴向您介绍['text2vec-palm'](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-palm)和['generative-palm'](/developers/weaviate/modules/reader-generator-modules/generative-palm)模块。这些模块将帮助您将最新的LLM功能引入您的Weaviate实例，让您可以轻松应对各种任务。
 
-### <i class="fa-solid fa-input-numeric"></i> Embeddings with `text2vec-palm`
+### <i class="fa-solid fa-input-numeric"></i> 使用`text2vec-palm`进行嵌入
 
-The [`text2vec-palm`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-palm) module can use a PaLM model to convert text to vector embeddings that represent their meaning.
+[`text2vec-palm`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-palm) 模块可以使用 PaLM 模型将文本转换为表示其含义的向量嵌入。
 
-So, you can use the `text2vec-palm` module to build a Weaviate database using PaLM-derived vectors for text objects, and perform lightning-fast searches.
+因此，您可以使用 `text2vec-palm` 模块为文本对象构建一个 Weaviate 数据库，并进行快速搜索。
 
-The PaLM model used, `textembedding-gecko-001`, takes a maximum of 3,072 input tokens, and outputs 768-dimensional vector embeddings.
+所使用的 PaLM 模型为 `textembedding-gecko-001`，最多可以处理 3,072 个输入标记，并输出 768 维的向量嵌入。
 
-Please note that according to Google, the embedding endpoint does *not* support fine-tuning.
+请注意，根据Google的说法，嵌入端点*不支持*微调。
 
-### <i class="fa-solid fa-typewriter"></i> Generative search with `generative-palm`
+### <i class="fa-solid fa-typewriter"></i> 通过 `generative-palm` 进行生成式搜索
 
-The [`generative-palm`](/developers/weaviate/modules/reader-generator-modules/generative-palm) module is another exciting development for Weaviate and Google Cloud / Vertex AI users.
+[`generative-palm`](/developers/weaviate/modules/reader-generator-modules/generative-palm) 模块是Weaviate和Google Cloud / Vertex AI用户的另一个令人兴奋的发展。
 
-Our generative search modules work in two stages. First, a search is performed in Weaviate, and then a generative model such as PaLM is called to action, whereby the results are sent to prompt the LLM (PaLM in this case).
+我们的生成式搜索模块分为两个阶段。首先，在Weaviate中进行搜索，然后调用生成模型（如PaLM），将结果发送给LLM（在这种情况下为PaLM）。
 
-In other words - Weaviate can not only find the right data object for you, it can find it, and send it to PaLM to answer questions about it, expand upon it, summarize it, or otherwise transform it as you see fit.
+换句话说，Weaviate不仅可以为您找到正确的数据对象，还可以将其发送给PaLM，以回答关于它的问题，扩展它，总结它或以您认为合适的其他方式对其进行转换。
 
-And remember that the Vertex PaLM API allows further fine-tuning of your PaLM model? It means you can do all this with an LLM that has been tuned to your use case, such as your task, or domain.
+并且请记住，Vertex PaLM API允许进一步对您的PaLM模型进行微调。这意味着您可以使用根据您的用例（如您的任务或领域）进行调整的LLM来完成所有这些操作。
 
-The base PaLM model for generative search is `text-bison-001`, which has the following properties:
+用于生成式搜索的基本PaLM模型是`text-bison-001`，它具有以下属性：
 
-- Max input token: 8,192
-- Max output tokens: 1,024
-- Training data: Up to Feb 2023
+- 最大输入标记：8,192
+- 最大输出标记：1,024
+- 训练数据：截至2023年2月
 
-## <i class="fa-solid fa-code"></i> Want to try it out?
+## <i class="fa-solid fa-code"></i> 想要尝试一下吗？
 
-You can read more about how to use these modules in our documentation! See the pages for:
+您可以在我们的文档中了解更多有关如何使用这些模块的信息！请参阅以下页面：
 
-- [`text2vec-palm`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-palm), and
-- [`generative-palm`](/developers/weaviate/modules/reader-generator-modules/generative-palm).
+- [`text2vec-palm`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-palm)
+- [`generative-palm`](/developers/weaviate/modules/reader-generator-modules/generative-palm)
 
 import WhatNext from '/_includes/what-next.mdx'
 
 <WhatNext />
-

@@ -1,104 +1,108 @@
 ---
-title: Why is Vector Search so fast?
-slug: why-is-vector-search-so-fast
-authors: [laura]
+authors:
+- laura
 date: 2022-09-13
-tags: ['search']
+description: Vector Databases can run semantic queries on multi-million datasets in
+  milliseconds. How is that possible?
 image: ./img/hero.png
-description: "Vector Databases can run semantic queries on multi-million datasets in milliseconds. How is that possible?"
+slug: why-is-vector-search-so-fast
+tags:
+- search
+title: Why is Vector Search so fast?
 ---
-![Why is Vector Search so fast?](./img/hero.png)
 
-<!-- truncate -->
+![为什么向量搜索如此快速？](./img/hero.png)
 
-## Why is this so incredibly fast?
+<!-- 截断 -->
 
-Whenever I talk about vector search, I like to demonstrate it with an example of a semantic search. To add the wow factor, I like to run my queries on a Wikipedia dataset, which is populated with over 28 million paragraphs sourced from Wikipedia.
+## 为什么如此快速？
 
-For example, I can query Weaviate for articles related to: "urban planning in Europe", and the vector database (in the case of my demo – [Weaviate](/developers/weaviate/)) responds with a series of articles about the topic, such as "The cities designed to be capitals".<br/>
-You can try it for yourself by following this [link](https://link.weaviate.io/3LiVxqp), which is already pre-populated with the above question. Press the play button, to see the magic happen.
+每当我谈论向量搜索时，我喜欢用一个语义搜索的示例来演示。为了增加惊叹效果，我喜欢在一个包含来自维基百科的2800万段落的数据集上运行我的查询。
 
-Here is the thing, finding the correct answer in a gigantic repository of unstructured data is not the most impressive part of this demonstration (I mean, it is very impressive), but it is the 🚀 speed at which it all happens. It takes a fraction of a second for the UI to show the results.
+例如，我可以查询Weaviate与“欧洲城市规划”相关的文章，向量数据库（在我的演示中为[Weaviate](/developers/weaviate/)）会返回一系列关于这个主题的文章，比如“设计为首都的城市”。<br/>
+您可以通过点击这个[链接](https://link.weaviate.io/3LiVxqp)来自行尝试，该链接已经预先填充了上述问题。点击播放按钮，看魔术发生吧。
 
-We are talking about a semantic search query, which **takes milliseconds** to find an answer in a dataset containing **28 million paragraphs**. Interestingly enough, it takes longer to render the results than it takes the vector database to find the answer.
+这是个关键的问题，在一个庞大的非结构化数据仓库中找到正确的答案并不是这个演示的最令人印象深刻的部分（当然，这确实非常令人印象深刻），但最让人印象深刻的是它🚀的速度。UI只需要几分之一秒就能显示结果。
 
-*Note, a semantic search is unlike a regular keywords search (which matches keywords like-for-like), but instead, we are searching for answers based on the semantic meaning of our query and data.*
+我们正在讨论一个语义搜索查询，它在包含**2800万段落**的数据集中**毫秒级**找到答案。有趣的是，渲染结果所花费的时间比向量数据库找到答案的时间更长。
 
-The inevitable question that follows up this demonstration is always:
+*请注意，语义搜索与常规的关键词搜索不同（常规的关键词搜索是逐字匹配关键词），而是根据查询和数据的语义意义来搜索答案。*
 
-> Why is this so incredibly fast?
+这个演示之后不可避免的问题总是：
 
-## What is a vector search?
-To answer this question we need to look at how vector databases work.
+> 为什么这么快？
 
-Vector databases index data, unlike other databases, based on data vectors (or vector embeddings). Vector embeddings capture the meaning and context of data, usually predicted by Machine Learning models.
+## 什么是向量搜索？
+要回答这个问题，我们需要看一下向量数据库是如何工作的。
 
-At the time of entry/import (or any significant changes to data objects), for every new/updated data object, vector databases use Machine Learning models to predict and calculate vector embeddings, which then are stored together with the object.
+向量数据库根据数据向量（或向量嵌入）对数据进行索引，与其他数据库不同。向量嵌入通常由机器学习模型预测，捕捉数据的含义和上下文。
 
-> Every data object in a dataset gets a vector
+在录入/导入时（或者对数据对象进行任何重大更改时），向量数据库使用机器学习模型来预测和计算向量嵌入，然后将其与对象一起存储。
 
-In a nutshell, vector embeddings are an array of numbers, which can be used as coordinates in a high-dimensional space. Although it is hard to imagine coordinates in more than 3-dimensional space (x, y, z), we can still use the vectors to compute the distance between vectors, which can be used to indicate similarity between objects. <br/>
+> 数据集中的每个数据对象都会得到一个向量
 
-There are many different distance metrics, like [cosine similarity](https://en.wikipedia.org/wiki/Cosine_similarity) and [Euclidean distance (L2 distance)](https://en.wikipedia.org/wiki/Euclidean_distance).
+简而言之，向量嵌入是一个由数字数组组成的向量，可以用作高维空间中的坐标。虽然很难想象在超过三维空间（x、y、z）中的坐标，但我们仍然可以使用向量来计算向量之间的距离，这可以用来表示对象之间的相似性。<br/>
 
-### The search part
-In a similar fashion, whenever we run a query (like: "What is the tallest building in Berlin?"), a vector database can also convert it to a "query" vector. The task of a vector database is to identify and retrieve a list of vectors that are closest to the given vector of your query, using a distance metric and a search algorithm.
+有很多不同的距离度量方法，比如[余弦相似度](https://en.wikipedia.org/wiki/Cosine_similarity)和[欧氏距离（L2距离）](https://en.wikipedia.org/wiki/Euclidean_distance)。
 
-This is a bit like a game of boules – where the small marker (jack) is the location of our query vector, and the balls (boules) are our data vectors – and we need to find the boules that are nearest to the marker.
+### 搜索部分
+类似地，无论何时我们执行一个查询（比如："柏林最高的建筑是什么？"），一个向量数据库也可以将其转换为一个"查询"向量。向量数据库的任务是使用距离度量和搜索算法，识别并检索与给定查询向量最接近的向量列表。
 
-## k-nearest neighbors (kNN)
-One way to find similar vectors is with a simple [k-nearest neighbors (kNN) algorithm](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm), which returns the k nearest vectors, by comparing every data vector in the database to the query vector.
+这有点像滚球游戏——其中小标记（jack）是我们查询向量的位置，球（boules）是我们的数据向量——我们需要找到与标记最接近的球。
 
-In our boules example (as illustraded below), with 6 boules, the kNN algorithm would measure the distance between the jack and each of the 6 boules on the ground. This would result in 6 separate calaculations.
+## k最近邻算法（kNN）
+一种找到相似向量的方法是使用简单的[k最近邻算法（kNN）](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm)，它通过将数据库中的每个数据向量与查询向量进行比较，返回k个最近的向量。
+
+在我们的游戏Boules的示例中（如下所示），使用kNN算法会测量地面上橙球与每个6个橙球之间的距离。这将导致6个单独的计算。
 
 <img
   src={require('./img/knn-boules.png').default}
-  alt="kNN search in a game of Boules"
+  alt="Boules游戏中的kNN搜索"
   style={{ maxWidth: "50%" }}
 />
 
-*[Figure 1 - kNN search in a game of Boules.]*
+*[图1 - Boules游戏中的kNN搜索。]*
 
-### A kNN search is computationally very expensive
-Comparing a search vector with 10, 100, or 1000 data vectors in just two dimensions is an easy job. But of course, in the real world, we are more likely to deal with millions (like in the Wikipedia dataset) or even billions of data items. In addition, the number of dimensions that most ML models use in semantic search goes up to hundreds or thousands of dimensions!
+### kNN搜索在计算上非常昂贵
+在仅有两个维度的情况下，将一个搜索向量与10个、100个或1000个数据向量进行比较是一项简单的任务。但在现实世界中，我们更有可能处理数百万（如维基百科数据集）甚至数十亿的数据项。此外，大多数语义搜索中使用的维度数量可能高达数百或数千个！
 
-The *brute* force of a **kNN search is computationally very expensive** - and depending on the size of your database, a single query could take anything from several seconds to even hours (yikes😅). If you compare a vector with 300 dimensions with 10M vectors, the vector search would need to do 300 x 10M = 3B computations! The number of required calculations increases linearly with the number of data points (O(n)) (Figure 2).
+*kNN搜索的蛮力算法**在计算上非常昂贵** - 根据数据库的大小，单个查询可能需要几秒钟甚至几小时（哎呀😅）。如果将一个具有300个维度的向量与10M个向量进行比较，向量搜索需要进行300 x 10M = 30亿次计算！所需计算的数量与数据点的数量呈线性增加（O(n)）（图2）。
 
 <img
   src={require('./img/knn-linear.png').default}
-  alt="kNN - O(n) complexity"
+  alt="kNN - O(n)复杂度"
   style={{ maxWidth: "50%" }}
 />
 
-*[Figure 2 - O(n) and O(log n) complexity]*
+*[图2 - O(n)和O(log n)复杂度]*
 
-In summary, kNN search doesn't scale well, and it is hard to image using it with a large dataset in production.
+总结起来，kNN搜索在规模上不具备良好的扩展性，在生产环境中难以想象使用大型数据集进行搜索。
 
-## The answer - Approximate nearest neighbors (ANN)
-Instead of comparing vectors one by one, vector databases use [Approximate Nearest Neighbor (ANN) algorithms](https://en.wikipedia.org/wiki/Nearest_neighbor_search#Approximation_methods), which trade off a bit of accuracy (hence the A in the name) for a huge gain in speed.
+## 解决方案 - 近似最近邻搜索 (ANN)
+而不是逐个比较向量，矢量数据库使用[近似最近邻（ANN）算法](https://en.wikipedia.org/wiki/Nearest_neighbor_search#Approximation_methods)，这种算法在精度上做出一些妥协（因此在名称中有一个A），但在速度上获得了巨大的提升。
 
-ANN algorithms may not return the true k nearest vectors, but they are very efficient. ANN algorithms maintain good performance (sublinear time, e.g. (poly)logarithmic complexity, see Figure 2) on very large-scale datasets.
+ANN算法可能不会返回真正的k个最近邻向量，但它们非常高效。ANN算法在非常大规模的数据集上保持良好的性能（亚线性时间，例如对数复杂度，见图2）。
 
-*Note that most vector databases allow you to configure how your ANN algorithm should behave. This lets you find the right balance between the **recall tradeoff** (the fraction of results that are the true top-k nearest neighbors), **latency**, **throughput** (queries per second) and **import time**.*<br/>
-*For a great example, check [Weaviate benchmarks](/developers/weaviate/benchmarks/ann#sift1m-1m-128d-vectors-l2-distance), to see how three parameters – [efConstruction, maxConnections and ef](/developers/weaviate/benchmarks/ann#what-is-being-measured) - affect recall, latency, throughput and import times.*
+*请注意，大多数向量数据库允许您配置ANN算法的行为。这使您可以在**召回率权衡**（真实的前k个最近邻结果的比例）、**延迟**、**吞吐量**（每秒查询数）和**导入时间**之间找到合适的平衡。*<br/>
+* 一个很好的例子是，查看[Weaviate基准测试](/developers/weaviate/benchmarks/ann#sift1m-1m-128d-vectors-l2-distance)，了解三个参数 - [efConstruction，maxConnections和ef](/developers/weaviate/benchmarks/ann#what-is-being-measured) - 如何影响召回率、延迟、吞吐量和导入时间。
 
-### Examples of ANN algorithms
-Examples of ANN methods are:
-* **trees** – e.g. [ANNOY](https://github.com/spotify/annoy) (Figure 3),
-* **proximity** **graphs** - e.g. [HNSW](https://arxiv.org/abs/1603.09320) (Figure 4),
-* **clustering** - e.g. [FAISS](https://github.com/facebookresearch/faiss),
-* **hashing** - e.g. [LSH](https://en.wikipedia.org/wiki/Locality-sensitive_hashing),
-* **vector compression** - e.g. [PQ](https://ieeexplore.ieee.org/document/5432202) or [SCANN](https://ai.googleblog.com/2020/07/announcing-scann-efficient-vector.html).
+### ANN算法示例
+ANN方法的示例包括：
+* **trees** - 例如[ANNOY](https://github.com/spotify/annoy)（图3），
+* **接近度图** - 例如[HNSW](https://arxiv.org/abs/1603.09320)（图4），
+* **聚类** - 例如[FAISS](https://github.com/facebookresearch/faiss)，
+* **哈希** - 例如[LSH](https://en.wikipedia.org/wiki/Locality-sensitive_hashing)，
+* **向量压缩** - 例如[PQ](https://ieeexplore.ieee.org/document/5432202)或[SCANN](https://ai.googleblog.com/2020/07/announcing-scann-efficient-vector.html)。
 
 ![ANNOY](./img/ann-annoy.png)<br/>
-*[Figure 3 - Tree-based ANN search]*
+*[图3 - 基于树的ANN搜索]*
 
-Which algorithm works best depends on your project. Performance can be measured in terms of latency, throughput (queries per second), build time, and accuracy (recall). These four components often have a tradeoff, so it depends on the use case which method works best.
+哪种算法最好取决于您的项目。性能可以从延迟、吞吐量（每秒查询数）、构建时间和准确性（召回率）等方面进行衡量。这四个组成部分通常存在权衡，因此最适合的方法取决于使用情况。
 
-So, while ANN is not some magic method that will always find the true k nearest neighbors in a dataset, it can find a pretty good approximation of the true k neighbors. And it can do this in a fraction of the time!
+因此，虽然ANN不是一种能够始终在数据集中找到真实的k个最近邻居的魔法方法，但它可以找到真实k个邻居的一个相当好的近似值。而且它可以在一小部分时间内完成这个任务！
 
-## HNSW in Weaviate
-[Weaviate](/developers/weaviate/) is a great example of a vector database that uses ANN algorithms to offer ultra-fast queries. The first ANN algorithm introduced to Weaviate is a custom implementation of [Hierarchical Navigable Small World graphs (HNSW)](/developers/weaviate/concepts/vector-index#hnsw).
+## Weaviate中的HNSW
+[Weaviate](/developers/weaviate/)是一个使用ANN算法提供超快查询的向量数据库的绝佳示例。首个引入Weaviate的ANN算法是[Hierarchical Navigable Small World graphs (HNSW)](/developers/weaviate/concepts/vector-index#hnsw)的自定义实现。
 
 <img
   src={require('./img/ann-hnsw.png').default}
@@ -106,28 +110,27 @@ So, while ANN is not some magic method that will always find the true k nearest 
   style={{ maxWidth: "50%" }}
 />
 
-*[Figure 4 - Proximity graph-based ANN search]*
+*[图4-基于邻近图的ANN搜索]*
 
-Check out [Weaviate ANN benchmarks](/developers/weaviate/benchmarks/ann) to see how HNSW performed on realistic large-scale datasets. You can use it to compare the tradeoffs between recall, QPS, latency, and import time.<br/>
-You will find it interesting to see, that Weaviate can maintain very high recall rates (>95%), whilst keeping high throughput and low latency (both in milliseconds). That is exactly what you need for fast, but reliable vector search!
+查看[Weaviate ANN基准测试](/developers/weaviate/benchmarks/ann)，了解HNSW在实际大规模数据集上的性能表现。您可以使用它来比较召回率、QPS、延迟和导入时间之间的权衡。<br/>
+您会发现很有趣的是，Weaviate可以保持很高的召回率（>95%），同时保持高吞吐量和低延迟（都在毫秒级）。这正是您需要的快速而可靠的向量搜索！
 
-## Summary
-A quick recap:
-* Vector databases use Machine Learning models to calculate and attach Vector embeddings to all data objects
-* Vector embeddings capture the meaning and context of data
-* Vector databases offer super fast queries thanks to ANN algorithms
-* ANN algorithms trade a small amount of accuracy for huge gains in performance
+## 概要
+* 向量数据库使用机器学习模型来计算并附加向量嵌入到所有数据对象中
+* 向量嵌入捕捉数据的含义和上下文
+* 向量数据库通过ANN算法提供超快速的查询
+* ANN算法在性能上取得巨大的收益，但会牺牲一小部分准确性
 
-*Of course, there is a lot more going on in a vector database that makes it so efficient. But that is content for another article.😉*
+*当然，向量数据库的高效性还有很多其他因素。但这是另一篇文章的内容。😉*
 
-## Learn more
-The Weaviate Core team is currently working on research and implementation for other ANN algorithms. We are going to publish some of our findings in the next couple of weeks. So, stay tuned for more content on the topic.
+## 了解更多信息
+Weaviate核心团队目前正在进行其他ANN算法的研究和实现。我们将在接下来的几周内发布一些研究结果。所以，请继续关注有关此主题的更多内容。
 
-Until then, you can:
-* Listen to a [podcast about ANN Benchmarks](https://youtu.be/kG3ji89AFyQ) with Connor and Etienne from Weaviate.
-* Check out the [Getting Started with Weaviate](/developers/weaviate/quickstart) guide and begin building amazing apps with Weaviate.
-* Join our community on [Slack](https://weaviate.io/slack) or [the forum](https://forum.weaviate.io/), where we can all talk about vector databases.
-* Reach out to us on [Twitter](https://twitter.com/weaviate_io).
+在那之前，您可以：
+* 听一下由Weaviate的Connor和Etienne主持的[关于ANN基准测试的播客](https://youtu.be/kG3ji89AFyQ)。
+* 查看[开始使用Weaviate](/developers/weaviate/quickstart)指南，并开始使用Weaviate构建令人惊奇的应用程序。
+* 在 [Slack](https://weaviate.io/slack) 或 [论坛](https://forum.weaviate.io/) 上加入我们的社区，我们可以一起讨论向量数据库。
+* 通过 [Twitter](https://twitter.com/weaviate_io) 与我们联系。
 
 import Ending from '/_includes/blog-end-oss-comment.md'
 
