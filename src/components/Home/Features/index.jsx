@@ -8,41 +8,41 @@ export default function HomePage() {
     <div className="container">
       <div className={styles.header}>
         <h2>
-        Developer Experience &amp; Community
+        开发者体验与社区
         </h2>
         <p>
-        Because we care about how fast you can go from zero to production,<br/>we aim to serve our community by:
+        因为我们关心你从零开始到产品发布的速度，<br/>我们致力于通过以下方式为我们的社区服务：
         </p>
         <p>
-          <i className="fas fa-stars"></i> Publishing open-source<br/>
-          <i className="fas fa-stars"></i> Creating valuable SaaS services<br/>
-          <i className="fas fa-stars"></i> Integrating with your favorite embedding providers and frameworks
+          <i className="fas fa-stars"></i> 发布开源项目<br/>
+          <i className="fas fa-stars"></i> 创建有价值的SaaS服务<br/>
+          <i className="fas fa-stars"></i> 与您喜欢的嵌入提供商和框架进行集成
         </p>
 
         <ButtonContainer>
-          <LinkButton link="https://weaviate.io/slack">Join Our Community on Slack</LinkButton>
+          <LinkButton link="https://weaviate.io/slack">在Slack上加入我们的社区</LinkButton>
         </ButtonContainer>
       </div>
       <div className={styles.features}>
         <div className={styles.box}>
           <p className={styles.icon1}></p>
-          <h4 className={styles.title}>Vector Search</h4>
+          <h4 className={styles.title}>向量搜索</h4>
           <p className={styles.subTitle}>
-            Whether you bring your own vectors or use one of the vectorization modules, you can index billions of data objects to search through.
+            无论您是带入自己的向量还是使用向量化模块，都可以索引数十亿的数据对象进行搜索。
           </p>
         </div>
         <div className={styles.box}>
           <p className={styles.icon2}></p>
-          <h4 className={styles.title}>Hybrid Search</h4>
+          <h4 className={styles.title}>混合搜索</h4>
           <p className={styles.subTitle}>
-            Combine multiple search techniques, such as keyword-based and vector search, to provide state-of-the-art search experiences.
+            结合多种搜索技术，如基于关键词的搜索和向量搜索，提供最先进的搜索体验。
           </p>
         </div>
         <div className={styles.box}>
           <p className={styles.icon3}></p>
-          <h4 className={styles.title}>Generative Search</h4>
+          <h4 className={styles.title}>生成性搜索</h4>
           <p className={styles.subTitle}>
-            Improve your search results by piping them through LLM models like GPT-3 to create next-gen search experiences.
+            通过将搜索结果通过LLM模型（如GPT-3）进行处理，提升您的搜索结果，创造下一代搜索体验。
           </p>
         </div>
       </div>

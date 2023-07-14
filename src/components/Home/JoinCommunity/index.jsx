@@ -8,9 +8,9 @@ export default function HomepageJoinCommunity() {
       <div className={styles.wrapper}>
         <div className={styles.leftSide}>
           <h2>
-            Join the global <br /> community
+            加入全球<br />社区
           </h2>
-          <p>Ask questions, get inspired, or just say Hi.</p>
+          <p>提问，寻找灵感，或者只是打个招呼。</p>
         </div>
         <div className={styles.rightSide}>
           <div className={styles.socialBox}>

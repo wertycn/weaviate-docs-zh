@@ -6,8 +6,8 @@ export default function HomepageNewsletter() {
     <div className="container">
       <div className={styles.box}>
         <div className={styles.text}>
-          <h2>Stay updated</h2>
-          <span>Subscribe to our newsletter</span>
+          <h2>保持更新</h2>
+          <span>订阅我们的新闻通讯</span>
         </div>
         <div className={styles.iframe}>
           <iframe

@@ -20,12 +20,12 @@ export default function HomepageIntegrations() {
           </div>
         </div>
         <div className={styles.right}>
-          <h2>Integrations</h2>
+          <h2>集成</h2>
           <p>
-            Besides Weaviate's capabilities to bring your own vectors, you can also choose one of Weaviate's modules with out-of-the-box support for vectorization. You can also pick from a wide variety of well-known neural search frameworks with Weaviate integrations.
+            除了Weaviate的能力可以带入您自己的向量，您还可以选择其中一个带有开箱即用向量化支持的Weaviate模块。您还可以从Weaviate集成的各种知名神经搜索框架中进行选择。
           </p>
           <ButtonContainer position='left'>
-            <LinkButton link="/developers/weaviate/modules" newTab={false}>Learn about Weaviate modules</LinkButton>
+            <LinkButton link="/developers/weaviate/modules" newTab={false}>了解Weaviate模块</LinkButton>
           </ButtonContainer>
         </div>
       </div>
