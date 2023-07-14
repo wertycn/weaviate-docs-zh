@@ -23,7 +23,7 @@ export default function HomepageHeader() {
               </Link>
               <Link
                 className={styles.buttonOutline}
-                to="https://weaviate.vereal.debug.icu/developers/weaviate"
+                to="/developers/weaviate"
               >
                 文档
               </Link>
