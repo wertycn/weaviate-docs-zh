@@ -1,33 +1,33 @@
 ---
-title: text2vec-huggingface
-sidebar_position: 2
 image: og/docs/modules/text2vec-huggingface.jpg
-# tags: ['text2vec', 'text2vec-huggingface', 'huggingface']
+sidebar_position: 2
+title: text2vec-huggingface
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Introduction
+## 简介
 
-The `text2vec-huggingface` module allows you to use [Hugging Face models](https://huggingface.co/models) directly in Weaviate as a vectorization module. When you create a Weaviate class that is set to use this module, it will automatically vectorize your data using the chosen module.
+`text2vec-huggingface` 模块允许您在 Weaviate 中直接使用[Hugging Face 模型](https://huggingface.co/models)作为向量化模块。当您创建一个使用该模块的 Weaviate 类时，它将自动使用所选模型对您的数据进行向量化。
 
-* Note: this module uses a third-party API.
-* Note: make sure to check the Inference [pricing page](https://huggingface.co/inference-api#pricing) before vectorizing large amounts of data.
-* Note: Weaviate automatically parallelizes requests to the Inference API when using the batch endpoint.
-* Note: This module only supports [sentence similarity](https://huggingface.co/models?pipeline_tag=sentence-similarity) models.
+* 注意：该模块使用第三方 API。
+* 注意：在对大量数据进行向量化之前，请确保查看推理[定价页面](https://huggingface.co/inference-api#pricing)。
+* 注意：当使用批处理端点时，Weaviate会自动并行化对推理API的请求。
+* 注意：此模块仅支持[句子相似度](https://huggingface.co/models?pipeline_tag=sentence-similarity)模型。
 
-## How to enable
+## 如何启用
 
-Request a Hugging Face API Token via [their website](https://huggingface.co/settings/tokens).
+通过[Hugging Face网站](https://huggingface.co/settings/tokens)申请Hugging Face API令牌。
 
-### Weaviate Cloud Services
+### Weaviate云服务
 
-This module is enabled by default on the WCS.
+该模块在WCS上默认启用。
 
-### Weaviate open source
+### Weaviate开源版
 
-Here is an example Docker-compose file, which will spin up Weaviate with the Hugging Face module.
+以下是一个示例的Docker-compose文件，可以使用Hugging Face模块启动Weaviate。
 
 ```yaml
 version: '3.4'
@@ -51,11 +51,11 @@ import T2VInferenceYamlNotes from './_components/text2vec.inference.yaml.notes.m
 
 <T2VInferenceYamlNotes apiname="HUGGINGFACE_APIKEY"/>
 
-## How to configure
+## 如何配置
 
-In your Weaviate schema, you must define how you want this module to vectorize your data. If you are new to Weaviate schemas, you might want to check out the [tutorial on the Weaviate schema](/developers/weaviate/tutorials/schema.md) first.
+在您的Weaviate模式中，您必须定义如何将数据向量化的方式。如果您对Weaviate模式还不熟悉，可以先查看[Weaviate模式教程](/developers/weaviate/tutorials/schema.md)。
 
-For example, the following schema configuration will set Weaviate to vectorize the `Document` class with `text2vec-huggingface` using the `all-MiniLM-L6-v2` model.
+例如，下面的模式配置将设置Weaviate将`Document`类使用`text2vec-huggingface`和`all-MiniLM-L6-v2`模型进行向量化。
 
 ```json
 {
@@ -94,38 +94,38 @@ For example, the following schema configuration will set Weaviate to vectorize t
 }
 ```
 
-## Usage
+## 使用方法
 
-* If the Hugging Face API key is not set in the `text2vec-huggingface` module, you can set the API key at query time by adding the following to the HTTP header: `X-Huggingface-Api-Key: YOUR-HUGGINGFACE-API-KEY`.
-* Using this module will enable [GraphQL vector search operators](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext).
+* 如果在 `text2vec-huggingface` 模块中未设置 Hugging Face API 密钥，您可以在查询时通过添加以下内容到 HTTP 标头来设置 API 密钥: `X-Huggingface-Api-Key: YOUR-HUGGINGFACE-API-KEY`。
+* 使用此模块将启用 [GraphQL 向量搜索运算符](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext)。
 
-### Example
+### 示例
 
 import CodeNearText from '/_includes/code/graphql.filters.nearText.huggingface.mdx';
 
 <CodeNearText />
 
-## Additional information
+## 附加信息
 
-### Support for Hugging Face Inference Endpoints
+### 支持 Hugging Face 推理端点
 
-The `text2vec-huggingface` module also supports [Hugging Face Inference Endpoints](https://huggingface.co/inference-endpoints), where you can deploy your own model as an endpoint. To use your own Hugging Face Inference Endpoint for vectorization with the `text2vec-huggingface` module, just pass the endpoint url in the class configuration as the `endpointURL` setting. Please note that only `feature extraction` inference endpoint types are supported.
+`text2vec-huggingface` 模块还支持[Hugging Face推断端点](https://huggingface.co/inference-endpoints)，您可以将自己的模型部署为端点。要在 `text2vec-huggingface` 模块中使用自己的 Hugging Face 推断端点进行向量化，只需将端点 URL 作为 `endpointURL` 设置传递给类配置即可。请注意，仅支持`特征提取`推断端点类型。
 
-### Available settings
+### 可用设置
 
-In the schema, on a class level, the following settings can be added:
+在模式中，在类级别上，可以添加以下设置：
 
-| setting | type | description | example |
+| 设置项 | 类型 | 描述 | 示例 |
 | --- | --- | --- | --- |
-| `model` | `string` | This can be any public or private Hugging Face model, [sentence similarity models](https://huggingface.co/models?pipeline_tag=sentence-similarity&sort=downloads) work best for vectorization.<br/><br/>Don't use with `queryModel` nor `passageModel`. | `"bert-base-uncased"` |
-| `passageModel` | `string` | DPR passage model.<br/><br/>Should be set together with `queryModel`, but without `model`. | `"sentence-transformers/facebook-dpr-ctx_encoder-single-nq-base"` |
-| `queryModel` | `string` | DPR query model.<br/><br/>Should be set together with `passageModel`, but without `model`. | `"sentence-transformers/facebook-dpr-question_encoder-single-nq-base"` |
-| `options.waitForModel` | `boolean` | If the model is not ready, wait for it instead of receiving 503. | |
-| `options.useGPU` | `boolean` | Use GPU instead of CPU for inference.<br/>(requires Hugginface's [Startup plan](https://huggingface.co/inference-api#pricing) or higher) | |
-| `options.useCache` | `boolean` | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non-deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query. | |
-| `endpointURL` | `string` | This can be any public or private Hugging Face Inference URL. To find out how to deploy your own Hugging Face Inference Endpoint click [here](https://huggingface.co/inference-endpoints).<br/><br/>Note: when this variable is set, the module will ignore model settings like `model` `queryModel` and `passageModel`. | |
+| `model` | `string` | 这可以是任何公开或私有的Hugging Face模型，[句子相似性模型](https://huggingface.co/models?pipeline_tag=sentence-similarity&sort=downloads)在向量化方面效果最佳。<br/><br/>不要与`queryModel`或`passageModel`一起使用。 | `"bert-base-uncased"` |
+| `passageModel` | `string` | DPR段落模型。<br/><br/>应该与`queryModel`一起设置，但不需要`model`。 | `"sentence-transformers/facebook-dpr-ctx_encoder-single-nq-base"` |
+| `queryModel` | `string` | DPR查询模型。<br/><br/>应该与`passageModel`一起设置，但不需要`model`。 | `"sentence-transformers/facebook-dpr-question_encoder-single-nq-base"` |
+| `options.waitForModel` | `boolean` | 如果模型还没有准备好，等待它而不是返回503。 | |
+| `options.useGPU` | `boolean` | 是否使用GPU进行推理，而不是CPU。<br/>(需要Hugginface的[启动计划](https://huggingface.co/inference-api#pricing)或更高级别的计划) | |
+| `options.useCache` | `boolean` | 推理 API 上有一个缓存层，可以加速已经看过的请求。大多数模型可以直接使用这些结果，因为模型是确定性的（即结果总是相同的）。但是，如果您使用的是非确定性模型，您可以设置此参数，以防止使用缓存机制，从而得到一个真正的新查询。 | |
+| `endpointURL` | `string` | 这可以是任何公共或私有的Hugging Face推理URL。要了解如何部署自己的Hugging Face推理端点，请点击[这里](https://huggingface.co/inference-endpoints)。<br/><br/>注意：当设置了这个变量时，模块将忽略模型设置，如`model`、`queryModel`和`passageModel`。 | |
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

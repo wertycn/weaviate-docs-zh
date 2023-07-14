@@ -1,25 +1,25 @@
 ---
-title: RESTful API
-sidebar_position: 0
 image: og/docs/api.jpg
-# tags: ['RESTful API references']
+sidebar_position: 0
+title: RESTful API
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
 ## RESTful API
 
-Weaviate has a basic RESTful API which offers CRUD support on all data objects. The clients automatically determine if they should call the RESTful or GraphQL API. You can also choose to call the APIs themselves.
+Weaviate具有基本的RESTful API，可以对所有数据对象进行CRUD操作。客户端会自动判断是否应调用RESTful API或GraphQL API。您也可以选择自己调用API。
 
-<!-- TODO: Should we remove the swagger links -->
-### Open API specs
+<!-- TODO: 是否应删除swagger链接 -->
+### Open API规范
 
-The Open API specs for the current Weaviate version number can be found [here](https://app.swaggerhub.com/apis/semi-technologies/weaviate/v||site.weaviate_version||).
+当前Weaviate版本的Open API规范可以在此处找到：[链接](https://app.swaggerhub.com/apis/semi-technologies/weaviate/v||site.weaviate_version||)。
 
-## References
+## 参考资料
 
-Each endpoint has its individual page:
+每个端点都有自己的页面：
 
 - [/v1/schema](./schema.md)
 - [/v1/objects](./objects.md)

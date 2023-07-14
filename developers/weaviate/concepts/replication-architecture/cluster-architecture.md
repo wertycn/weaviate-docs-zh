@@ -1,76 +1,73 @@
 ---
-title: Cluster Architecture
-sidebar_position: 3
 image: og/docs/concepts.jpg
-# tags: ['architecture']
+sidebar_position: 3
+title: Cluster Architecture
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-This page describes how the nodes or clusters in Weaviate's replication design behave in a leaderless fashion.
+本页面描述了Weaviate的复制设计中的节点或集群如何以无领导者的方式运行。
 
-## Leaderless Design
+## 无领导者设计
 
-Replication in Weaviate is leaderless. This means there is no central leader or primary node that will replicate to follower nodes. Instead, all nodes can accept writes and reads from the client, which can offer better availability. There is no single point of failure. A leaderless replication approach is also known as [Dynamo-style](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf) data replication, used by Amazon, and was also implemented by other open source projects like [Apache Cassandra](https://cassandra.apache.org).
+在Weaviate中，复制是无领导者的。这意味着没有中央领导者或主节点来复制给从节点。相反，所有节点都可以接受客户端的写入和读取操作，这可以提供更好的可用性。没有单点故障。无领导者的复制方法也被称为[Dynamo风格](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)的数据复制，被亚马逊使用，并且也被其他开源项目如[Apache Cassandra](https://cassandra.apache.org)实施。
 
-In Weaviate, a coordination pattern is used to relay a client’s read and write requests to the correct nodes. Unlike in a leader-based database, a coordinator node does not enforce any ordering of the operations.
+在Weaviate中，使用协调模式将客户端的读写请求传递给正确的节点。与基于领导者的数据库不同，协调节点不会强制执行任何操作的顺序。
 
-The following illustration shows a leaderless replication design in Weaviate. There is one coordination node, which leads traffic from the client to the correct replicas. There is nothing special about this node; it was chosen to be the coordinator because this node received the request from the load balancer. A future request for the same data may be coordinated by a different node.
+下图显示了Weaviate中的无领导复制设计。有一个协调节点，负责将客户端的流量引导到正确的副本。这个节点并没有特别之处；它被选择为协调器是因为这个节点接收了负载均衡器的请求。将来对相同数据的请求可能由不同的节点协调处理。
 
-<p align="center"><img src="/img/docs/replication-architecture/replication-main-quorum.png" alt="Replication Architecture" width="75%"/></p>
+<p align="center"><img src="/img/docs/replication-architecture/replication-main-quorum.png" alt="复制架构" width="75%"/></p>
 
-The main advantage of a leaderless replication design is improved fault tolerance. Without a leader that handles all requests, a leaderless design offers better availability. In a single-leader design, all writes need to be processed by this leader. If this node cannot be reached or goes down, no writes can be processed. With a leaderless design, all nodes can receive write operations, so there is no risk of one master node failing.
+无领导复制设计的主要优势是提高了容错性。没有一个处理所有请求的领导者，无领导设计提供了更好的可用性。在单领导者设计中，所有写操作都需要由该领导者处理。如果该节点无法访问或宕机，将无法处理任何写操作。而在无领导设计中，所有节点都可以接收写操作，因此不存在一个主节点故障的风险。
 
-On the flipside of high availability, a leaderless database tends to be less consistent. Because there is no leader node, data on different nodes may temporarily be out of date. Leaderless databases tend to be eventually consistent. Consistency in Weaviate is [tunable](./consistency.md), but this occurs at the expense of availability.
+在高可用性的反面，无领导数据库往往不太一致。因为没有领导节点，不同节点上的数据可能会暂时过时。无领导数据库往往是最终一致的。在Weaviate中，一致性是可调节的，但这是以可用性为代价的。
 
+## 复制因子
 
-## Replication Factor
+在Weaviate中，复制功能是按类别启用和控制的。这意味着您可以为不同的类别设置不同的复制因子。
 
-In Weaviate, replication is enabled and controlled per class. This means you can have different replication factors for different classes.
+复制因子（RF或n）决定了在分布式环境中存储数据的副本数量。复制因子为1意味着在数据库设置中只有每个数据条目的1个副本，换句话说，没有复制。复制因子为2意味着每个数据条目有两个副本，分别存在于两个不同的节点（副本）。显然，复制因子不能大于节点数。集群中的任何节点都可以作为协调节点，将查询引导到正确的目标节点。
 
-The replication factor (RF or n) determines how many copies of data are stored in the distributed setup. A replication factor of 1 means that there is only 1 copy of each data entry in the database setup, in other words there is no replication. A replication factor of 2 means that there are two copies of each data entry, which are present on two different nodes (replicas). Naturally, the replication factor cannot be higher than the number of nodes. Any node in the cluster can act as a coordinating node to lead queries to the correct target node(s).
+通常使用3个副本因子，因为这在性能和容错之间提供了适当的平衡。一般情况下，偏好使用奇数个节点，因为这样更容易解决冲突。在一个3节点的设置中，可以通过2个节点达到法定人数。因此，容错能力为1个节点。另一方面，在一个2节点的设置中，无法容忍任何节点故障，同时仍然在节点之间达成共识。在一个4节点的设置中，需要3个节点才能达成共识。因此，一个3节点的设置在容错性和成本之间有更好的比例，而不是2节点或4节点的设置。
 
-A replication factor of 3 is commonly used, since this provides a right balance between performance and fault tolerance. An odd number of nodes is generally preferred, as it makes it easier to resolve conflicts. In a 3-node setup, a quorum can be reached with 2 nodes. Therefore the fault tolerance is 1 node. In a 2-node setup, on the other hand, no node failures can be tolerated while still reaching consensus across nodes. In a 4-node setup, respectively, 3 nodes would be required to reach a consensus. Thus, a 3-node setup has a better fault-tolerance to cost ratio than either a 2-node or 4-node setup.
+<p align="center"><img src="/img/docs/replication-architecture/replication-factor.png" alt="复制因子" width="75%"/></p>
 
-<p align="center"><img src="/img/docs/replication-architecture/replication-factor.png" alt="Replication Factor" width="75%"/></p>
+## 写操作
 
+在写操作中，客户端的请求将被发送到集群中的任何一个节点。第一个接收请求的节点被分配为协调器。协调器节点将请求发送到一些预定义的副本，并将结果返回给客户端。因此，集群中的任何一个节点都可以成为协调器节点。客户端只与该协调器节点直接联系。在将结果返回给客户端之前，协调器节点会等待一定数量的写操作确认，具体数量取决于配置。Weaviate等待的确认数量取决于[一致性配置](./consistency.md)。
 
-## Write operations
+**步骤**
+1. 客户端将数据发送给任何一个节点，该节点将被指定为协调节点
+2. 协调节点将数据发送给集群中的一个以上的副本节点
+3. 协调节点等待来自x个节点的确认。从v1.18开始，x是[可配置的](./consistency.md)，默认为`ALL`节点。
+4. 当协调节点收到x个确认时，写入操作成功完成。
 
-On a write operation, the client’s request will be sent to any node in the cluster. The first node which receives the request is assigned as the coordinator. The coordinator node sends the request to a number of predefined replicas and returns the result to the client. So, any node in the cluster can be a coordinator node. A client will only have direct contact with this coordinator node. Before sending the result back to the client, the coordinator node waits for a number of write acknowledgements from different nodes depending on the configuration. How many acknowledgements Weaviate waits for, depends on the [consistency configuration](./consistency.md).
+作为一个例子，考虑一个集群大小为3，复制因子为3的情况。因此，分布式设置中的所有节点都包含数据的副本。当客户端发送新数据时，它将被复制到所有三个节点。
 
-**Steps**
-1. The client sends data to any node, which will be assigned as the coordinator node
-2. The coordinator node sends the data to more than one replica node in the cluster
-3. The coordinator node waits for acknowledgement from x nodes. Starting with v1.18, x is [configurable](./consistency.md), and defaults to `ALL` nodes.
-4. When x ACKs are received by the coordinator node, the write is successful.
+<p align="center"><img src="/img/docs/replication-architecture/replication-rf3-size3.png" alt="集群大小为3的复制因子为3" width="75%"/></p>
 
-As an example, consider a cluster size of 3 with replication factor of 3. So, all nodes in the distributed setup contain a copy of the data. When the client sends new data, this will be replicated to all three nodes.
+对于一个集群大小为8，复制因子为3的情况下，写操作将不会发送到所有8个节点，而只会发送到包含副本的那三个节点。协调节点将确定数据将被写入哪些节点。存储哪些类别（分片）的节点是由Weaviate的设置确定的，每个节点和协调节点都知道这一点。数据复制的位置是确定的，因此所有节点都知道哪个数据将落在哪个分片上。
 
-<p align="center"><img src="/img/docs/replication-architecture/replication-rf3-size3.png" alt="Replication Factor 3 with cluster size 3" width="75%"/></p>
+<p align="center"><img src="/img/docs/replication-architecture/replication-rf3-size8.png" alt="复制因子为3，集群大小为8" width="75%"/></p>
 
-With a cluster size of 8 and a replication factor of 3, a write operation will not be sent to all 8 nodes, but only to those three containing the replicas. The coordinating node will determine which nodes the data will be written to. Which nodes store which classes (shards) is determined by the setup of Weaviate, which is known by each node and thus each coordinator node. Where something is replicated is deterministic, so all nodes know on which shard which data will land.
+## 读操作
 
-<p align="center"><img src="/img/docs/replication-architecture/replication-rf3-size8.png" alt="Replication Factor 3 with cluster size 8" width="75%"/></p>
+读操作也由协调节点协调，将查询定向到包含数据的正确节点。由于一个或多个节点可能包含旧（过时）数据，在将数据发送给用户之前，读取客户端将确定接收到的数据中最新的数据。
 
-## Read operations
+**步骤**
+1. 客户端向Weaviate发送查询请求，集群中任何一个首先接收到请求的节点都将充当协调节点
+2. 协调节点将查询发送给集群中的多个副本节点
+3. 协调节点等待来自x个节点的响应。*x是[可配置的](./consistency.md)（从v1.18开始可用的`ALL`，`QUORUM`或`ONE`，从v1.17开始，按ID获取对象的请求具有可调整的一致性）*
+4. 协调节点使用一些元数据（例如时间戳、ID、版本号）解决冲突的数据。
+5. 协调节点将最新的数据返回给客户端。
 
-Read operations are also coordinated by a coordinator node, which directs a query to the correct nodes that contain the data. Since one or more nodes may contain old (stale) data, the read client will determine which of the received data is the most recent before sending it to the user.
+如果集群大小为3，并且副本因子也为3，则所有节点都可以提供查询服务。一致性级别决定了将查询哪些节点。
 
-**Steps**
-1. The client sends a query to Weaviate, any node in the cluster that receives the request first will act as the coordinator node
-2. The coordinator node sends the query to more than one replica node in the cluster
-3. The coordinator waits for a response from x nodes. *x is [configurable](./consistency.md) (`ALL`, `QUORUM` or `ONE`, available from v1.18, Get-Object-By-ID type requests have tunable consistency from v1.17).*
-4. The coordinator node resolves conflicting data using some metadata (e.g. timestamp, id, version number)
-5. The coordinator returns the latest data to the client
+如果集群大小为10，复制因子为3，则包含该数据（类）的3个节点可以通过协调节点来处理查询。客户端会等待直到x（一致性级别）个节点响应。
 
-If the cluster size is 3 and the replication factor is also 3, then all nodes can serve the query. The consistency level determines how many nodes will be queried.
-
-If the cluster size is 10 and the replication factor is 3, the 3 nodes which contain that data (class) can serve queries, coordinated by the coordinator node. The client waits until x (the consistency level) nodes have responded.
-
-
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

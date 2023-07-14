@@ -1,8 +1,7 @@
 ---
-title: Generative search
-sidebar_position: 70
 image: og/docs/howto.jpg
-# tags: ['how to', 'generative']
+sidebar_position: 70
+title: Generative search
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,31 +10,30 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PythonCode from '!!raw-loader!/_includes/code/howto/search.generative.py';
 import TSCode from '!!raw-loader!/_includes/code/howto/search.generative.ts';
 
-## Overview
+## 概述
 
-This page shows you how to perform `generative` searches using Weaviate.
+本页面将向您展示如何在Weaviate中执行“生成式”搜索。
 
 :::info Related pages
 - [API References: GraphQL: Get](../api/graphql/get.md)
 :::
 
-## Requirements
+## 需求
 
-To use the generative search feature, you must:
-1. Configure Weaviate to use a generator module ([`generative-openai`](../modules/reader-generator-modules/generative-openai.md), [`generative-cohere`](../modules/reader-generator-modules/generative-cohere.md), [`generative-palm`](../modules/reader-generator-modules/generative-palm.md)),
-2. Configure the parameters for the `generative-*` module in the target class,
-3. Specify a query to retrieve one or more objects, and
-4. Provide a [`single prompt`](#single-prompt) or a [`grouped task`](#grouped-task) to generate text from.
-
+要使用生成式搜索功能，您必须：
+1. 配置Weaviate以使用生成器模块（[`generative-openai`](../modules/reader-generator-modules/generative-openai.md)，[`generative-cohere`](../modules/reader-generator-modules/generative-cohere.md)，[`generative-palm`](../modules/reader-generator-modules/generative-palm.md)），
+2. 配置目标类别中的`generative-*`模块的参数，
+3. 指定一个查询来检索一个或多个对象，
+4. 提供一个[`单个提示`](#single-prompt)或者一个[`分组任务`](#grouped-task)来生成文本。
 
 <details>
-  <summary>How do I <strong>configure Weaviate</strong> with a generator module?</summary>
+  <summary>我如何使用一个生成器模块来<strong>配置Weaviate</strong>？</summary>
 
-  You must enable the desired generative search module and (optionally) specify the corresponding inference service (OpenAI, Cohere, PaLM) API key in the relevant configuration file (e.g. `docker-compose.yml`), or (recommended) request that client code provide it with every request. You can generate this file using the [Weaviate configuration tool](../installation/docker-compose.md#configurator).
+  您必须在相关的配置文件（例如 `docker-compose.yml`）中启用所需的生成搜索模块，并（可选）指定相应的推理服务（OpenAI、Cohere、PaLM）API密钥，或者（推荐）要求客户端代码在每个请求中提供它。您可以使用[Weaviate配置工具](../installation/docker-compose.md#configurator)生成此文件。
   
-  Here are the relevant settings from the configuration file. Ensure the corresponding environment variable is set (i.e. `$OPENAI_APIKEY`, `$COHERE_APIKEY`, or `$PALM_APIKEY`), unless you want the client to supply the API key (recommended).
+  以下是配置文件中的相关设置。请确保对应的环境变量已设置（例如 `$OPENAI_APIKEY`、`$COHERE_APIKEY` 或 `$PALM_APIKEY`），除非您希望客户端提供 API 密钥（推荐）。
 
-  <Tabs groupId="modules">
+<Tabs groupId="modules">
 <TabItem value="OpenAI" label="OpenAI">
 
 ```yaml
@@ -73,9 +71,9 @@ services:
 </details>
 
 <details>
-  <summary>How do I <strong>configure the generative module</strong> in the target class?</summary>
+  <summary>如何在目标类中配置生成模块？</summary>
 
-You can configure parameters for the generative search module in the target class via the `moduleConfig.generative-*` property. Please refer to the "Schema configuration" section in the relevant module page.
+您可以通过`moduleConfig.generative-*`属性来配置目标类中的生成搜索模块的参数。请参考相关模块页面中的"模式配置"部分。
 </details>
 
 :::info For more detail
@@ -86,15 +84,15 @@ See the relevant module page for:
 :::
 
 
-## Single prompt
+## 单个提示
 
-A **single prompt** generative search returns a generated response for each object in the query results. For **single prompt** generative searches, you must specify which object *properties* to use in the prompt.
+**单个提示**生成式搜索为查询结果中的每个对象返回一个生成的响应。对于**单个提示**生成式搜索，您必须指定在提示中使用哪些对象*属性*。
 
-In the below example, the query:
-1. Retrieves two `JeopardyQuestion` objects related to `World history`,
-1. Prepares a prompt for each object, based on the prompt `"Convert the following into a question for twitter. Include emojis for fun, but do not include the answer: {question}."`, where `{question}` is an object property, and
-1. Retrieves a generated text for each object (2 total), and
-1. Returns the generated text as a part of each object, along with the `question` property.
+在下面的示例中，查询：
+1. 检索与`世界历史`相关的两个`JeopardyQuestion`对象，
+1. 为每个对象准备一个提示，基于提示语 `"将以下内容转换为Twitter提问。为了增加趣味性，可以包含表情符号，但不要包括答案：{question}。"`, 其中 `{question}` 是对象的属性，
+2. 获取每个对象的生成文本（共2个），
+3. 将生成文本作为每个对象的一部分，与 `question` 属性一起返回。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -130,9 +128,9 @@ In the below example, the query:
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成如下所示的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -143,19 +141,19 @@ It should produce a response like the one below:
 
 </details>
 
-### Single prompt property selection
+### 单个提示属性选择
 
-When using generative search with single prompts, you must specify which object _properties_ to use in the prompt.
+在使用单个提示进行生成式搜索时，您必须指定在提示中使用哪些对象的属性。
 
-The properties to use as a part of the prompt do *not* need to be among the properties retrieved in the query.
+作为提示的一部分，不需要使用查询中检索到的属性。
 
-In the below example, the query:
-1. Retrieves two `JeopardyQuestion` objects related to `World history`,
-1. Prepares a prompt for each object, based on the prompt `"Convert this quiz question: {question} and answer: {answer} into a trivia tweet.` where `{question}` and `{answer}` are object properties, and
-1. Retrieves a generated text for each object (2 total), and
-1. Returns the generated text as a part of each object.
+在下面的示例中，查询：
+1. 检索与“世界历史”相关的两个“JeopardyQuestion”对象，
+2. 为每个对象准备一个提示，基于提示“将这个测验问题：{question}和答案：{answer}转换为一条有趣的推文。”其中`{question}`和`{answer}`是对象的属性，
+3. 检索每个对象的生成文本（总共2个），以及
+1. 将生成的文本作为每个对象的一部分返回。
 
-Note that the `question` and `answer` properties are not retrieved in the query, but are used in the prompt.
+注意，查询中不检索`question`和`answer`属性，但在提示中使用。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -191,9 +189,9 @@ Note that the `question` and `answer` properties are not retrieved in the query,
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成类似下面的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -204,21 +202,21 @@ It should produce a response like the one below:
 
 </details>
 
-## Grouped task
+## 分组任务
 
-A **grouped task** works by generating a response for the entire query results set.
+**分组任务**通过为整个查询结果集生成响应来工作。
 
-When using generative search with a **grouped task**, the required parameter is the user prompt. By default, the entire set of properties are included in the combined prompt unless [specified otherwise](#grouped-task-property-selection).
+在使用**分组任务**进行生成搜索时，所需的参数是用户提示。默认情况下，除非[另有说明](#grouped-task-property-selection)，否则将包含所有属性的组合提示。
 
-### Example
+### 示例
 
-In the below example, the query:
-1. Retrieves three `JeopardyQuestion` objects related to `cute animals`,
-1. Combines the user prompt with the set of retrieved objects to build the grouped task,
-1. Retrieves one generated text using the grouped task, and
-1. Returns the generated text as a part of the first object returned, as well as the requested `points` property.
+在下面的示例中，查询：
+1. 检索与“可爱动物”相关的三个`JeopardyQuestion`对象，
+2. 将用户提示与检索到的对象集合组合起来构建分组任务，
+1. 使用分组任务检索一个生成的文本，并
+2. 将生成的文本作为返回的第一个对象的一部分，并返回请求的`points`属性。
 
-Note that the prompt includes information about the type of the animal (from the `answer` property), even though the `answer` property is not explicitly retrieved.
+请注意，提示中包含有关动物类型的信息（来自`answer`属性），即使没有显式地检索`answer`属性。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -254,9 +252,9 @@ Note that the prompt includes information about the type of the animal (from the
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成如下所示的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -267,16 +265,16 @@ It should produce a response like the one below:
 
 </details>
 
-### Grouped task property selection
+### 分组任务属性选择
 
 :::info Requires Weaviate `v1.18.3` or higher
 :::
 
-You can specify which properties will be included in the `grouped task` prompt. Use this to limit the information provided in the prompt, and to reduce the prompt length.
+您可以指定包含在“分组任务”提示中的属性。使用此功能可以限制提示中提供的信息并减少提示的长度。
 
-In the below example, the prompt will only include the `question` and `answer` properties. Note that the `answer` property is not explicitly retrieved in the query, but is used by the prompt.
+在下面的示例中，提示只包括“question”和“answer”属性。请注意，“answer”属性在查询中没有显式检索，但在提示中使用。
 
-<!-- TODO - add client code when made available -->
+<!-- TODO - 添加客户端代码（如果有） -->
 
 <Tabs groupId="languages">
   <TabItem value="python" label="Python">
@@ -308,14 +306,14 @@ In the below example, the prompt will only include the `question` and `answer` p
     endMarker="# END GroupedGenerativePropertiesGraphQL"
     language="graphql"
   />
-  
-  </TabItem>
+
+</TabItem>
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该产生如下所示的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -326,7 +324,7 @@ It should produce a response like the one below:
 
 </details>
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

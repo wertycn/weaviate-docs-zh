@@ -1,34 +1,34 @@
 ---
-title: REST - /v1/meta
-sidebar_position: 16
 image: og/docs/api.jpg
-# tags: ['RESTful API', 'references', 'meta']
+sidebar_position: 16
+title: REST - /v1/meta
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Usage
+## 使用方法
 
-The meta endpoint accepts a `GET` request:
+元端点接受一个 `GET` 请求:
 
 ```js
 GET /v1/meta
 ```
 
 And it returns the following fields:
-- `hostname`: The location of the Weaviate instance.
-- `version`: The version of Weaviate.
-- `modules`: Module specific info.
+- `hostname`: Weaviate实例的位置。
+- `version`: Weaviate的版本。
+- `modules`: 模块特定信息。
 
-## Example
-The following command:
+## 示例
+以下命令：
 
 import Meta from '/_includes/code/meta.mdx';
 
 <Meta/>
 
-returns:
+返回：
 
 ```json
 {
@@ -43,7 +43,7 @@ returns:
 }
 ```
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

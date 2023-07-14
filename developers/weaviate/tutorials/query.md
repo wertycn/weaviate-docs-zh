@@ -1,32 +1,32 @@
 ---
-title: Queries in detail
-sidebar_position: 50
 image: og/docs/tutorials.jpg
-# tags: ['basics']
+sidebar_position: 50
+title: Queries in detail
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-In this section, we will explore different queries that you can perform with Weaviate. Here, we will expand on the `nearText` queries that you may have seen in the [Quickstart tutorial](../quickstart/index.md) to show you different query types, filters and metrics that can be used.
+在本节中，我们将探索您可以在Weaviate上执行的不同查询。在这里，我们将扩展您在[快速入门教程](../quickstart/index.md)中可能已经看到的`nearText`查询，以展示不同的查询类型、过滤器和指标的使用方法。
 
-By the end of this section, you will have performed vector and scalar searches separately as well as in combination to retrieve individual objects and aggregations.
+在本节结束时，您将分别执行向量搜索和标量搜索，以及结合使用它们来检索单个对象和聚合数据。
 
-## Prerequisites
+## 先决条件
 
-We recommend you complete the [Quickstart tutorial](../quickstart/index.md) first.
+我们建议您首先完成[快速入门教程](../quickstart/index.md)。
 
-Before you start this tutorial, you should follow the steps in the Quickstart to have:
+在开始本教程之前，您应该按照快速入门中的步骤完成以下操作：
 
-- An instance of Weaviate running (e.g. on the [Weaviate Cloud Services](https://console.weaviate.cloud)),
-- An API key for your preferred inference API, such as OpenAI, Cohere, or Hugging Face,
-- Installed your preferred Weaviate client library,
-- Set up a `Question` class in your schema, and
-- Imported the `jeopardy_tiny.json` data.
+- 运行一个Weaviate实例（例如在[Weaviate云服务](https://console.weaviate.cloud)上）
+- 一个适用于您首选推理 API（例如 OpenAI、Cohere 或 Hugging Face）的 API 密钥，
+- 安装您首选的 Weaviate 客户端库，
+- 在模式中设置一个 `Question` 类，
+- 导入 `jeopardy_tiny.json` 数据。
 
-## Object retrieval with `Get`
+## 使用 `Get` 进行对象检索
 
 :::tip GraphQL
 Weaviate's queries are built using GraphQL. If this is new to you, don't worry. We will take it step-by-step and build up from the basics. Also, in many cases, the GraphQL syntax is abstracted by the client.
@@ -34,43 +34,43 @@ Weaviate's queries are built using GraphQL. If this is new to you, don't worry. 
 You can query Weaviate using one or a combination of a semantic (i.e. vector) search and a lexical (i.e. scalar) search. As you've seen, a vector search allows for similarity-based searches, while scalar searches allow filtering by exact matches.
 :::
 
-First, we will start by making queries to Weaviate to retrieve **Question** objects that we imported earlier.
+首先，我们将通过向Weaviate发出查询来检索之前导入的**Question**对象。
 
-The Weaviate function for retrieving objects is `Get`.
+用于检索对象的Weaviate函数是`Get`。
 
-This might be familiar for some of you. If you have completed our [Imports in detail tutorial](./import.md), you may have performed a `Get` query to confirm that the data import was successful. Here is the same code as a reminder:
+这对一些人来说可能很熟悉。如果您已经完成了我们的[Imports in detail tutorial](./import.md)，您可能已经执行了一个`Get`查询来确认数据导入成功。这是相同的代码，以作为提醒：
 
 import CodeImportGet from '/_includes/code/quickstart.import.get.mdx';
 
 <CodeImportGet />
 
-This query simply asks Weaviate for *some* objects of this (`Question`) class.
+这个查询只是简单地向Weaviate请求这个（`Question`）类的一些对象。
 
-Of course, in most cases we would want to retrieve information on some criteria. Let's build on this query by adding a vector search.
+当然，在大多数情况下，我们希望根据一些条件检索信息。让我们在这个查询的基础上添加一个向量搜索。
 
-### `Get` with `nearText`
+### 使用`nearText`的`Get`
 
-This is a vector search using a `Get` query.
+这是一个使用`Get`查询的向量搜索。
 
 import CodeAutoschemaNeartext from '/_includes/code/quickstart.autoschema.neartext.mdx'
 
 <CodeAutoschemaNeartext />
 
-This might also look familiar, as it was used in the [Quickstart tutorial](../quickstart/index.md). But let's break it down a little.
+这可能看起来很熟悉，因为它在[快速入门教程](../quickstart/index.md)中使用过。但是让我们稍微解释一下。
 
-Here, we are using a `nearText` parameter. What we are doing is to provide Weaviate with a query `concept` of `biology`. Weaviate then converts this into a vector through the inference API (OpenAI in this particular example) and uses that vector as the basis for a vector search.
+在这里，我们使用了`nearText`参数。我们所做的是向Weaviate提供一个查询`concept`为`biology`的向量。Weaviate然后通过推理API（在这个特定的例子中是OpenAI）将其转换为一个向量，并将该向量作为基础进行向量搜索。
 
-Also note here that we pass the API key in the header. This is required as the inference API is used to vectorize the input query.
+同时请注意，在此我们将API密钥作为头部传递。这是必需的，因为推理API用于将输入查询向量化。
 
-Additionally, we use the `limit` argument to only fetch a maximum of two (2) objects.
+此外，我们使用`limit`参数仅获取最多两个（2个）对象。
 
-If you run this query, you should see the entries on *"DNA"* and *"species"* returned by Weaviate.
+如果您运行此查询，您应该会看到Weaviate返回的关于"DNA"和"species"的条目。
 
-### `Get` with `nearVector`
+### 使用`nearVector`进行`Get`请求
 
-In some cases, you might wish to input a vector directly as a search query. For example, you might be running Weaviate with a custom, external vectorizer. In such a case, you can use the `nearVector` parameter to provide the query vector to Weaviate.
+在某些情况下，您可能希望将向量直接作为搜索查询进行输入。例如，您可能正在使用自定义的外部向量化器运行Weaviate。在这种情况下，您可以使用`nearVector`参数将查询向量提供给Weaviate。
 
-For example, here is an example Python code obtaining an OpenAI embedding manually and providing it through the `nearVector` parameter:
+例如，以下是一个获取OpenAI嵌入并通过`nearVector`参数手动提供的示例Python代码：
 
 ```python
 import openai
@@ -95,21 +95,21 @@ result = (
 print(json.dumps(result, indent=4))
 ```
 
-And it should return the same results as above.
+并且它应该返回与上述结果相同的结果。
 
-Note that we used the same OpenAI embedding model (`text-embedding-ada-002`) here so that the vectors are in the same vector "space".
+请注意，我们在这里使用了相同的OpenAI嵌入模型（`text-embedding-ada-002`），以便向量在相同的向量“空间”中。
 
-You might also have noticed that we have added a `certainty` argument in the `with_near_vector` method. This lets you specify a similarity threshold for objects, and can be very useful for ensuring that no distant objects are returned.
+您可能还注意到我们在`with_near_vector`方法中添加了一个`certainty`参数。这个参数允许您为对象指定一个相似度阈值，非常有用，可以确保不会返回远离的对象。
 
-## Additional properties
+## 附加属性
 
-We can ask Weaviate to return `_additional` properties for any returned objects. This allows us to obtain properties such as the `vector` of each returned object as well as the actual `certainty` value, so we can verify how close each object is to our query vector. Here is a query that will return the `certainty` value:
+我们可以要求Weaviate返回任何返回对象的`_additional`属性。这使我们能够获取每个返回对象的`vector`以及实际的`certainty`值，以便我们可以验证每个对象与我们的查询向量的接近程度。以下是一个查询，将返回`certainty`值：
 
 import CodeQueryNeartextAdditional from '/_includes/code/quickstart.query.neartext.additional.mdx'
 
 <CodeQueryNeartextAdditional />
 
-Try it out, and you should see a response like this:
+尝试一下，您应该会看到类似这样的响应：
 
 ```json
 {
@@ -138,23 +138,23 @@ Try it out, and you should see a response like this:
 }
 ```
 
-You can try modifying this query to see if you retrieve the vector (note - it will be a looooong response 😉).
+您可以尝试修改此查询以查看是否检索到向量（注意 - 这将是一个很长的响应 😉）。
 
-We encourage you to also try out different queries and see how that changes the results and distances not only with this dataset but also with different datasets, and/or vectorizers.
+我们鼓励您还尝试使用不同的查询，观察结果和距离如何在不同的数据集和/或向量化器中发生变化。
 
-## Filters
+## 筛选器
 
-As useful as it is, sometimes vector search alone may not be sufficient. For example, you may actually only be interested in **Question** objects in a particular category, for instance.
+尽管向量搜索非常有用，但有时候单纯的向量搜索可能不足够。例如，您可能只对特定类别中的**问题**对象感兴趣。
 
-In these cases, you can use Weaviate's scalar filtering capabilities - either alone, or in combination with the vector search.
+在这些情况下，您可以使用Weaviate的标量过滤功能 - 单独使用或与向量搜索结合使用。
 
-Try the following:
+请尝试以下操作：
 
 import CodeQueryWhere1 from '/_includes/code/quickstart.query.where.1.mdx'
 
 <CodeQueryWhere1 />
 
-This query asks Weaviate for **Question** objects whose category contains the string `ANIMALS`. You should see a result like this:
+此查询要求Weaviate返回包含字符串`ANIMALS`的**Question**对象。您应该会看到类似以下的结果：
 
 ```json
 {
@@ -187,17 +187,17 @@ This query asks Weaviate for **Question** objects whose category contains the st
 }
 ```
 
-Now that you've seen a scalar filter, let's see how it can be combined with vector search functions.
+现在您已经看到了标量过滤器，让我们来看看它如何与向量搜索函数结合使用。
 
-### Vector search with scalar filters
+### 使用标量过滤器进行向量搜索
 
-Combining a filter with a vector search is an additive process. Let us show you what we mean by that.
+将过滤器与向量搜索结合是一个加法过程。让我们来展示一下我们的意思。
 
 import CodeQueryWhere2 from '/_includes/code/quickstart.query.where.2.mdx'
 
 <CodeQueryWhere2 />
 
-This query asks Weaviate for **Question** objects that are closest to "biology", but within the category of `ANIMALS`. You should see a result like this:
+这个查询请求Weaviate返回与"biology"最接近的**Question**对象，但是在`ANIMALS`类别内。您应该会看到如下结果：
 
 ```json
 {
@@ -226,25 +226,25 @@ This query asks Weaviate for **Question** objects that are closest to "biology",
 }
 ```
 
-Note that the results are confined to the choices from the 'animals' category. Note that these results, while not being cutting-edge science, are biological factoids.
+请注意，结果仅限于“动物”类别的选择。请注意，这些结果虽然不是最前沿的科学，但是是生物学上的事实。
 
-## Metadata with `Aggregate`
+## 使用`Aggregate`的元数据
 
-As the name suggests, the `Aggregate` function can be used to show aggregated data such as on entire classes or groups of objects.
+顾名思义，`Aggregate`函数可用于显示聚合数据，例如整个类别或对象组的数据。
 
-For example, the below query will return the number of data objects in the `Question` class:
+例如，下面的查询将返回`Question`类别中的数据对象数量：
 
 import CodeQueryAggregate1 from '/_includes/code/quickstart.query.aggregate.1.mdx'
 
 <CodeQueryAggregate1 />
 
-And you can also use the `Aggregate` function with filters, just as you saw with the `Get` function above. The below query for example will return the number of **Question** objects with the category "ANIMALS".
+您还可以像上面使用`Get`函数一样，使用`Aggregate`函数与筛选器一起使用。下面的查询示例将返回具有类别为"ANIMALS"的**Question**对象的数量。
 
 import CodeQueryAggregate2 from '/_includes/code/quickstart.query.aggregate.2.mdx'
 
 <CodeQueryAggregate2 />
 
-And as you saw above, there are four objects that match the query filter.
+正如您在上面看到的，有四个对象与查询过滤器匹配。
 
 ```json
 {
@@ -262,32 +262,32 @@ And as you saw above, there are four objects that match the query filter.
 }
 ```
 
-Here, Weaviate has identified the same objects that you saw earlier in the similar `Get` queries. The difference is that instead of returning the individual objects you are seeing the requested aggregated statistic (count) here.
+在这里，Weaviate已经识别出与您之前在类似的`Get`查询中看到的相同对象。不同之处在于，这里不是返回单个对象，而是显示所请求的聚合统计信息（计数）。
 
-As you can see, the `Aggregate` function can return handy aggregated, or metadata, information from the Weaviate database.
+正如您所见，`Aggregate`函数可以从Weaviate数据库中返回方便的聚合或元数据信息。
 
-## Recap
+## 总结
 
-* `Get` queries are used for retrieving data objects.
-* `Aggregate` queries can be used to retrieve metadata, or aggregated data.
-* Parameters such as `nearText` or `nearVector` can be used for vector queries.
-* Scalar filters can be used for exact filtering, taking advantage of inverted indexes.
-* Vector and scalar filters can be combined, and are available on both `Get` and `Aggregate` queries
+* `Get`查询用于检索数据对象。
+* `Aggregate`查询可用于检索元数据或聚合数据。
+* 可以使用`nearText`或`nearVector`等参数进行向量查询。
+* 标量过滤器可用于精确过滤，利用倒排索引的优势。
+* 可以组合使用向量和标量过滤器，并且在`Get`和`Aggregate`查询中都可用。
 
-## Suggested reading
+## 推荐阅读
 
-- [Tutorial: Schemas in detail](./schema.md)
-- [Tutorial: Import in detail](./import.md)
-- [Tutorial: Introduction to modules](./modules.md)
-- [Tutorial: Introduction to Weaviate Console](../../wcs/guides/console.mdx)
+- [教程：详解模式](./schema.md)
+- [教程：详解导入](./import.md)
+- [教程：模块介绍](./modules.md)
+- [教程：Weaviate控制台介绍](../../wcs/guides/console.mdx)
 
-## Notes
+## 注释
 
-### How is certainty calculated?
+### 如何计算确定性？
 
-`certainty` in Weaviate is a measure of distance from the vector to the data objects. You can also calculate the cosine similarity based on the certainty as described [here](../more-resources/faq.md#q-how-do-i-get-the-cosine-similarity-from-weaviates-certainty?).
+在Weaviate中，`certainty`是从向量到数据对象的距离的度量。您还可以根据确定性计算余弦相似度，如[这里所述](../more-resources/faq.md#q-how-do-i-get-the-cosine-similarity-from-weaviates-certainty?)。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

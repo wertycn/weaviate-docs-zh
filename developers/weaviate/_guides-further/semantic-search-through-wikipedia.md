@@ -1,67 +1,64 @@
 ---
-title: (TBC) Larger dataset example (Wikipedia)
-sidebar_position: 99
 image: og/docs/further-guides.jpg
-# tags: ['semantic search', 'wikipedia']
+sidebar_position: 99
+title: (TBC) Larger dataset example (Wikipedia)
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-Learn how to to another semantic search with Wikipedia
+学习如何使用维基百科进行另一种语义搜索
 
-<!-- TODO: Finish this page! -->
-<!-- :::caution Under construction.
-Migrated from "semantic-search-through-wikipedia" tutorial from Weaviate Docs Classic
-::: -->
+<!-- TODO: 完善这个页面！ -->
+<!-- :::caution 正在建设中。
+从"Weaviate Docs Classic"的"semantic-search-through-wikipedia"教程迁移而来 -->
+在本教程中，我们将完整的英文维基百科文章数据集导入到一个Weaviate实例中，通过维基百科文章进行语义搜索查询，除此之外，我们还建立了所有文章之间的图形关系。我们提供了导入脚本、预处理文章和备份，以便您可以自己运行完整的设置。
 
-In this tutorial, we imported the complete English language Wikipedia article dataset into a single Weaviate instance to conduct semantic search queries through the Wikipedia articles, besides this, we've made all the graph relations between the articles too. We have made the import scripts, pre-processed articles, and backup available so that you can run the complete setup yourself.
+在本教程中，您将找到复制导入所需的3个步骤，但也提供了下载以跳过前两个步骤的选项。
 
-In this tutorial, you'll find the 3-steps needed to replicate the import, but there are also downlaods available to skip the first two steps.
+## 统计数据与链接
 
-## Stats & Links
-
-| description | value |
+| 描述 | 值 |
 | --- | --- |
-| Articles imported | `11.520.881` |
-| Paragaphs imported | `28.086.917` |
-| Graph cross references | `125.447.595` |
-| Wikipedia version | `truthy May 15th, 2022` |
-| Machine for inference | `12 CPU – 100 GB RAM – 250Gb SSD – 1 x NVIDIA Tesla P4` |
-| Weaviate version | `v1.14.1` |
-| Dataset size | `122GB` |
-| Vectorization model | `sentence-transformers-paraphrase-MiniLM-L6-v2` |
+| 导入的文章数量 | `11,520,881` |
+| 导入的段落数量 | `28,086,917` |
+| 图形交叉引用数量 | `125,447,595` |
+| 维基百科版本 | `2022年5月15日` |
+| 推理机器配置 | `12个CPU - 100GB RAM - 250GB SSD - 1个NVIDIA Tesla P4` |
+| Weaviate版本 | `v1.14.1` |
+| 数据集大小 | `122GB` |
+| 向量化模型 | `sentence-transformers-paraphrase-MiniLM-L6-v2` |
 
-### Links
+### 链接
 
-* [💡 Live Demo Weaviate GraphQL front-end](http://console.weaviate.io/console/query#weaviate_uri=http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080&graphql_query=%7B%0A%20%20Get%20%7B%0A%20%20%20%20Paragraph(%0A%20%20%20%20%20%20ask%3A%20%7B%0A%20%20%20%20%20%20%20%20question%3A%20%22Who%20was%20Stanley%20Kubrick%3F%22%0A%20%20%20%20%20%20%20%20properties%3A%20%5B%22content%22%5D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20limit%3A%201%0A%20%20%20%20)%20%7B%0A%20%20%20%20%20%20content%0A%20%20%20%20%20%20order%0A%20%20%20%20%20%20title%0A%20%20%20%20%20%20inArticle%20%7B%0A%20%20%20%20%20%20%20%20...%20on%20Article%20%7B%0A%20%20%20%20%20%20%20%20%20%20title%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20_additional%20%7B%0A%20%20%20%20%20%20%20%20answer%20%7B%0A%20%20%20%20%20%20%20%20%20%20result%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D)
-* [💡 Live Demo Weaviate RESTful Endpoint](http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080/v1/schema)
-* [Project code](https://github.com/weaviate/semantic-search-through-Wikipedia-with-Weaviate)
-* [[BLOG] Semantic search through Wikipedia with Weaviate (GraphQL, Sentence-BERT, and BERT Q&A)](/blog/semantic-search-with-wikipedia-and-weaviate)
-* [[VIDEO] Wikipedia Vector Search Demo with Weaviate](https://www.youtube.com/watch?v=IGB8vjCuay0)
+* [💡 Weaviate GraphQL前端实时演示](http://console.weaviate.io/console/query#weaviate_uri=http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080&graphql_query=%7B%0A%20%20Get%20%7B%0A%20%20%20%20Paragraph(%0A%20%20%20%20%20%20ask%3A%20%7B%0A%20%20%20%20%20%20%20%20question%3A%20%22Who%20was%20Stanley%20Kubrick%3F%22%0A%20%20%20%20%20%20%20%20properties%3A%20%5B%22content%22%5D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20limit%3A%201%0A%20%20%20%20)%20%7B%0A%20%20%20%20%20%20content%0A%20%20%20%20%20%20order%0A%20%20%20%20%20%20title%0A%20%20%20%20%20%20inArticle%20%7B%0A%20%20%20%20%20%20%20%20...%20on%20Article%20%7B%0A%20%20%20%20%20%20%20%20%20%20title%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20_additional%20%7B%0A%20%20%20%20%20%20%20%20answer%20%7B%0A%20%20%20%20%20%20%20%20%20%20result%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D)
+* [💡 Weaviate RESTful端点实时演示](http://semantic-search-wikipedia-with-weaviate.api.vectors.network:8080/v1/schema)
+* [项目代码](https://github.com/weaviate/semantic-search-through-Wikipedia-with-Weaviate)
+* [[博客] 通过Weaviate进行维基百科语义搜索（GraphQL、Sentence-BERT和BERT Q&A）](/blog/semantic-search-with-wikipedia-and-weaviate)
+* [[视频] 使用Weaviate进行维基百科向量搜索演示](https://www.youtube.com/watch?v=IGB8vjCuay0)
 
-### Acknowledgments
+### 鸣谢
 
-* The [`t2v-transformers` module](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers.md) used contains the [sentence-transformers-paraphrase-MiniLM-L6-v2](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate/tree/main/step-3/docker-compose-gpu.yml#L32) transformer created by the [SBERT team](https://www.sbert.net/)
-* Thanks to the team of [Obsei](https://github.com/obsei/obsei) for sharing the idea on our [Slack](https://weaviate.io/slack) channel
+* 使用的 [`t2v-transformers` 模块](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers.md) 包含了由 [SBERT团队](https://www.sbert.net/) 创建的 [sentence-transformers-paraphrase-MiniLM-L6-v2](https://github.com/weaviate/semantic-search-through-wikipedia-with-weaviate/tree/main/step-3/docker-compose-gpu.yml#L32) 转换器
+* 感谢 [Obsei团队](https://github.com/obsei/obsei) 在我们的 [Slack](https://weaviate.io/slack) 频道上分享了这个想法
 
-![Example semantic search queries in Weaviate's GraphQL interface)[/img/wikipedia-demo.gif)
+![在Weaviate的GraphQL界面中进行语义搜索查询的示例动画](/img/wikipedia-demo.gif)
 
-# 3-step Tutorial
+# 3步教程
 
-## Import
+## 导入
 
-There are 3-steps in the import process. **You can also skip the first two and [directly import the backup](#step-3-load-from-backup)**
+导入过程分为3个步骤。**您也可以跳过前两个步骤，[直接导入备份](#step-3-load-from-backup)**
 
-### Step 1: Process the Wikipedia dump
+### 第1步：处理维基百科转储文件
 
-In this process, the Wikipedia dataset is processed and cleaned (the markup is removed, HTML tags are removed, etc). The output file is a [JSON Lines](https://jsonlines.org/) document that will be used in the next step.
+在此过程中，将处理和清理维基百科数据集（去除标记、去除HTML标签等）。输出文件是一个 [JSON Lines](https://jsonlines.org/) 文档，将在下一步中使用。
 
-Process from the Wikimedia dump:
+从维基媒体转储中进行处理：
 
-```sh
 $ cd step-1
 $ wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
 $ bunzip2 enwiki-latest-pages-articles.xml.bz2
@@ -98,10 +95,12 @@ We will be using a single Weaviate instance, but four Tesla P4 GPUs that we will
 * The import scripts assumes that the JSON file is called `wikipedia-en-articles.json`.
 
 ```sh
+```
 $ cd step-2
 $ docker-compose up -d
 $ pip3 install -r requirements.txt
 $ python3 import.py
+```
 ```
 
 The import takes a few hours, so probably you want to do something like:
@@ -123,25 +122,25 @@ You can now run the dataset! We would advise running it with 1 GPU, but you can 
 Note that Weaviate needs some time to import the backup (if you use the setup mentioned above +/- 15min). You can see the status of the backup in the docker logs of the Weaviate container.
 
 ```sh
-# clone this repository
+# 克隆该存储库
 $ git clone https://github.com/weaviate/semantic-search-through-Wikipedia-with-Weaviate/
-# go into the backup dir
+# 进入备份目录
 $ cd step-3
-# download the Weaviate backup
+# 下载Weaviate备份
 $ curl https://storage.googleapis.com/semi-technologies-public-data/weaviate-wikipedia-1.13.2.tar.gz -o weaviate-wikipedia-1.13.2.tar.gz
-# untar the backup (112G unpacked)
+# 解压备份文件（112G解压后）
 $ tar -xvzf weaviate-wikipedia-1.13.2.tar.gz
-# get the unpacked directory
+# 获取解压后的目录
 $ echo $(pwd)/var/weaviate
-# use the above result (e.g., /home/foobar/var/weaviate)
-#   update volumes in docker-compose.yml (NOT PERSISTENCE_DATA_PATH!) to the above output
-#   (e.g.,
-#     volumes:
-#       - /home/foobar/var/weaviate:/var/lib/weaviate
-#   )
+# 使用上面的结果（例如，/home/foobar/var/weaviate）
+# 在docker-compose.yml中更新volumes（不是PERSISTENCE_DATA_PATH！）到上述输出
+# （例如，
+#   volumes:
+#     - /home/foobar/var/weaviate:/var/lib/weaviate
+# ）
 #
-#   With 12 CPUs this process takes about 12 to 15 minutes to complete.
-#   The Weaviate instance will be available directly, but the cache is pre-filling in this timeframe
+# 在12个CPU的情况下，这个过程大约需要12到15分钟才能完成。
+# Weaviate实例将直接可用，但在这段时间内缓存正在预填充。
 ```
 
 #### With GPU
@@ -164,13 +163,13 @@ _"Where is the States General of The Netherlands located?"_ [try it live!](http:
 
 ```graphql
 ##
-# Using the Q&A module I
+# 使用Q&A模块 I
 ##
 {
   Get {
     Paragraph(
       ask: {
-        question: "Where is the States General of The Netherlands located?"
+        question: "荷兰的国会在哪里？"
         properties: ["content"]
       }
       limit: 1
@@ -192,13 +191,13 @@ _"What was the population of the Dutch city Utrecht in 2019?"_ [try it live!](ht
 
 ```graphql
 ##
-# Using the Q&A module II
+# 使用问答模块 II
 ##
 {
   Get {
     Paragraph(
       ask: {
-        question: "What was the population of the Dutch city Utrecht in 2019?"
+        question: "2019年荷兰乌得勒支市的人口有多少？"
         properties: ["content"]
       }
       limit: 1
@@ -220,13 +219,13 @@ About the concept _"Italian food"_ [try it live!](http://console.weaviate.io/con
 
 ```graphql
 ##
-# Generic question about Italian food
+# 关于意大利食物的一般问题
 ##
 {
   Get {
     Paragraph(
       nearText: {
-        concepts: ["Italian food"]
+        concepts: ["意大利食物"]
       }
       limit: 50
     ) {
@@ -247,19 +246,19 @@ _"What was Michael Brecker's first saxophone?"_ in the Wikipedia article about _
 
 ```graphql
 ##
-# Mixing scalar queries and semantic search queries
+# 混合标量查询和语义搜索查询
 ##
 {
   Get {
     Paragraph(
       ask: {
-        question: "What was Michael Brecker's first saxophone?"
+        question: "迈克尔·布雷克的第一把萨克斯是什么？"
         properties: ["content"]
       }
       where: {
         operator: Equal
         path: ["inArticle", "Article", "title"]
-        valueText: "Michael Brecker"
+        valueText: "迈克尔·布雷克"
       }
       limit: 1
     ) {
@@ -272,12 +271,12 @@ _"What was Michael Brecker's first saxophone?"_ in the Wikipedia article about _
       order
       title
       inArticle {
-        ... on Article {
-          title
-        }
-      }
-    }
-  }
+        ...
+        ...在文章上 {
+  标题
+}
+}
+}
 }
 ```
 
@@ -285,13 +284,13 @@ Get all Wikipedia graph connections for _"jazz saxophone players"_ [try it live!
 
 ```graphql
 ##
-# Mixing semantic search queries with graph connections
+# 将语义搜索查询与图连接混合使用
 ##
 {
   Get {
     Paragraph(
       nearText: {
-        concepts: ["jazz saxophone players"]
+        concepts: ["爵士萨克斯管演奏家"]
       }
       limit: 25
     ) {
@@ -299,9 +298,9 @@ Get all Wikipedia graph connections for _"jazz saxophone players"_ [try it live!
       order
       title
       inArticle {
-        ... on Article { # <== Graph connection I
+        ... on Article { # <== 图连接 I
           title
-          hasParagraphs { # <== Graph connection II
+          hasParagraphs { # <== 图连接 II
             ... on Paragraph {
               title
             }

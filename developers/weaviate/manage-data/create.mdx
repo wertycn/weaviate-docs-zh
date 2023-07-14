@@ -1,8 +1,7 @@
 ---
-title: Create objects
-sidebar_position: 10
 image: og/docs/howto.jpg
-# tags: ['how-to', 'CRUD', 'create']
+sidebar_position: 10
+title: Create objects
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,9 +10,9 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PyCode from '!!raw-loader!/_includes/code/howto/manage-data.create.py';
 import TSCode from '!!raw-loader!/_includes/code/howto/manage-data.create.ts';
 
-## Overview
+## 概述
 
-This page shows you how to create individual objects in Weaviate.
+本页面将向您展示如何在Weaviate中创建单个对象。
 
 :::tip To create multiple objects, it's best to use [batch operations](./import.mdx).
 :::
@@ -24,32 +23,32 @@ This page shows you how to create individual objects in Weaviate.
 :::
 
 
-## Requirements
+## 需求
 
-To create an object, specify:
-* The object data to be added, and
-* The target class.
+要创建一个对象，需要指定：
+* 要添加的对象数据，以及
+* 目标类。
 
 :::tip Multi-tenancy
 For classes where [multi-tenancy](../concepts/data.md#multi-tenancy) is enabled, you will also need to specify the tenant name when creating objects. See [Manage data: multi-tenancy operations](./multi-tenancy.md) for details on how.
 :::
 
-### Object data vs class definition
+### 对象数据 vs 类定义
 
-Compared to the class definition, the object data:
-- Can omit defined properties.
-- Can include new properties.
+与类定义相比，对象数据：
+- 可以省略已定义的属性。
+- 可以包含新的属性。
 
 :::info
 Any new properties will be added to the class definition during object creation with [auto-schema](../config-refs/schema.md#autoschema).
 :::
 
-#### Example
+#### 示例
 
-This example shows how to create an object in the `JeopardyQuestion` class, with:
-- An existing property (`question`),
-- A new property (`somePropNotInTheSchema`), and
-- Omits an existing property (`answer`).
+这个示例展示了如何在`JeopardyQuestion`类中创建一个对象，包括：
+- 一个现有的属性（`question`），
+- 一个新属性（`somePropNotInTheSchema`），
+- 省略一个现有的属性（`answer`）。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -72,19 +71,19 @@ This example shows how to create an object in the `JeopardyQuestion` class, with
 </Tabs>
 
 
-## Optional parameters
+## 可选参数
 
-Optionally, you can specify an [id](../api/graphql/additional-properties.md#id) or a vector.
+您可以选择指定一个 [id](../api/graphql/additional-properties.md#id) 或者一个向量。
 
 ### `id`
 
-You can optionally specify an ID in [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) format. Otherwise, Weaviate will generate a random UUID.
+您可以选择以 [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) 格式指定一个ID。否则，Weaviate将生成一个随机的UUID。
 
 ### `vector`
 
-You can optionally specify a vector to represent each object. Otherwise, Weaviate will follow the relevant vectorizer setting.
+您可以选择指定一个向量来表示每个对象。否则，Weaviate将遵循相关的向量化设置。
 
-### Example
+### 示例
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -106,33 +105,33 @@ You can optionally specify a vector to represent each object. Otherwise, Weaviat
   </TabItem>
 </Tabs>
 
-## Preventing duplicates
+## 防止重复
 
-In Weaviate, the only unique field is the `id`. If you try to create an object with an existing id, Weaviate will throw an error. (In [batch imports](./import.mdx#managing-potential-duplication), Weaviate will overwrite the object if one exists.)
+在Weaviate中，唯一的字段是`id`。如果您尝试使用已存在的id创建对象，Weaviate将抛出错误。（在[批量导入](./import.mdx#managing-potential-duplication)中，如果存在对象，Weaviate将覆盖该对象。）
 
-To prevent duplicates, we suggest:
-- Using a deterministic ID generation method, and
-- Checking if an object exists before creating it.
+为了防止重复，我们建议：
+- 使用确定性ID生成方法，并且
+- 在创建对象之前检查对象是否存在。
 
-### Generate deterministic ID
+### 生成确定性ID
 
-You can do so with the [`generate_uuid5`](https://weaviate-python-client.readthedocs.io/en/stable/weaviate.util.html#weaviate.util.generate_uuid5) function in the Python client, or the `generateUuid5` function in the TypeScript client.
+您可以使用Python客户端中的[`generate_uuid5`](https://weaviate-python-client.readthedocs.io/en/stable/weaviate.util.html#weaviate.util.generate_uuid5)函数或TypeScript客户端中的`generateUuid5`函数来实现。
 
-### Check if an object exists
+### 检查对象是否存在
 
-You can [check if an object exists](./read.mdx#check-object-existence) given its [id](../api/graphql/additional-properties.md#id).
+您可以通过给定的[id](../api/graphql/additional-properties.md#id)来[检查对象是否存在](./read.mdx#check-object-existence)。
 
 :::info IDs unique to each class and tenants
 [Classes](../concepts/data.md#class-collections) and [tenants](../concepts/data.md#multi-tenancy) each work like namespaces. So, it is possible to have the same id in different classes and/or tenants.
 :::
 
-## Validating before creation
+## 创建之前进行验证
 
-You can [validate](../api/rest/objects.md#validate-a-data-object) an object against the class definition before creating it.
+您可以在创建对象之前对其进行[验证](../api/rest/objects.md#validate-a-data-object)，以确保它符合类定义。
 
-This will confirm:
-- Whether the creation of an object will succeed, and
-- That it doesn't have any extra properties vs. the schema.
+这将确认：
+- 对象的创建是否成功，以及
+- 它是否与模式相比没有额外的属性。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -155,7 +154,7 @@ This will confirm:
 </Tabs>
 
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

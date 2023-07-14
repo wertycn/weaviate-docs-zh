@@ -1,14 +1,14 @@
 ---
-title: Modules - Other
-sidebar_position: 0
 image: og/docs/modules/_title.jpg
-# tags: ['modules', 'other modules']
+sidebar_position: 0
+title: Modules - Other
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-This section includes reference guides for other modules, such as the [spellcheck module](./spellcheck.md) and [custom modules](./custom-modules.md). You can find information about the [backup module here](../../configuration/backups.md).
-<!-- TODO: Consider adding references for the backup module here -->
+本节包括其他模块的参考指南，例如[拼写检查模块](./spellcheck.md)和[自定义模块](./custom-modules.md)。您可以在[此处找到关于备份模块的信息](../../configuration/backups.md)。
+<!-- TODO: 考虑在此处添加备份模块的参考信息 -->

@@ -1,24 +1,24 @@
 ---
-title: More resources
-sidebar_position: 0
 image: og/docs/more-resources.jpg
-# tags: ['More resources']
+sidebar_position: 0
+title: More resources
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## More information
+## 更多信息
 
-- [FAQ](./faq.md)
-- [Glossary](./glossary.md)
-- [Example datasets](./example-datasets.md)
-- [Example use cases](./example-use-cases.md)
-- [Index types and performance](./performance.md)
-- [Migration Guide](./migration-guide.md)
-<!-- - [Deprecation messages]---(./_deprecation-messages.md) -->
+- [常见问题](./faq.md)
+- [术语表](./glossary.md)
+- [示例数据集](./example-datasets.md)
+- [示例用例](./example-use-cases.md)
+- [指标类型和性能](./performance.md)
+- [迁移指南](./migration-guide.md)
+<!-- - [弃用消息]---(./_deprecation-messages.md) -->
 
-## (Even) more Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

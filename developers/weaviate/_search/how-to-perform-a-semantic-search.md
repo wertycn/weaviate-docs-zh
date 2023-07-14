@@ -1,46 +1,42 @@
 ---
-title: (TBC) Vector/Semantic Search
-sidebar_position: 2
 image: og/docs/search.jpg
-# tags: ['how to', 'perform a semantic search']
+sidebar_position: 2
+title: (TBC) Vector/Semantic Search
 ---
 
-## Overview
-<!-- TODO: Consider merging the whole doc into "Query basics" (prev. how-to-query-data) -->
+## 概述
+<!-- TODO: 考虑将整个文档合并到“查询基础”中（以前是如何查询数据） -->
 
-Learn how to perform vector searches using Weaviate
+学习如何使用Weaviate执行向量搜索
 
-<!-- TODO: Finish this page! -->
-<!-- :::caution Under construction.
-Migrated from "How to perform a semantic search" tutorial from Weaviate Docs Classic
-::: -->
+<!-- TODO: 完成本页！ -->
+<!-- :::caution 正在建设中。
+从Weaviate Docs Classic迁移而来的“如何执行语义搜索”教程 -->
+## 介绍
 
-## Introduction
+- Weaviate具有用于查询数据的RESTful API端点，但Weaviate的查询语言是[GraphQL](https://graphql.org/)。
+- 在创建了[模式](../tutorials/schema.md)并[导入数据](/developers/weaviate/tutorials/import.md)之后，您可以查询Weaviate。
+- 您可以执行简单的[`Get{}`](../api/graphql/get.md)查询来轻松检索数据，了解更多信息请参阅[此处](./how-to-query-data.md)。
+- 为了根据语义缩小`Get{}`查询的搜索结果，可以在`Get{}`查询中使用`nearText`过滤器。在[此教程](#neartext-filter)中了解详情。
+- 要以模糊方式搜索和查找数据对象，可以使用GraphQL的`Explore{}`函数，在[此教程](#explore-graphql-function)和[参考页面](../api/graphql/explore.md)中了解详情。
 
-- Weaviate has RESTful API endpoints to query data, but Weaviate's query language is [GraphQL](https://graphql.org/).
-- You can query a Weaviate after you've created a [schema](../tutorials/schema.md) and [populated it](/developers/weaviate/tutorials/import.md) with data.
-- You can perform simple [`Get{}`](../api/graphql/get.md) queries to easily retrieve data, learn how [here](./how-to-query-data.md).
-- To narrow down search results from a `Get{}` query based on semantics, use the `nearText` filter in the `Get{}` query. Read how in [this tutorial](#neartext-filter).
-- To search and find for data objects in a fuzzy manner, you can use the GraphQL `Explore{}` function, read how in [this tutorial](#explore-graphql-function), and on the [reference page](../api/graphql/explore.md).
+## 先决条件
+ 1. **连接到Weaviate实例。**\\
+ 如果您还没有设置Weaviate实例，请查看[快速入门指南](/developers/weaviate/quickstart/index.md)。在本指南中，我们假设您的实例在`http://localhost:8080`上运行，并且使用[text2vec-contextionary](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md)作为向量化模块。
+ 2. **上传模式**。\\
+ 了解如何创建和上传模式[此处](../tutorials/schema.md)。在本指南中，我们假设已经上传了类似的模式，其中包含`Publication`，`Article`和`Author`类。
+ 3. **添加数据**。\\
+ 确保您的Weaviate实例中有可用的数据，您可以在[上一个指南](/developers/weaviate/tutorials/how-to-import-data.md)中了解如何操作。在本教程中，我们假设存在`Publication`，`Article`和`Author`的数据对象。
 
-## Prerequisites
- 1. **Connect to a Weaviate instance.**\\
- If you haven't set up a Weaviate instance yet, check the [Quickstart guide](/developers/weaviate/quickstart/index.md). In this guide we assume your instance is running at `http://localhost:8080` with [text2vec-contextionary](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md) as vectorization module.
- 2. **Upload a schema**. \\
- Learn how to create and upload a schema [here](../tutorials/schema.md). In this guide we assume to have a similar schema uploaded with the classes `Publication`, `Article` and `Author`.
- 3. **Add data**. \\
- Make sure there is data available in your Weaviate instance, you can read how to do this in the [previous guide](/developers/weaviate/tutorials/how-to-import-data.md). In this tutorial we assume there are data objects of `Publication`s, `Article`s and `Author`s present.
-
-## nearText filter
-If you want to perform semantic search on data objects in a known class, you can use the `nearText` filter in a `Get{}` query. Let's say we want to find `Publication`s that are related to "fashion", we can do the following query:
+## nearText过滤器
+如果您想在已知类中对数据对象进行语义搜索，可以在`Get{}`查询中使用`nearText`过滤器。假设我们想查找与"时尚"相关的`Publication`，我们可以执行以下查询：
 
 import HowtoSemanticSearchFilter from '/_includes/code/howto.semanticsearch.filter.mdx';
 
 <HowtoSemanticSearchFilter/>
 
-This will result in something like the following. Vogue was selected as only result, because there were no other publications related enough to "fashion" and "haute couture".
+这将得到类似以下的结果。Vogue被选为唯一结果，因为没有其他与"时尚"和"高级定制"足够相关的出版物。
 
-```json
 {
   "data": {
     "Get": {
@@ -85,20 +81,24 @@ As you can see, the same arguments are applied in the "explore" filter and the `
       {
         "beacon": "weaviate://localhost/f2b7c189-9183-3095-a5bb-b619d7fe9703",
         "certainty": 0.7862817,
-        "className": "Article"
-      },
-      {
-        "beacon": "weaviate://localhost/21239ca9-8f09-3747-b369-ff41e0dfebdd",
-        "certainty": 0.7857753,
-        "className": "Article"
-      },
-      {
-        "beacon": "weaviate://localhost/8f2cb04e-c3bb-344f-8fbd-f742bf36e653",
-        "certainty": 0.77738225,
-        "className": "Article"
-      }
-    ]
-  },
+        {
+  "results": [
+    {
+      "beacon": "weaviate://localhost/ae0c8f59-4aad-3ab7-a501-4a2f924ddcbe",
+      "certainty": 0.84826905,
+      "className": "Article"
+    },
+    {
+      "beacon": "weaviate://localhost/21239ca9-8f09-3747-b369-ff41e0dfebdd",
+      "certainty": 0.7857753,
+      "className": "Article"
+    },
+    {
+      "beacon": "weaviate://localhost/8f2cb04e-c3bb-344f-8fbd-f742bf36e653",
+      "certainty": 0.77738225,
+      "className": "Article"
+    }
+  ],
   "errors": null
 }
 ```
@@ -112,7 +112,7 @@ $ curl -s http://localhost:8080/v1/objects/{id}
 So querying all property values of the first result can be done as follows:
 
 ```bash
-$ curl -s http://localhost:8080/v1/objects/65010df4-da64-333d-b1ce-55c3fc9174ab
+`$ curl -s http://localhost:8080/v1/objects/65010df4-da64-333d-b1ce-55c3fc9174ab`
 ```
 
 ## Next steps

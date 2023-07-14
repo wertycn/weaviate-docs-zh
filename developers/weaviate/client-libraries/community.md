@@ -1,38 +1,38 @@
 ---
-title: Community clients
-sidebar_position: 90
 image: og/docs/client-libraries.jpg
-# tags: ['client libraries', 'cli']
+sidebar_position: 90
+title: Community clients
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-In addition to the official client libraries, below community client libraries exist for the following languages:
+除了官方客户端库外，以下社区客户端库适用于以下语言：
 
-- [.NET/C#](https://www.nuget.org/packages/SearchPioneer.Weaviate.Client) by [Stuart Cam](https://searchpioneer.com/)
-- [PHP](https://packagist.org/packages/timkley/weaviate-php) by [Tim Kleyersburg](https://www.tim-kleyersburg.de/)
-- [Ruby](https://rubygems.org/gems/weaviate-ruby) by [Andrei Bondarev](https://www.sourcelabs.io/)
+- [.NET/C#](https://www.nuget.org/packages/SearchPioneer.Weaviate.Client) - 由 [Stuart Cam](https://searchpioneer.com/) 提供
+- [PHP](https://packagist.org/packages/timkley/weaviate-php) - 由 [Tim Kleyersburg](https://www.tim-kleyersburg.de/) 提供
+- [Ruby](https://rubygems.org/gems/weaviate-ruby) 由 [Andrei Bondarev](https://www.sourcelabs.io/) 维护
 
-These are not officially maintained by Weaviate, but we are very grateful for the work of these developers and would like to share their work with you.
+这些库不是由Weaviate官方维护的，但我们非常感谢这些开发者的工作，并愿意与您分享他们的工作。
 
-## Community-maintained client libraries
+## 社区维护的客户端库
 
-| Language | Maintainer | Source Code | Package manager | Documentation / Examples | License |
-| -------- | ---------- | ----------- | --------------- | ------------------------ | ------- |
+| 语言 | 维护者 | 源代码 | 包管理器 | 文档/示例 | 许可证 |
+| ---- | ------ | ------ | -------- | --------- | ------ |
 | .NET/C# | Stuart Cam at [Search Pioneer](https://searchpioneer.com/) | [GitHub](https://github.com/searchpioneer/weaviate-dotnet-client) | [NuGet](https://www.nuget.org/packages/SearchPioneer.Weaviate.Client) | [GitHub README](https://github.com/searchpioneer/weaviate-dotnet-client) / [Integration tests](https://github.com/searchpioneer/weaviate-dotnet-client/tree/main/tests-integration/SearchPioneer.Weaviate.Client.IntegrationTests/Api) | [Apache 2.0](https://github.com/searchpioneer/weaviate-dotnet-client/blob/main/license.txt) |
 | PHP | [Tim Kleyersburg](https://www.tim-kleyersburg.de/) | [GitHub](https://github.com/timkley/weaviate-php) | [Packagist](https://packagist.org/packages/timkley/weaviate-php) | [GitHub README](https://github.com/timkley/weaviate-php) | [MIT](https://github.com/timkley/weaviate-php/blob/main/LICENSE.md) |
-| Ruby | Andrei Bondarev at [Source Labs](https://www.sourcelabs.io/) | [GitHub](https://github.com/andreibondarev/weaviate-ruby) | [RubyGems](https://rubygems.org/gems/weaviate-ruby) | [RubyDoc](https://rubydoc.info/gems/weaviate-ruby) | [MIT](https://github.com/andreibondarev/weaviate-ruby/blob/main/LICENSE.txt)
+| Ruby | Andrei Bondarev 在 [Source Labs](https://www.sourcelabs.io/) | [GitHub](https://github.com/andreibondarev/weaviate-ruby) | [RubyGems](https://rubygems.org/gems/weaviate-ruby) | [RubyDoc](https://rubydoc.info/gems/weaviate-ruby) | [MIT](https://github.com/andreibondarev/weaviate-ruby/blob/main/LICENSE.txt)
 
-## Contributing
+## 贡献
 
-To contribute to these libraries, please contact the maintainers directly.
+要为这些库做贡献，请直接联系维护者。
 
-If you have created a Weaviate client library and would like to be featured here, please let us know on [the forum](https://forum.weaviate.io/) or [Slack](https://weaviate.io/slack).
+如果您已经创建了一个Weaviate客户端库，并希望在这里展示，请在[论坛](https://forum.weaviate.io/)或[Slack](https://weaviate.io/slack)上告诉我们。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

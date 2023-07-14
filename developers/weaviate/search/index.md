@@ -1,32 +1,31 @@
 ---
-title: Search
-sidebar_position: 0
 image: og/docs/howto.jpg
-# tags: ['how to', 'perform a search']
+sidebar_position: 0
+title: Search
 ---
 
-## Overview
+## 概述
 
-These **search** how-to guides aim to help you find the data you want using Weaviate.
+这些**搜索**指南旨在帮助您使用Weaviate找到所需的数据。
 
 import BasicPrereqs from '/_includes/prerequisites-quickstart.md';
 
 <BasicPrereqs />
 
-We recommend starting with the [query basics](./basics.md) page.
-- It covers the basic syntax of a search (i.e. `Get`) query, and how to specify the properties you want to retrieve.
+我们建议您从[查询基础知识](./basics.md)页面开始。
+- 它介绍了搜索（即`Get`）查询的基本语法，以及如何指定要检索的属性。
 
-Then, move onto a how-to guide of your choice. We have separate how-to guides for:
+然后，可以选择您感兴趣的指南进行学习。我们为以下内容提供了单独的指南：
 
-- [Similarity](./similarity.md): Covers `nearXXX` searches, which work by searching for objects with the most similar vector representation to the query.
-- [BM25](./bm25.md): A keyword search that ranks results with the BM25F search function.
-- [Hybrid](./hybrid.md): Combines BM25 and similarity search to rank results.
-- [Aggregate](./aggregate.md): Aggregate data from a results set.
-- [Filters](./filters.md): Apply conditional filters to the search.
+- [相似度](./similarity.md): 包含`nearXXX`搜索，通过搜索与查询最相似的向量表示的对象。
+- [BM25](./bm25.md): 使用BM25F搜索函数对结果进行排序的关键字搜索。
+- [混合](./hybrid.md): 结合BM25和相似性搜索来对结果进行排序。
+- [聚合](./aggregate.md): 从结果集中聚合数据。
+- [筛选器](./filters.md): 对搜索应用条件筛选器。
 
-Each guide is self-contained. So you can read them in any order.
+每个指南都是独立的，所以您可以按任意顺序阅读它们。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

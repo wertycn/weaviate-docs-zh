@@ -1,34 +1,32 @@
 ---
-title: Manage data
-sidebar_position: 0
 image: og/docs/howto.jpg
-# tags: ['how to', 'manage data', 'crud']
+sidebar_position: 0
+title: Manage data
 ---
 
-## Overview
+## 概述
 
-These how-to **manage data** guides aim to help you do just that, such as perform CRUD operations using Weaviate.
+这些**数据管理**指南旨在帮助您实现这一目标，例如使用Weaviate执行CRUD操作。
 
 import BasicPrereqs from '/_includes/prerequisites-quickstart.md';
 
 <BasicPrereqs />
 
-We have separate how-to guides for:
+我们有专门的指南用于:
 
-- [Create objects](./create.mdx): How to create individual objects.
-- [Import items](./import.mdx): For bulk imports of data.
-- [Read objects](./read.mdx): How to read individual objects.
-- [Read all objects](./read-all-objects.mdx): How to read all objects, e.g. to manually back up a class.
-- [Update objects](./update.mdx): Update objects.
-- [Delete objects](./delete.mdx): Delete individual objects or filtered object groups.
-- [Cross-references](./cross-references.mdx): For managing cross-references.
-- [Multi-tenancy operations](./multi-tenancy.md): For operations with multi-tenancy enabled.
+- [创建对象](./create.mdx): 如何创建单个对象。
+- [导入数据](./import.mdx): 用于批量导入数据。
+- [读取对象](./read.mdx): 如何读取单个对象。
+- [阅读所有对象](./read-all-objects.mdx)：如何阅读所有对象，例如手动备份一个类。
+- [更新对象](./update.mdx)：更新对象。
+- [删除对象](./delete.mdx)：删除单个对象或筛选的对象组。
+- [交叉引用](./cross-references.mdx)：用于管理交叉引用。
+- [多租户操作](./multi-tenancy.md)：用于启用多租户的操作。
 
-Each guide is self-contained. So you can read them in any order.
+每个指南都是独立的。因此，您可以按任意顺序阅读它们。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 
 <DocsMoreResources />
-

@@ -1,8 +1,7 @@
 ---
-title: Schema
-sidebar_position: 1
 image: og/docs/configuration.jpg
-# tags: ['configuration', 'schema']
+sidebar_position: 1
+title: Schema
 ---
 
 import Badges from '/_includes/badges.mdx';
@@ -15,11 +14,11 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PyCode from '!!raw-loader!/_includes/code/howto/configure.schema.py';
 import TSCode from '!!raw-loader!/_includes/code/howto/configure.schema.ts';
 
-# How to configure a schema
+# 如何配置模式
 
-## Overview
+## 概述
 
-This page includes information on **how to configure** your schema in Weaviate. For other schema-related information, see related pages below.
+本页包含关于如何在Weaviate中配置模式的信息。有关其他与模式相关的信息，请参见下面的相关页面。
 
 :::info Related pages
 - [Tutorial: Schema](../tutorials/schema.md)
@@ -28,13 +27,13 @@ This page includes information on **how to configure** your schema in Weaviate. 
 - [Concepts: Data Structure](../concepts/data.md)
 :::
 
-### Auto-schema
+### 自动模式
 
-When a class definition is missing or inadequate for data import, the auto-schema feature infers it based on the object properties and defaults ([learn more](../config-refs/schema.md#auto-schema)).
+当数据导入的类定义缺失或不完整时，自动模式功能会根据对象属性和默认值进行推断（[了解更多](../config-refs/schema.md#auto-schema)）。
 
-However, you might find it preferable to define the schema manually to ensure that the schema aligns with your specific requirements.
+然而，您可能更倾向于手动定义模式，以确保模式与您的特定要求相符。
 
-## Create a class
+## 创建一个类
 
 :::info Capitalization
 Class and property names are treated equally no matter how the first letter is cased, eg "Article" == "article".
@@ -42,11 +41,11 @@ Class and property names are treated equally no matter how the first letter is c
 Generally, however, Weaviate follows GraphQL conventions where classes start with a capital letter and properties start with a lowercase letter.
 :::
 
-A class describes a collection of data objects. They are defined as a part of the schema, such as shown in the examples below.
+一个类描述了一组数据对象。它们被定义为模式的一部分，如下面的示例所示。
 
-### Minimal example
+### 最简例子
 
-As a minimum, you must specify the `class` parameter for the class name.
+至少，您必须为类名指定`class`参数。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -69,9 +68,9 @@ As a minimum, you must specify the `class` parameter for the class name.
 </Tabs>
 
 
-### Property definition
+### 属性定义
 
-You can use `properties` to specify properties. A class definition can include any number of properties.
+您可以使用 `properties` 来指定属性。类定义可以包含任意数量的属性。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -94,15 +93,15 @@ You can use `properties` to specify properties. A class definition can include a
 </Tabs>
 
 
-In addition to the property name, you can configure parameters such as the data type, inverted index tokenization and more.
+除了属性名称外，您还可以配置参数，例如数据类型、倒排索引标记化等。
 
-- [Property object configuration references](../config-refs/schema.md#property-object)
-- [Available data types](../config-refs/datatypes.md)
+- [属性对象配置参考](../config-refs/schema.md#property-object)
+- [可用的数据类型](../config-refs/datatypes.md)
 
 
-### Specify a vectorizer
+### 指定一个向量化器
 
-You can set an optional `vectorizer` for each class, which will override any default values present in the configuration (e.g. in an [environment variable](../config-refs/env-vars.md)). The following sets the `text2vec-openai` module as the vectorizer for the `Article` class.
+您可以为每个类设置一个可选的 `vectorizer`，它将覆盖配置中存在的任何默认值（例如，在[环境变量](../config-refs/env-vars.md)中）。以下示例将 `text2vec-openai` 模块设置为 `Article` 类的向量化器。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -124,12 +123,12 @@ You can set an optional `vectorizer` for each class, which will override any def
   </TabItem>
 </Tabs>
 
-- [Available vectorizers](../modules/retriever-vectorizer-modules/index.md)
-- [Vectorizer configuration references](../config-refs/schema.md#vectorizer)
+- [可用的向量化器](../modules/retriever-vectorizer-modules/index.md)
+- [Vectorizer配置参考](../config-refs/schema.md#vectorizer)
 
-### Class-level module settings
+### 类级别的模块设置
 
-You can set the `moduleConfig` parameter at the class-level to set class-wide settings for module behavior. For example, the vectorizer could be configured to set the model used (`model`), or whether to vectorize the class name (`vectorizeClassName`).
+您可以在类级别上设置`moduleConfig`参数，以设置模块行为的类级别设置。例如，可以配置矢量化器来设置使用的模型(`model`)，或者是否对类名进行矢量化(`vectorizeClassName`)。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -151,12 +150,11 @@ You can set the `moduleConfig` parameter at the class-level to set class-wide se
   </TabItem>
 </Tabs>
 
-The available parameters vary according to the module ([learn more](../modules/index.md)).
+可用参数根据模块的不同而变化（[了解更多](../modules/index.md)）。
 
+### 模块级别的设置
 
-### Property-level module settings
-
-You can also set the `moduleConfig` parameter at the property-level to set property-level settings for module behavior. For example, you could set whether to vectorizer the property name (`vectorizePropertyName`), or whether to skip the property from vectorization altogether (`skip`).
+您还可以在属性级别上设置`moduleConfig`参数，以设置模块行为的属性级别设置。例如，您可以设置是否对属性名称进行向量化(`vectorizePropertyName`)，或者完全跳过属性的向量化(`skip`)。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -178,12 +176,11 @@ You can also set the `moduleConfig` parameter at the property-level to set prope
   </TabItem>
 </Tabs>
 
-The available parameters vary according to the module ([learn more](../modules/index.md)).
+可用参数根据模块而异（[了解更多](../modules/index.md)）。
 
+### 索引、分片和复制设置
 
-### Indexing, sharding and replication settings
-
-You can also set indexing, sharding and replication settings through the schema. For example, a vector index distance metric can be set for a class, and a replication factor can be set as shown below.
+您还可以通过模式设置索引、分片和复制设置。例如，可以为一个类设置向量索引距离度量，并设置复制因子，如下所示。
 
 :::note
 You will need a [multi-node setup](../installation/docker-compose.md#multi-node-setup) to test locally replication factors greater than 1.
@@ -210,19 +207,19 @@ You will need a [multi-node setup](../installation/docker-compose.md#multi-node-
 </Tabs>
 
 
-You can read more about the various parameters below:
+您可以在下面了解更多关于各种参数的信息：
 
-- [Vector index configuration references](../config-refs/schema.md#vectorindexconfig)
-- [Inverted index configuration references](../config-refs/schema.md#invertedindexconfig--stopwords-stopword-lists)
-- [Sharding configuration references](../config-refs/schema.md#shardingconfig)
-- [Replication configuration references](../config-refs/schema.md#replicationconfig)
+- [向量索引配置参考](../config-refs/schema.md#vectorindexconfig)
+- [倒排索引配置参考](../config-refs/schema.md#invertedindexconfig--stopwords-stopword-lists)
+- [分片配置参考](../config-refs/schema.md#shardingconfig)
+- [复制配置参考](../config-refs/schema.md#replicationconfig)
 
-### Multi-tenancy
+### 多租户
 
 :::info Available from `v1.20` onwards
 :::
 
-To enable multi-tenancy, you must set the `multiTenancyConfig` key to `{"enabled": true}` in the class definition.
+为了启用多租户功能，您必须在类定义中将`multiTenancyConfig`键设置为`{"enabled": true}`。
 
 ```json
 {
@@ -233,23 +230,23 @@ To enable multi-tenancy, you must set the `multiTenancyConfig` key to `{"enabled
 }
 ```
 
-For more details of multi-tenancy operations, please see the [multi-tenancy operations page](../manage-data/multi-tenancy.md).
+有关多租户操作的更多详细信息，请参阅[多租户操作页面](../manage-data/multi-tenancy.md)。
 
-## Delete a class
+## 删除一个类
 
 import CautionSchemaDeleteClass from '/_includes/schema-delete-class.mdx'
 
 <CautionSchemaDeleteClass />
 
-## Update a class definition
+## 更新类定义
 
-Some parts of a class definition may be updated, while others are immutable.
+类定义的某些部分可以更新，而其他部分是不可变的。
 
-The following sections describe how to add a property in a class, or to modify parameters.
+以下部分描述了如何在类中添加属性或修改参数。
 
-### Add a property
+### 添加属性
 
-A new property can be added to an existing class.
+一个新属性可以添加到现有的类中。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -275,9 +272,9 @@ A new property can be added to an existing class.
 Currently, a property cannot be removed from a class definition or renamed once it has been added. This is due to the high compute cost associated with reindexing the data in such scenarios.
 :::
 
-### Modify a parameter
+### 修改参数
 
-You can modify some parameters of a schema as shown below. However, many parameters are immutable and cannot be changed once set.
+您可以修改模式的一些参数，如下所示。但是，许多参数是不可变的，一旦设置就无法更改。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -291,15 +288,14 @@ You can modify some parameters of a schema as shown below. However, many paramet
 
   <TabItem value="js" label="JavaScript/TypeScript">
 
-  >  Coming soon (vote for the [feature request](https://github.com/weaviate/typescript-client/issues/72))
+  > 即将推出（请为[功能请求](https://github.com/weaviate/typescript-client/issues/72)投票）
 
-  </TabItem>
+</TabItem>
 </Tabs>
 
+## 查看模式
 
-## Review schema
-
-If you want to review the schema, you can retrieve it as shown below.
+如果您想查看模式，可以按照下面的示例检索它。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -321,10 +317,10 @@ If you want to review the schema, you can retrieve it as shown below.
   </TabItem>
 </Tabs>
 
-The response will be a JSON object, such as the example shown below.
+响应将是一个JSON对象，例如下面的示例。
 
 <details>
-  <summary>Sample schema</summary>
+  <summary>示例模式</summary>
 
 ```json
 {
@@ -424,7 +420,7 @@ The response will be a JSON object, such as the example shown below.
 
 </details>
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

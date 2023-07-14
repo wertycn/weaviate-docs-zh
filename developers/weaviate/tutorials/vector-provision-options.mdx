@@ -1,43 +1,42 @@
 ---
-title: Imports - Vector provision options
-sidebar_position: 45
 image: og/docs/tutorials.jpg
-# tags: ['how-to', 'options for vectors']
+sidebar_position: 45
+title: Imports - Vector provision options
 ---
 
 import ReactPlayer from 'react-player/lazy'
 
-## Overview
+## 概述
 
 :::info This video covers options for adding a vector during import.
 :::
 
-When importing objects into Weaviate, you can choose to:
-- **Provide object vectors** to Weaviate,
-- **Configure a vectorizer** to obtain vectors at import time, or
-- **Combine these options** to configure a vectorizer while explicitly providing vectors.
+当将对象导入Weaviate时，您可以选择：
+- **提供对象向量**给Weaviate，
+- **配置一个向量化器**在导入时获取向量，或者
+- **结合这些选项**来配置一个向量化器，同时明确提供向量。
 
-This **5-minute video** provides an overview of all three workflows, with code examples shown in Python.
+这个**5分钟视频**概述了这三种工作流程，其中显示了Python代码示例。
 
-### Prerequisites
+### 先决条件
 
-We recommend that you go through the [Quickstart tutorial](../quickstart/index.md) before watching this video, or to make sure you are familiar with the basic of a schema, import, and query in Weaviate.
+我们建议您在观看此视频之前先完成[快速入门教程](../quickstart/index.md)，或者确保您熟悉Weaviate中的模式、导入和查询的基础知识。
 
-### Jupyter notebook & data
+### Jupyter笔记本和数据
 
-You can find the accompanying Jupyter notebook and data at [this repository](https://github.com/weaviate-tutorials/vector-provision-options).
+您可以在[此存储库](https://github.com/weaviate-tutorials/vector-provision-options)中找到相应的Jupyter笔记本和数据。
 
-## Video (4mins 46secs)
+## 视频（4分46秒）
 
 <ReactPlayer url='https://www.youtube.com/watch?v=x9ztOHUxALg' width="100%" controls="true"/>
 <br/>
 
-### Timestamps
+### 时间戳
 
-- 0:00: Introduction
-- 0:15: Overview
-- 0:30: Instantiate Weaviate client & load data
-- 1:18: Import data with Weaviate-obtained vectors
-- 2:17: Import data with user-specified vectors
-- 3:14: Combined option - import with user-specified vectors and specify a vectorizer
-- 4:20: Wrap-up
+- 0:00: 介绍
+- 0:15: 概述
+- 0:30: 实例化Weaviate客户端和加载数据
+- 1:18: 使用Weaviate获取的向量导入数据
+- 2:17: 使用用户指定的向量导入数据
+- 3:14: 组合选项 - 使用用户指定的向量导入数据并指定一个向量化器
+- 4:20: 总结

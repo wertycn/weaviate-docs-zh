@@ -1,32 +1,31 @@
 ---
-title: Roadmap
-sidebar_position: 0
 image: og/docs/roadmap.jpg
-# tags: ['roadmap']
+sidebar_position: 0
+title: Roadmap
 ---
 
 import { Roadmap } from '/src/theme/Roadmap';
 
-## Overview
+## 概述
 
-The following is an overview of features planned for Weaviate. By clicking the link, you can upvote the feature or engage in a discussion about it. You can also join our [forum](https://forum.weaviate.io/) to discuss the roadmap in more detail.
+以下是Weaviate计划的功能概述。通过点击链接，您可以给该功能点赞或参与讨论。您还可以加入我们的[论坛](https://forum.weaviate.io/)，以便更详细地讨论路线图。
 
 :::tip Upvote issues that matter to you
 We use your feedback and votes on GitHub pages to plan future releases.<br/>
 If you find any of the issues of interest, follow the link and upvote <i className="far fa-thumbs-up"></i> it on GitHub.
 :::
 
-Please feel free to engage with us about the roadmap on [Weaviate's GitHub](https://github.com/weaviate/weaviate) or on [the forum](https://forum.weaviate.io/).
+请随时通过[Weaviate的GitHub](https://github.com/weaviate/weaviate)或[论坛](https://forum.weaviate.io/)与我们讨论路线图。
 
-## Planned for Weaviate 1.20
+## Weaviate 1.20计划中的内容
 
 <Roadmap label="planned-1.20"/>
 
-## Backlog
+## 积压任务
 
 <Roadmap label="backlog"/>
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

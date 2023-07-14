@@ -1,8 +1,7 @@
 ---
-title: Filters
-sidebar_position: 90
 image: og/docs/howto.jpg
-# tags: ['how to', 'apply conditional filters']
+sidebar_position: 90
+title: Filters
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,9 +10,9 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PythonCode from '!!raw-loader!/_includes/code/howto/search.filters.py';
 import JavaScriptCode from '!!raw-loader!/_includes/code/howto/search.filters.ts';
 
-## Overview
+## 概述
 
-This page shows you how to add conditional filters to your search queries with the `where` operator.
+本页面将向您展示如何使用`where`运算符为搜索查询添加条件筛选器。
 
 :::info Related pages
 - [API References: Filters](../api/graphql/filters.md)
@@ -23,11 +22,11 @@ import BasicPrereqs from '/_includes/prerequisites-quickstart.md';
 
 <BasicPrereqs />
 
-## A single-condition filter
+## 单条件筛选器
 
-To add a filter, you must provide at least one `where` condition to your query.
+要添加筛选器，您必须为查询提供至少一个`where`条件。
 
-The following example specifies that the `round` property must equal `"Double Jeopardy!"`. Note that the `valueText` parameter is used since the property datatype is `text`.
+以下示例指定`round`属性必须等于`"Double Jeopardy!"`。请注意，由于属性的数据类型是`text`，因此使用了`valueText`参数。
 
 :::tip Filter arguments list
 See [this page](../api/graphql/filters.md#filter-structure) for the list of available filter arguments.
@@ -61,9 +60,9 @@ See [this page](../api/graphql/filters.md#filter-structure) for the list of avai
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成以下类似的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -74,11 +73,11 @@ It should produce a response like the one below:
 
 </details>
 
-### With a search parameter
+### 使用搜索参数
 
-Conditional filters can be combined with a search parameter such as `nearXXX`, `hybrid` or `bm25`.
+条件过滤器可以与搜索参数（如`nearXXX`、`hybrid`或`bm25`）结合使用。
 
-The following example adds a `points` filter to a `nearText` query, where the `points` property must be greater than 200. Note that the `valueInt` is used as the property datatype is `int`.
+下面的示例将一个 `points` 过滤器添加到一个 `nearText` 查询中，其中 `points` 属性必须大于200。请注意，由于属性的数据类型是 `int`，因此使用 `valueInt`。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -108,24 +107,24 @@ The following example adds a `points` filter to a `nearText` query, where the `p
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该产生如下所示的响应：
 
 <FilteredTextBlock
   text={PythonCode}
-  startMarker="# Expected SingleFilterNearText results"
-  endMarker="# END Expected SingleFilterNearText results"
+  startMarker="# 预期的 SingleFilterNearText 结果"
+  endMarker="# END 预期的 SingleFilterNearText 结果"
   language="json"
 />
 
 </details>
 
-### By partial matches (text)
+### 通过部分匹配（文本）
 
-With `text` data type properties, you can use the `Like` operator to filter by partial matches.
+对于 `text` 数据类型的属性，您可以使用 `Like` 运算符进行部分匹配过滤。
 
-The following example filters for objects including the text `"inter"` in any part of a token in the `answer` property.
+以下示例筛选包含文本“inter”的对象，在`answer`属性的任何部分中。
 
 :::tip `*` vs `?`
 `*` matches zero or more characters, whereas `?` matches exactly one unknown character.
@@ -159,9 +158,9 @@ The following example filters for objects including the text `"inter"` in any pa
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该产生以下类似的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -172,13 +171,13 @@ It should produce a response like the one below:
 
 </details>
 
-## Multiple-condition filters
+## 多条件筛选器
 
-To add a multiple-condition filter, you must set the operator to `And` or `Or`, and set two or more conditions under the corresponding `operands` parameter.
+要添加多条件筛选器，您必须将运算符设置为`And`或`Or`，并在相应的`operands`参数下设置两个或多个条件。
 
-The following example specifies and `And` condition, so that both:
-- the `round` property must equal `"Double Jeopardy!"`, and
-- the `points` property must be less than 600.
+以下示例指定了一个`And`条件，使得两个条件都满足:
+- `round`属性必须等于`"Double Jeopardy!"`，并且
+- `points`属性必须小于600。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -208,26 +207,26 @@ The following example specifies and `And` condition, so that both:
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该产生如下所示的响应：
 
 <FilteredTextBlock
   text={PythonCode}
-  startMarker="# Expected MultipleFiltersAnd results"
-  endMarker="# END Expected MultipleFiltersAnd results"
+  startMarker="# 期望的多个过滤器结果"
+  endMarker="# 结束期望的多个过滤器结果"
   language="json"
 />
 
 </details>
 
-### Nested multiple conditions
+### 嵌套多个条件
 
-Conditional filters can be nested in Weaviate. To do so, set the `operator` of an outer `operands` value to `And` or `Or`. Then, you can provide two or more conditions to the inner `operands`.
+在Weaviate中可以嵌套条件过滤器。为此，将外部`operands`的`operator`设置为`And`或`Or`。然后，您可以为内部`operands`提供两个或更多条件。
 
-The following example specifies that:
-- the `answer` property must contain a substring `"nest"`, `And`
-- the `points` property must be greater than 700, `Or`, the `points` property must be less than 300.
+以下示例指定了：
+- `answer`属性必须包含子字符串`"nest"`，`And`
+- `points`属性必须大于700，`Or`，`points`属性必须小于300。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -241,25 +240,25 @@ The following example specifies that:
 <TabItem value="js" label="JavaScript/TypeScript">
 <FilteredTextBlock
   text={JavaScriptCode}
-  startMarker="// searchMultipleFiltersNested"
-  endMarker="// END searchMultipleFiltersNested"
-  language="js"
+startMarker="// searchMultipleFiltersNested"
+endMarker="// END searchMultipleFiltersNested"
+language="js"
 />
 </TabItem>
 <TabItem value="graphql" label="GraphQL">
-<FilteredTextBlock
-  text={PythonCode}
-  startMarker="# MultipleFiltersNestedGraphQL"
-  endMarker="# END MultipleFiltersNestedGraphQL"
-  language="graphql"
-/>
+  <FilteredTextBlock
+    text={PythonCode}
+    startMarker="# MultipleFiltersNestedGraphQL"
+    endMarker="# END MultipleFiltersNestedGraphQL"
+    language="graphql"
+  />
 </TabItem>
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成如下的响应:
 
 <FilteredTextBlock
   text={PythonCode}
@@ -271,13 +270,13 @@ It should produce a response like the one below:
 </details>
 
 
-## Filter using cross-references
+## 使用交叉引用进行筛选
 
-You can filter objects using properties from a cross-referenced object.
+您可以使用交叉引用对象的属性来筛选对象。
 
-The following example filters `JeopardyQuestion` objects using properties of `JeopardyCategory` that they are cross-referencing.
+以下示例使用`JeopardyCategory`对象的属性对`JeopardyQuestion`对象进行筛选，这些属性是它们之间的交叉引用。
 
-More speficially, the example filters for the `title` property of `JeopardyCategory` objects that are cross-referenced from the `JeopardyQuestion` object. The `title` property must include the substring `Sport`. 
+更具体地说，该示例通过筛选从`JeopardyQuestion`对象引用的`JeopardyCategory`对象的`title`属性来实现。`title`属性必须包含子字符串`Sport`。 
 
 :::note Case-sensitivity
 The results are case-insensitive here, as the `title` property is defined with [`word` tokenization](../config-refs/schema.md#property-tokenization).
@@ -311,9 +310,9 @@ The results are case-insensitive here, as the `title` property is defined with [
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成如下所示的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -325,7 +324,7 @@ It should produce a response like the one below:
 </details>
 
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

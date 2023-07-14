@@ -1,9 +1,9 @@
 ---
-title: Distance metrics
-sidebar_position: 4
 image: og/docs/configuration.jpg
-# tags: ['HNSW']
+sidebar_position: 4
+title: Distance metrics
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -14,27 +14,24 @@ import Badges from '/_includes/badges.mdx';
 - [Concepts: Data Structure](../concepts/data.md)
 :::
 
-## Available distance metrics
+## 可用的距离度量标准
 
-If not specified explicitly, the default distance metric in Weaviate is
-`cosine`. It can be [set in the vectorIndexConfig](/developers/weaviate/configuration/indexes.md#how-to-configure-hnsw) field as part of the  schema (here's an [example adding a class to the schema](../api/rest/schema.md#create-a-class)) to any of the following types:
+如果没有显式指定，默认的距离度量标准是`cosine`。可以将其作为模式的一部分，在vectorIndexConfig字段中进行[设置](/developers/weaviate/configuration/indexes.md#how-to-configure-hnsw)（这里是一个[向模式中添加类的示例](../api/rest/schema.md#create-a-class)），适用于以下任何类型：
 
 :::tip Comparing distances
 In all cases, larger distance values indicate lower similarity. Conversely, smaller distance values indicate higher similarity.
 :::
 
 <!-- TODO: Consider removing {:.text-nowrap} -->
-| Name | Description | Definition | Range | Examples |
+| 名称 | 描述 | 定义 | 范围 | 示例 |
 | --- | --- | --- | --- | --- |
-| <span style={{ whiteSpace: 'nowrap' }}>`cosine`</span> | Cosine (angular) distance. <br/><sub>[See note 1 below]</sub> | <span style={{ whiteSpace: 'nowrap' }}>`1 - cosine_sim(a,b)`</span> | <span style={{ whiteSpace: 'nowrap' }}>`0 <= d <= 2`</span> | `0`: identical vectors<br/><br/> `2`: Opposing vectors. |
-| <span style={{ whiteSpace: 'nowrap' }}>`dot`</span> | A dot product-based indication of distance. <br/><br/>More precisely, the negative dot product. <br/><sub>[See note 2 below]</sub> | <span style={{ whiteSpace: 'nowrap' }}>`-dot(a,b)`</span> | <span style={{ whiteSpace: 'nowrap' }}>`-∞ < d < ∞`</span> | `-3`: more similar than `-2` <br/><br/>`2`: more similar than `5` |
-| <span style={{ whiteSpace: 'nowrap' }}>`l2-squared`</span> | The squared euclidean distance between two vectors. | <span style={{ whiteSpace: 'nowrap' }}>`sum((a_i - b_i)^2)`</span> | <span style={{ whiteSpace: 'nowrap' }}>`0 <= d < ∞`</span> | `0`: identical vectors |
-| <span style={{ whiteSpace: 'nowrap' }}>`hamming`</span> | Number of differences between vectors at each dimensions. | <span style={{ whiteSpace: 'nowrap' }}><code>sum(&#124;a_i != b_i&#124;)</code></span> | <span style={{ whiteSpace: 'nowrap' }}>`0 <= d < ∞`</span> | `0`: identical vectors |
-| <span style={{ whiteSpace: 'nowrap' }}>`manhattan`</span> | The distance between two vector dimensions measured along axes at right angles.  | <span style={{ whiteSpace: 'nowrap' }}><code>sum(&#124;a_i - b_i&#124;)</code></span> | <span style={{ whiteSpace: 'nowrap' }}>`0 <= d < dims`</span> | `0`: identical vectors |
+| <span style={{ whiteSpace: 'nowrap' }}>`cosine`</span> | 余弦（角度）距离。<br/><sub>[请参考下文注释 1]</sub> | <span style={{ whiteSpace: 'nowrap' }}>`1 - cosine_sim(a,b)`</span> | <span style={{ whiteSpace: 'nowrap' }}>`0 <= d <= 2`</span> | `0`: 向量相同<br/><br/> `2`: 反向向量。 |
+| <span style={{ whiteSpace: 'nowrap' }}>`dot`</span> | 基于点积的距离指示。 <br/><br/>更确切地说，是负的点积。 <br/><sub>[见下面的注释2]</sub> | <span style={{ whiteSpace: 'nowrap' }}>`-dot(a,b)`</span> | <span style={{ whiteSpace: 'nowrap' }}>`-∞ < d < ∞`</span> | `-3`: 比`-2`更相似 <br/><br/>`2`: 比`5`更相似 |
+| <span style={{ whiteSpace: 'nowrap' }}>`l2-squared`</span> | 两个向量之间的欧几里德距离的平方。 | <span style={{ whiteSpace: 'nowrap' }}>`sum((a_i - b_i)^2)`</span> | <span style={{ whiteSpace: 'nowrap' }}>`0 <= d < ∞`</span> | `0`: 向量相同 |
+| `hamming` | 向量在每个维度上的差异数量。 | `sum(|a_i != b_i|)` | `0 <= d < ∞` | `0`: 相同的向量 |
+| <span style={{ whiteSpace: 'nowrap' }}>`manhattan`</span> | 两个向量维度之间沿着垂直轴测量的距离。 | <span style={{ whiteSpace: 'nowrap' }}><code>sum(&#124;a_i - b_i&#124;)</code></span> | <span style={{ whiteSpace: 'nowrap' }}>`0 <= d < dims`</span> | `0`: 相同的向量 |
 
-
-
-If you're missing your favorite distance type and would like to contribute it to Weaviate, we'd be happy to review your [PR](https://github.com/weaviate/weaviate).
+如果您想要添加您喜欢的距离类型并将其贡献给Weaviate，我们将非常乐意审查您的[PR](https://github.com/weaviate/weaviate)。
 
 :::note Additional notes
 
@@ -43,48 +40,44 @@ If you're missing your favorite distance type and would like to contribute it to
 
 :::
 
-### Distance implementations and optimizations
+### 距离计算和优化
 
-On a typical Weaviate use case the largest portion of CPU time is spent calculating vector distances. Even with an approximate nearest neighbor index - which leads to far fewer calculations - the efficiency of distance calculations has a major impact on [overall performance](/developers/weaviate/benchmarks/ann.md).
+在典型的Weaviate使用情况下，CPU时间的大部分都用于计算向量距离。即使使用了近似最近邻索引，从而减少了计算量，距离计算的效率对[整体性能](/developers/weaviate/benchmarks/ann.md)也有重大影响。
 
-You can use the following overview to find the best possible combination of distance metric and CPU architecture / instruction set.
+您可以使用以下概述来找到最佳的距离度量和CPU架构/指令集的组合。
 
-| Distance | `linux/amd64 AVX2` | `darwin/amd64 AVX2` | `linux/amd64 AVX512` | `linux/arm64` | `darwin/arm64` |
+| 距离 | `linux/amd64 AVX2` | `darwin/amd64 AVX2` | `linux/amd64 AVX512` | `linux/arm64` | `darwin/arm64` |
 | --- | --- | --- | --- | --- | --- |
-| `cosine` | [optimized](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/dot_amd64.s) | [optimized](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/dot_amd64.s) | no SIMD | no SIMD | no SIMD |
-| `dot` | [optimized](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/dot_amd64.s) | [optimized](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/dot_amd64.s) | no SIMD | no SIMD | no SIMD |
-| `l2-squared` | [optimized](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/l2_amd64.s) | [optimized](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/l2_amd64.s) | no SIMD | no SIMD | no SIMD |
-| `hamming` | no SIMD | no SIMD | no SIMD | no SIMD | no SIMD |
-| `manhattan` | no SIMD | no SIMD | no SIMD | no SIMD | no SIMD |
+| `余弦` | [优化版本](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/dot_amd64.s) | [优化版本](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/dot_amd64.s) | 无SIMD | 无SIMD | 无SIMD |
+| `dot` | [优化](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/dot_amd64.s) | [优化](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/dot_amd64.s) | 无SIMD | 无SIMD | 无SIMD |
+| `l2-squared` | [优化](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/l2_amd64.s) | [优化](https://github.com/weaviate/weaviate/blob/master/adapters/repos/db/vector/hnsw/distancer/asm/l2_amd64.s) | 无SIMD | 无SIMD | 无SIMD |
+| `hamming` | 无SIMD | 无SIMD | 无SIMD | 无SIMD | 无SIMD |
+| `manhattan` | 无SIMD | 无SIMD | 无SIMD | 无SIMD | 无SIMD |
 
-If you like dealing with Assembly programming, SIMD, and vector instruction sets we would love to receive your contribution for one of the combinations that have not yet received an SIMD-specific optimization.
+如果您喜欢处理汇编程序、SIMD和矢量指令集，我们非常欢迎您为尚未接受SIMD特定优化的组合之一做出贡献。
 
-### Distance fields in the APIs
+### API中的距离字段
 
-The `distance` is exposed in the APIs in two ways:
+`distance`在API中以两种方式公开：
 
-* Whenever a vector search is involved, the distance can be displayed as part of the results, for example using <span style={{ whiteSpace: 'nowrap' }}>`_additional { distance }`</span>
-* Whenever a vector search is involved, the distance can be specified as a limiting criterion, for example using <span style={{ whiteSpace: 'nowrap' }}>`nearVector({distance: 1.5, vector: ... })`</span>
+* 每当涉及到向量搜索时，距离可以作为结果的一部分显示，例如使用 <span style={{ whiteSpace: 'nowrap' }}>`_additional { distance }`</span>
+* 每当涉及到向量搜索时，可以将距离指定为限制条件，例如使用<span style={{ whiteSpace: 'nowrap' }}>`nearVector({distance: 1.5, vector: ... })`</span>
 
-Note: The `distance` field was introduced in `v1.14.0`. In previous versions, only `certainty` (see below) was available.
+注意：`distance`字段是在`v1.14.0`版本中引入的。在之前的版本中，只有`certainty`（见下文）可用。
 
-### Distance vs Certainty
+### 距离 vs 确定性
 
-Prior to version `v1.14` only `certainty` was available in the APIs. The
-original ideas behind certainty was to normalize the distance score into a
-value between `0 <= certainty <= 1`, where 1 would represent identical vectors
-and 0 would represent opposite vectors.
+在`v1.14`版本之前，API中只有`certainty`可用。
+`certainty`的原始想法是将距离得分归一化为`0 <= certainty <= 1`之间的值，其中1表示相同的向量，0表示相反的向量。
 
-This concept is however unique to `cosine` distance. With other distance
-metrics, scores may be unbounded. As a result the preferred way is to use
-`distance` in favor of `certainty`.
+然而，这个概念只适用于`cosine`距离。对于其他距离度量，得分可能是无界的。因此，更推荐使用`distance`而不是`certainty`。
 
-For backward compatibility, `certainty` can still be used when the distance is
-`cosine`. If any other distance is selected `certainty` cannot be used.
+为了向后兼容，当距离是...时，仍然可以使用`certainty`。
+`cosine`。如果选择了其他距离，则无法使用`certainty`。
 
-See also [distance and certainty _additional{} properties](../api/graphql/additional-properties.md).
+另请参阅[距离和确信度_additional{}属性](../api/graphql/additional-properties.md)。
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

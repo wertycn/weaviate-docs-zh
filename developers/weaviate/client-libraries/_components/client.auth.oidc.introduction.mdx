@@ -1,5 +1,9 @@
-To authenticate against Weaviate with OIDC, you must select a flow made available by the identity provider and create the flow-specific authentication configuration.
+---
+{}
+---
 
-This configuration will then be used by the Weaviate client to authenticate. The configuration includes secrets that help the client obtain an `access token` and, if configured, a `refresh token`.
+要使用OIDC对Weaviate进行身份验证，您必须选择一个由身份提供者提供的流程，并创建特定于该流程的身份验证配置。
 
-The `access token` is added to the HTTP header of each request and is utilized for authentication with Weaviate. Typically, this token has a limited lifespan, and the `refresh token` can be employed to obtain a new set of tokens when necessary.
+然后，Weaviate客户端将使用此配置进行身份验证。配置包括帮助客户端获取`访问令牌`的机密信息，以及（如果配置了）`刷新令牌`。
+
+`访问令牌`会被添加到每个请求的HTTP头中，并用于与Weaviate进行身份验证。通常，这个令牌的有效期是有限的，当需要时可以使用`刷新令牌`来获取一组新的令牌。

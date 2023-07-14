@@ -1,11 +1,10 @@
 ---
-title: (NEW) Vectorizer comparisons
-sidebar_position: 3
 image: og/docs/vectors.jpg
-# tags: []
+sidebar_position: 3
+title: (NEW) Vectorizer comparisons
 ---
 
-## Introduction
-This page will include comparisons of vectorizers, to help our users better understand the technical difference between vectorizers.
+## 简介
+本页面将包括向量化器的比较，以帮助用户更好地了解向量化器之间的技术差异。
 
-The separate [guide on vectorizer selection](../tutorials/how-to-select-the-right-vectorizer.md) will include practical help and guidance for users (i.e. non-DS professionals or academics) on what vectorizer might be best for their data and use case.
+单独的[向量化器选择指南](../tutorials/how-to-select-the-right-vectorizer.md)将为用户（非数据科学专业人员或学者）提供实用的帮助和指导，以确定适合他们的数据和用例的最佳向量化器。

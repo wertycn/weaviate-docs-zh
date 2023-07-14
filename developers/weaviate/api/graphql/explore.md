@@ -1,9 +1,9 @@
 ---
-title: GraphQL - Explore{}
-sidebar_position: 3
 image: og/docs/api.jpg
-# tags: ['graphql', 'explore{}']
+sidebar_position: 3
+title: GraphQL - Explore{}
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -16,9 +16,9 @@ As WCS by default enables multiple inference-API modules and therefore multiple 
 
 :::
 
-## Explore{} query structure and syntax
+## 探索{} 查询结构和语法
 
-The `Explore{}` function is always defined based on the following principle:
+`Explore{}` 函数的定义始终基于以下原则：
 
 ```graphql
 {
@@ -48,13 +48,13 @@ The `Explore{}` function is always defined based on the following principle:
 }
 ```
 
-An example query:
+一个示例查询：
 
 import GraphQLExploreVec from '/_includes/code/graphql.explore.vector.mdx';
 
 <GraphQLExploreVec/>
 
-The result might look like this:
+结果可能如下所示：
 
 ```json
 {
@@ -71,45 +71,40 @@ The result might look like this:
 }
 ```
 
-### CamelCase interpretation
+### 驼峰式解析
 
-Weaviate's vectorization module `text2vec-contextionary` splits words based on CamelCase. For example, if a user wants to explore for the iPhone (the Apple device) they should use `iphone` rather than `iPhone` because the latter will be interpreted as `[i, phone]`.
+Weaviate的向量化模块`text2vec-contextionary`根据驼峰式拆分单词。例如，如果用户想要搜索iPhone（苹果设备），他们应该使用`iphone`而不是`iPhone`，因为后者将被解释为`[i, phone]`。
 
-## Explore filter arguments
+## 探索过滤器参数
 
-### Concepts
+### 概念
 
-Strings written in the `Concepts` array are your fuzzy search terms. An array of concepts is required to set in the Explore query, and all words in this array should be present in the Contextionary.
+`Concepts` 数组中的字符串是您的模糊搜索项。必须设置一个概念数组来进行 Explore 查询，并且该数组中的所有单词都应该在 Contextionary 中存在。
 
-There are three ways to define the `concepts` array argument in the Explore filter.
+在 Explore 过滤器中，有三种方式可以定义 `concepts` 数组参数。
 
-- `["New York Times"]` = one vector position is determined based on the occurrences of the words
-- `["New", "York", "Times"]` = all concepts have a similar weight.
-- `["New York", "Times"]` = a combination of the two above.
+- `["New York Times"]` = 基于单词出现的次数来确定一个向量位置
+- `["New", "York", "Times"]` = 所有概念具有相似的权重。
+- `["纽约", "时报"]` = 上述两者的组合。
 
-A practical example would be: `concepts: ["beatles", "John Lennon"]`
+一个实际的例子是：`concepts: ["披头士", "约翰·列侬"]`
 
-#### Distance
+#### 距离
 
-You can set a maximum allowed `distance`, which will be used to determine which
-data results to return. The interpretation of the value of the distance field
-depends on the [distance metric used](/developers/weaviate/config-refs/distances.md).
+您可以设置一个最大允许的`距离`，用于确定要返回的数据结果。距离字段的值的解释取决于所使用的[距离度量标准](/developers/weaviate/config-refs/distances.md)。
 
-If the distance metric is `cosine` you can also use `certainty` instead of
-`distance`. Certainty normalizes the distance in a range of 0..1, where 0
-represents a perfect opposite (cosine distance of 2) and 1 represents vectors
-with an identical angle (cosine distance of 0). Certainty is not available on
-non-cosine distance metrics.
+如果距离度量标准是`余弦`，您也可以使用`确定度`来代替。
+`distance`。确定性将距离归一化到0到1的范围内，其中0表示完全相反（余弦距离为2），1表示具有相同角度的向量（余弦距离为0）。确定性不适用于非余弦距离度量。
 
-#### Moving
+#### 移动中
 
-Because pagination is not possible in multidimensional storage, you can improve your results with additional explore functions which can move away from semantic concepts or towards semantic concepts. E.g., if you look for the concept 'New York Times' but don't want to find the city New York, you can use the `moveAwayFrom{}` function by using the words 'New York'. This is also a way to exclude concepts and to deal with negations (`not` operators in similar query languages). Concepts in the `moveAwayFrom{}` filter are not per definition excluded from the result, but the resulting concepts are further away from the concepts in this filter.
+由于多维存储中无法进行分页，您可以通过使用其他探索函数来改进结果，这些函数可以远离语义概念或靠近语义概念。例如，如果您正在寻找概念“纽约时报”，但不想找到纽约这个城市，您可以使用`moveAwayFrom{}`函数，并使用词语“纽约”。这也是排除概念和处理否定（类似查询语言中的`not`运算符）的一种方式。`moveAwayFrom{}`筛选器中的概念并不是定义上被排除在结果之外，而是结果中的概念与此筛选器中的概念之间更远。
 
-## Additional filters
+## 额外的筛选器
 
-`Explore{}` functions can be extended with search filters (both semantic filters as traditional filters). Because the filters work on multiple core functions (like `Aggregate{}`) there is a [specific documentation page dedicated to filters](filters.md).
+`Explore{}` 函数可以通过搜索筛选器进行扩展（包括语义筛选器和传统筛选器）。由于筛选器适用于多个核心函数（如 `Aggregate{}`），因此有一个[专门的文档页面专门介绍筛选器](filters.md)。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

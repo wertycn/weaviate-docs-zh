@@ -1,38 +1,36 @@
 ---
-title: Philosophy
-sidebar_position: 2
 image: og/docs/concepts.jpg
-# tags: ['architecture']
+sidebar_position: 2
+title: Philosophy
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## A design modeled after how our users use Weaviate
+## 以我们的用户使用Weaviate为模型的设计
 
-The architecture that guides the principles for Weaviate’s replication systems is modeled after how users typically use Weaviate. Weaviate powers site search, recommendation, knowledge extraction, and other information retrieval cases. These cases all have a few things in common:
-* They are often **very-large-scale** (with datasets in the billions of objects and vectors)
-* They often incur **large parallel usage with strict latency requirements** (i.e. high throughput with low p99 latencies)
-* It is vital that the service is **highly-available** and resilient to unplanned outages or planned maintenance, such as version upgrades.
-* It is often tolerable if data is temporarily out of sync, as long as **consistency is reached eventually**.
-* Weaviate is sometimes used alongside strongly consistent, transactional databases if transactional data exists in a use case. In cases where Weaviate is used as the primary database, data is typically not transactional.
-* Weaviate’s users have a lot of experience working with cloud-native technologies, including NoSQL databases, and know how an application needs to be structured to deal with eventually consistent systems correctly.
+Weaviate的复制系统的架构是根据用户通常使用Weaviate的方式建模的。Weaviate提供站点搜索、推荐、知识提取和其他信息检索功能。这些功能都有一些共同点：
+* 它们通常是**非常大规模的**（数据集可能达到数十亿个对象和向量）
+* 它们通常需要**具有严格延迟要求的大规模并行使用**（即高吞吐量与低p99延迟）
+* 这个服务的**高可用性**和对于非计划性故障或计划性维护（如版本升级）的弹性是至关重要的。
+* 即使数据暂时不同步，只要**最终达到一致性**，通常是可以容忍的。
+* 如果用例中存在事务性数据，Weaviate有时会与强一致性的事务性数据库一起使用。在将Weaviate用作主要数据库的情况下，数据通常不具备事务性。
+* Weaviate的用户在使用云原生技术方面拥有丰富的经验，包括NoSQL数据库，并且知道如何正确构建应用程序以处理最终一致性系统。
 
-Based on the above usage patterns, and keeping the [CAP theorem](./index.md#cap-theorem) trade-offs in mind, Weaviate’s replication architecture **prefers availability over consistency**. Nevertheless, individual requests might have stricter consistency requirements than others. For those cases, Weaviate offers both [tunable read and write consistency](./consistency.md).
+根据上述的使用模式，并且考虑到[CAP定理](./index.md#cap-theorem)的权衡，Weaviate的复制架构**更偏向于可用性而非一致性**。然而，个别请求可能对一致性有更严格的要求。针对这些情况，Weaviate提供了可调整的读写一致性。
 
+## 无领导架构的原因
 
-## Reasons for a leaderless architecture
+Weaviate的复制架构受到其他现代的、面向相似目标的互联网规模数据库的启发；[Apache Cassandra](https://cassandra.apache.org/_/index.html)就是一个显著的例子。Weaviate的[复制架构](./cluster-architecture.md)与Cassandra有很多相似之处。毫不奇怪，选择了无领导模式来实现可用性和吞吐量目标。在有领导者的设置中，领导节点有两个重要的缺点：首先，领导者成为性能瓶颈，例如，因为每个写请求都需要通过领导者。其次，领导者的故障涉及选举新领导者，这可能是一个复杂和昂贵的过程，可能导致临时不可用。领导者系统的主要优点是它可能更容易提供特定的一致性保证。正如上面的动机所概述的，Weaviate更喜欢大规模的用例、线性扩展和可用性，而不是严格的一致性。
 
-Weaviate’s replication architecture is inspired by other modern, Internet-scale databases that serve similar goals; [Apache Cassandra](https://cassandra.apache.org/_/index.html) is a notable example. Weaviate’s [Replication Architecture](./cluster-architecture.md) has significant similarities to Cassandra's. Unsurprisingly, a leaderless pattern was chosen to achieve both availability and throughput goals. In a leaderful setup, leader nodes have two significant disadvantages: Firstly, leaders become a performance bottleneck, e.g., because every write request needs to pass through the leader. Secondly, a leader's failure involves the election of a new leader, which can be a complex and costly process that can lead to temporary unavailability. The main advantage of a leaderful system is that it may be easier to provide specific consistency guarantees. As outlined in the motivation above, Weaviate prefers large-scale use cases, linear scaling, and availability over strict consistency.
+## 渐进式发布
 
-## Gradual rollout
+与其他许多Weaviate功能一样，复制功能也是分阶段推出的。这并不意味着第一个带有复制功能的版本是不完整的。相反，这意味着复制是一个伞形术语，它伴随着许多功能一起工作，以实现复制的各种目标。其中最重要的功能包含在第一个版本（v1.17）中，但有些功能可能仅在随后的版本中（如v1.18和v1.19）中提供。
 
-As with many other Weaviate features, Replication is being rolled out in multiple phases. This does not mean that the first release with replication is to be considered incomplete. Instead it means that Replication is an umbrella term that accompanies many features that work together to achieve the various goals of replication. The most significant of those are contained in the first release (v1.17), but some may only follow in subsequent releases, such as v1.18 and v1.19.
+这种分阶段推出的动机有两个方面。首先，不是每个人的需求都相同，第一个版本中包含的功能集对于许多用例来说已经足够。您可以使用[复制路线图](./index.md#roadmap)部分来做出明智的决策。其次，您的反馈和了解您的需求对于指导未来功能的发布非常有价值。通过早期和频繁的发布，我们可以减少获取有价值反馈的时间。
 
-The motivation behind this phased roll-out is two-fold. First, not everyone has the same requirements, and the feature set included in the first release is sufficient for many use cases. You can use the [Replication Roadmap](./index.md#roadmap) section to make an informed decision. Second, your feedback and learning about your needs are extremely valuable to guide the future releases of features. By releasing early and often, we can reduce the time to get valuable feedback.
-
-
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

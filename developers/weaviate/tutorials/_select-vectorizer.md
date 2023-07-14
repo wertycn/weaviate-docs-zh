@@ -1,16 +1,16 @@
 ---
-title: (PLACEHOLDER) Select the right vectorizer
-sidebar_position: 1
 image: og/docs/tutorials.jpg
-# tags: ['how to']
+sidebar_position: 1
+title: (PLACEHOLDER) Select the right vectorizer
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-<!-- :::caution This page is under construction.
+<!-- :::caution 本页面正在建设中。
 ::: -->
 
 This tutorial will help Weaviate users select a suitable vectorizer module for their data, available resources and use case.

@@ -1,113 +1,110 @@
 ---
-title: Example datasets
-sidebar_position: 5
 image: og/docs/more-resources.jpg
-# tags: ['example datasets']
+sidebar_position: 5
+title: Example datasets
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Multi-Modal Text/Image search using CLIP
+## 使用CLIP进行多模态文本/图像搜索
 
-This example application spins up a Weaviate instance using the
-[multi2vec-clip](/developers/weaviate/modules/retriever-vectorizer-modules/multi2vec-clip.md)
-module, imports a few sample images (you can add your own images, too!) and
-provides a very simple search frontend in [React](https://reactjs.org/) using
-the [TypeScript/JavaScript](/developers/weaviate/client-libraries/typescript.mdx) client.
+这个示例应用程序使用[multi2vec-clip](/developers/weaviate/modules/retriever-vectorizer-modules/multi2vec-clip.md)模块启动了一个Weaviate实例，导入了一些示例图像（您也可以添加自己的图像！），并使用[React](https://reactjs.org/)提供了一个非常简单的搜索前端界面。
+[TypeScript/JavaScript](/developers/weaviate/client-libraries/typescript.mdx) 客户端。
 
-[Get started here](https://github.com/weaviate/weaviate-examples/blob/main/clip-multi-modal-text-image-search/README.md)
+[在此开始](https://github.com/weaviate/weaviate-examples/blob/main/clip-multi-modal-text-image-search/README.md)
 
-## Semantic Search through Wikipedia
+## 通过维基百科进行语义搜索
 
-We imported the complete English language Wikipedia article dataset into a single Weaviate instance to conduct semantic search queries through the Wikipedia articles, besides this, we've made all the graph relations between the articles too. We have made the import scripts, pre-processed articles, and backup available so that you can run the complete setup yourself.
+我们将完整的英文维基百科文章数据集导入到一个 Weaviate 实例中，以便通过维基百科文章进行语义搜索查询，此外，我们还建立了所有文章之间的图形关系。我们提供了导入脚本、预处理文章和备份，以便您可以自己运行完整的设置。
 
-[Get started here](https://github.com/weaviate/semantic-search-through-Wikipedia-with-Weaviate)
+[在这里开始](https://github.com/weaviate/semantic-search-through-Wikipedia-with-Weaviate)
 
-## Meta AI Research - Biggraph on Wikidata
+## Meta AI Research - 在Wikidata上的大图
 
-We have imported the complete Wikidata PBG model into a Weaviate to search through the entire dataset in < 50 milliseconds (excluding internet latency). The demo GraphQL queries contain both pure vector search and scalar and vector searched mixed queries.
+我们已经将完整的Wikidata PBG模型导入到Weaviate中，以在小于50毫秒（不包括网络延迟）的时间内搜索整个数据集。演示的GraphQL查询包含纯向量搜索和标量与向量混合查询。
 
-[Get started here](https://github.com/weaviate/biggraph-wikidata-search-with-weaviate)
+[在这里开始](https://github.com/weaviate/biggraph-wikidata-search-with-weaviate)
 
-## News publications
+## 新闻发布
 
-This dataset contains +/- 1000 random news articles from; Financial Times, New York Times, Guardian, Wallstreet Journal, CNN, Fox News, The Economist, New Yorker, Wired, Vogue, Game Informer.
+该数据集包含来自以下媒体的大约1000篇随机新闻文章：《金融时报》、《纽约时报》、《卫报》、《华尔街日报》、CNN、福克斯新闻、《经济学人》、《纽约客》、《连线》、《时尚》、《游戏资讯》。
 
-It includes a [schema](../tutorials/schema.md) with classes for `Article`, `Publication`, `Category` and `Author`.
+它包括一个带有`Article`、`Publication`、`Category`和`Author`类的[模式](../tutorials/schema.md)。
 
-### Run with Docker Compose
+### 使用Docker Compose运行
 
-If you want to run this dataset locally, you can run it in one go with Docker Compose.
+如果您想在本地运行这个数据集，可以使用Docker Compose一键运行。
 
-You can run this demo dataset with any `text2vec` module. Examples:
+您可以使用任何`text2vec`模块来运行这个演示数据集。示例：
 
 #### Text2vec-contextionary
 
-The Docker Compose file contains both Weaviate with the `text2vec-contextionary` module and the dataset.
+Docker Compose文件包含了Weaviate和`text2vec-contextionary`模块以及数据集。
 
-Download the Docker Compose file
+下载Docker Compose文件
 
 ```bash
 $ curl -o docker-compose.yml https://raw.githubusercontent.com/weaviate/weaviate-examples/main/weaviate-contextionary-newspublications/docker-compose.yaml
 ```
 
-Run Docker (optional: run with `-d` to run Docker in the background)
+运行Docker（可选：使用`-d`后台运行Docker）
 
 ```bash
 $ docker-compose up
 ```
 
-Weaviate will be available and preloaded with the News Articles demo dataset on:
+Weaviate将在以下位置提供并预加载新闻文章演示数据集：
 
 - `http://localhost:8080/`
-- [Via the Console](https://console.weaviate.io): connect to `https://demo.dataset.playground.semi.technology`.
+- [通过控制台](https://console.weaviate.io)：连接到`https://demo.dataset.playground.semi.technology`。
 
-#### Text2vec-transformers (without GPU)
+#### Text2vec-transformers（无GPU）
 
-The Docker Compose file contains both Weaviate with the `text2vec-contextionary` module, `NER` module, `Q&A` module and `spellcheck` module, and the dataset.
+Docker Compose文件包含Weaviate与`text2vec-contextionary`模块、`NER`模块、`Q&A`模块和`spellcheck`模块以及数据集。
 
-Download the Docker Compose file
+下载Docker Compose文件
 
 ```bash
 $ curl -o docker-compose.yml https://raw.githubusercontent.com/weaviate/weaviate-examples/main/weaviate-transformers-newspublications/docker-compose.yaml
 ```
 
-Run Docker (optional: run with `-d` to run Docker in the background)
+运行Docker（可选：使用`-d`参数在后台运行Docker）
 
 ```bash
 $ docker-compose up
 ```
 
-Weaviate will be available and preloaded with the News Articles demo dataset on:
+Weaviate将在以下地址上可用，并预加载了新闻文章演示数据集：
 
 - `http://localhost:8080/`
-- [Via the Console](https://console.weaviate.io): connect to `https://demo.dataset.playground.semi.technology`.
+- [通过控制台](https://console.weaviate.io)：连接到`https://demo.dataset.playground.semi.technology`。
 
-#### Text2vec-transformers (with GPU enabled)
+#### Text2vec-transformers（启用了GPU）
 
-The Docker Compose file contains both Weaviate with the `text2vec-contextionary` module, `NER` module, `Q&A` module and `spellcheck` module, and the dataset. GPU should be available on your machine when running this configuration.
+Docker Compose文件包含了Weaviate和`text2vec-contextionary`模块、`NER`模块、`Q&A`模块和`spellcheck`模块，以及数据集。在运行此配置时，您的机器上应该有GPU可用。
 
-Download the Docker Compose file
+下载Docker Compose文件
 
 ```bash
 $ curl -o docker-compose.yml https://raw.githubusercontent.com/weaviate/weaviate-examples/main/weaviate-transformers-newspublications/docker-compose-gpu.yaml
 ```
 
-Run Docker (optional: run with `-d` to run Docker in the background)
+运行Docker（可选：使用`-d`选项在后台运行Docker）
 
 ```bash
 $ docker-compose up
 ```
 
-Weaviate will be available and preloaded with the News Articles demo dataset on:
+Weaviate将在以下地址上可用，并预装有新闻文章演示数据集：
 
 - `http://localhost:8080/`
-- [Via the Console](https://console.weaviate.io): connect to `https://demo.dataset.playground.semi.technology`.
+- [通过控制台](https://console.weaviate.io)：连接到`https://demo.dataset.playground.semi.technology`。
 
-### Run manually
+### 手动运行
 
-If you have your own version of Weaviate running on an **external** host or localhost **without** Docker Compose;
+如果您有自己的Weaviate版本运行在**外部**主机或无Docker Compose的本地主机上；
 
 ```bash
 # WEAVIATE ORIGIN (e.g., https://foobar.weaviate.network), note paragraph basics for setting the local IP
@@ -121,9 +118,9 @@ $ docker run -it -e weaviate_host=$WEAVIATE_ORIGIN -e cache_dir-$CACHE_DIR -e ba
 
 ```
 
-Usage with Docker on **local with** Docker Compose;
+使用 Docker 在本地使用 Docker Compose；
 
-_Note: run this from the same directory where the Weaviate Docker Compose files are located_
+_注意：请在 Weaviate Docker Compose 文件所在的目录中运行此命令_
 
 {% raw %}
 ```bash
@@ -142,7 +139,7 @@ $ docker run -it --network=$WEAVIATE_NETWORK -e weaviate_host=$WEAVIATE_ORIGIN -
 ```
 {% endraw %}
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

@@ -1,17 +1,17 @@
 ---
-title: Modules
-sidebar_position: 15
 image: og/docs/concepts.jpg
-# tags: ['modules']
+sidebar_position: 15
+title: Modules
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-<!-- :::caution Migrated From:
-- Combines theoretical explanations from `Configuration/Modules` + `Modules/Index`. e.g.:
-  - `Introduction` is from `Configuration/Modules`
-  - `Vectorization modules (Dense Retriever modules)` is from `Modules/Index`
+<!-- :::caution 迁移自：
+- 将`Configuration/Modules`和`Modules/Index`中的理论解释结合在一起。例如：
+  - `Introduction`来自`Configuration/Modules`
+  - `Vectorization modules (Dense Retriever modules)`来自`Modules/Index` -->
 ::: -->
 
 ## Overview
@@ -19,8 +19,8 @@ import Badges from '/_includes/badges.mdx';
 This page explains what modules are, and what purpose they serve in Weaviate.
 
 :::info Related pages
-- [Configuration: Modules](../configuration/modules.md)
-- [References: Modules](../modules/index.md)
+- [配置：模块](../configuration/modules.md)
+- [参考：模块](../modules/index.md)
 :::
 
 ## Introduction

@@ -1,49 +1,49 @@
 ---
-title: Load data into Weaviate with Spark
-sidebar_position: 80
 image: og/docs/tutorials.jpg
-# tags: ['how to', 'spark connector', 'spark']
+sidebar_position: 80
+title: Load data into Weaviate with Spark
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-This tutorial is designed to show you an example of how to use the [Spark Connector](https://github.com/weaviate/spark-connector) to import data into Weaviate from Spark.
+本教程旨在向您展示如何使用[Spark Connector](https://github.com/weaviate/spark-connector)从Spark导入数据到Weaviate。
 
-By the end of this tutorial, you'll be able to see how to you can import your data into [Apache Spark](https://spark.apache.org/) and then use the Spark Connector to write your data to Weaviate.
+通过本教程的学习，您将学会如何将数据导入到[Apache Spark](https://spark.apache.org/)中，并使用Spark Connector将数据写入Weaviate。
 
-## Installation
+## 安装
 
-We recommend reading the [Quickstart tutorial](../quickstart/index.md) first before tackling this tutorial.
+我们建议在继续阅读本教程之前，先阅读[快速上手教程](../quickstart/index.md)。
 
-We will install the python `weaviate-client` and also run Spark locally for which we need to install the python `pyspark` package. Use the following command in your terminal to get both:
+我们将安装Python的`weaviate-client`库，并在本地运行Spark，因此需要安装Python的`pyspark`包。请在终端中使用以下命令获取这两个包：
 ```bash
 pip3 install pyspark weaviate-client
 ```
 
-For demonstration purposes this tutorial runs Spark locally. Please see the Apache Spark docs or consult your cloud environment for installation and deploying a Spark cluster and choosing a language runtime other than Python.
+为了演示目的，本教程在本地运行Spark。请参阅Apache Spark文档或咨询您的云环境，以安装和部署Spark集群，并选择除Python之外的语言运行时。
 
-We will also need the Weaviate Spark connector. You can download this by running the following command in your terminal:
+我们还需要Weaviate Spark连接器。您可以通过在终端中运行以下命令来下载它:
 
 ```bash
 curl https://github.com/weaviate/spark-connector/releases/download/v||site.spark_connector_version||/spark-connector-assembly-||site.spark_connector_version||.jar --output spark-connector-assembly-||site.spark_connector_version||.jar
 ```
 
-For this tutorial, you will also need a Weaviate instance running at `http://localhost:8080`. This instance does not need to have any modules and can be setup by following the [Quickstart tutorial](../quickstart/index.md).
+对于本教程，您还需要在`http://localhost:8080`上运行一个Weaviate实例。该实例不需要安装任何模块，可以通过按照[快速入门教程](../quickstart/index.md)进行设置。
 
-You will also need Java 8+ and Scala 2.12 installed. You can get these separately setup or a more convenient way to get both of these set up is to install [IntelliJ](https://www.jetbrains.com/idea/).
+您还需要安装Java 8+和Scala 2.12。您可以单独设置它们，或者更方便的方法是安装[IntelliJ](https://www.jetbrains.com/idea/)，以同时设置这两个。
 
-## What is the Spark connector?
+## 什么是Spark连接器？
 
-The Spark Connector gives you the ability to easily write data from Spark data structures into Weaviate. This is quite useful when used in conjunction with Spark extract, transform, load (ETLs) processes to populate a Weaviate vector database.
+Spark连接器使您能够轻松将Spark数据结构中的数据写入Weaviate。当与Spark提取、转换、加载（ETL）过程一起使用时，这非常有用，可以用来填充Weaviate向量数据库。
 
-The Spark Connector is able to automatically infer the correct Spark DataType based on your schema for the class in Weaviate. You can choose to vectorize your data when writing to Weaviate, or if you already have vectors available, you can supply them. By default, the Weaviate client will create document IDs for you for new documents but if you already have IDs you can also supply those in the dataframe. All of this and more can be specified as options in the Spark Connector.
+Spark连接器能够根据Weaviate中的类的模式自动推断出正确的Spark数据类型。在将数据写入Weaviate时，您可以选择将其向量化，或者如果已经有向量可用，则可以提供它们。默认情况下，Weaviate客户端会为新文档创建文档ID，但如果您已经有ID，也可以在数据帧中提供它们。所有这些都可以作为Spark连接器中的选项进行指定。
 
-## Initializing a Spark session
+## 初始化Spark会话
 
-The code below will create a Spark Session using the libraries mentioned above.
+下面的代码将使用上述提到的库创建一个Spark会话。
 
 ```python
 from pyspark.sql import SparkSession
@@ -62,50 +62,50 @@ spark = (
 spark.sparkContext.setLogLevel("WARN")
 ```
 
-You should now have a Spark Session created and will be able to view it using the **Spark UI** at `http://localhost:4040`.
+您现在应该已经创建了一个Spark Session，并且可以在`http://localhost:4040`上使用**Spark UI**查看它。
 
-You can also verify the local Spark Session is running by executing:
+您还可以通过执行以下命令来验证本地Spark Session是否正在运行:
 
 ```python
 spark
 ```
 
-## Reading data into Spark
+## 读取数据到Spark
 
-For this tutorial we will read in a subset of the Sphere dataset, containing 100k lines, into the Spark Session that was just started.
+在本教程中，我们将读取一个包含100,000行的Sphere数据集的子集到刚刚启动的Spark会话中。
 
-You can download this dataset from [here](https://storage.googleapis.com/sphere-demo/sphere.100k.jsonl.tar.gz). Once downloaded extract the dataset.
+您可以从[这里](https://storage.googleapis.com/sphere-demo/sphere.100k.jsonl.tar.gz)下载此数据集。下载完成后，请解压缩数据集。
 
-The following line of code can be used to read the dataset into your Spark Session:
+以下代码可用于将数据集读取到您的Spark会话中：
 
 ```python
 df = spark.read.load("sphere.100k.jsonl", format="json")
 ```
 
-To verify this is done correctly we can have a look at the first few records:
+为了验证是否正确完成，我们可以查看前几条记录：
 
 ```python
 df.limit(3).toPandas().head()
 ```
 
-## Writing to Weaviate
+## 写入 Weaviate
 
 :::tip
 Prior to this step, make sure your Weaviate instance is running at `http://localhost:8080`. You can refer to the [Quickstart tutorial](../quickstart/index.md) for instructions on how to set that up.
 :::
 
-To quickly get a Weaviate instance running you can run the line of code below to get a docker file:
+要快速启动一个Weaviate实例，您可以运行下面的代码行来获取一个Docker文件：
 
 ```bash
 curl -o docker-compose.yml "https://configuration.weaviate.io/v2/docker-compose/docker-compose.yml?modules=standalone&runtime=docker-compose&weaviate_version=v||site.weaviate_version||"
 ```
 
-Once you have the file you can spin up the `docker-compose.yml` using:
+一旦您拥有该文件，您可以使用以下命令启动 `docker-compose.yml`:
 ```bash
 docker compose up -d
 ```
 
-The Spark Connector assumes that a schema has already been created in Weaviate. For this reason we will use the Python client to create this schema. For more information on how we create the schema see this [tutorial](./schema.md).
+Spark连接器假设在Weaviate中已经创建了模式。因此，我们将使用Python客户端来创建此模式。有关如何创建模式的更多信息，请参阅此[教程](./schema.md)。
 
 ```python
 import weaviate
@@ -139,7 +139,7 @@ client.schema.create_class(
 )
 ```
 
-Next we will write the Spark dataframe to Weaviate. The `.limit(1500)` could be removed to load the full dataset.
+接下来，我们将Spark DataFrame写入到Weaviate。`.limit(1500)`可以被移除以加载完整的数据集。
 
 ```python
 df.limit(1500).withColumnRenamed("id", "uuid").write.format("io.weaviate.spark.Weaviate") \
@@ -152,29 +152,29 @@ df.limit(1500).withColumnRenamed("id", "uuid").write.format("io.weaviate.spark.W
     .mode("append").save()
 ```
 
-## Spark connector options
+## Spark连接器选项
 
-Let's examine the code above to understand exactly what's happening and all the settings for the Spark Connector.
+让我们来看一下上面的代码，以了解发生了什么以及Spark连接器的所有设置。
 
-- Using `.option("host", "localhost:8080")` we specify the Weaviate instance we want to write to
+- 使用`.option("host", "localhost:8080")`，我们指定要写入的Weaviate实例
 
-- Using `.option("className", "Sphere")` we ensure that the data is written to the class we just created.
+- 使用`.option("className", "Sphere")`，我们确保数据写入到刚刚创建的类中。
 
-- Since we already have document IDs in our dataframe, we can supply those for use in Weaviate by renaming the column that is storing them to `uuid` using `.withColumnRenamed("id", "uuid")` followed by the `.option("id", "uuid")`.
+- 由于我们的数据框中已经有文档ID，我们可以通过使用`.withColumnRenamed("id", "uuid")`将存储文档ID的列重命名为`uuid`，然后使用`.option("id", "uuid")`传递给Weaviate。
 
-- Using `.option("vector", "vector")` we can specify for Weaviate to use the vectors stored in our dataframe under the column named `vector` instead of re-vectorizing the data from scratch.
+- 使用`.option("vector", "vector")`，我们可以指定Weaviate使用存储在我们的数据框中名为`vector`的列中的向量，而不是重新进行向量化处理。
 
-- Using `.option("batchSize", 200)` we specify how to batch the data when writing to Weaviate. Aside from batching operations, streaming is also allowed.
+- 使用 `.option("batchSize", 200)` 我们可以指定在写入到 Weaviate 时如何对数据进行分批处理。除了批处理操作，还可以进行流处理。
 
-- Using `.mode("append")` we specify the write mode as `append`. Currently only the append write mode is supported.
+- 使用 `.mode("append")` 我们指定写入模式为 `append`。目前仅支持追加写入模式。
 
-By now we've written our data to Weaviate, and we understand the capabilities of the Spark connector and its settings. As a last step, we can query the data via the Python client to confirm that the data has been loaded.
+现在我们已经将数据写入到 Weaviate，并且了解了 Spark 连接器及其设置的功能。作为最后一步，我们可以通过 Python 客户端查询数据，以确认数据已加载。
 
 ```python
 client.query.get("Sphere", "title").do()
 ```
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

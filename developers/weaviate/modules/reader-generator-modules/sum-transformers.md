@@ -1,50 +1,50 @@
 ---
-title: Summarization
-sidebar_position: 80
 image: og/docs/modules/sum-transformers.jpg
-# tags: ['transformers']
+sidebar_position: 80
+title: Summarization
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## In short
+## 简而言之
 
-* The Summarization (`sum-transformers`) module is a Weaviate module that summarizes whole paragraphs into a short text.
-* The module containerizes a summarization-focussed transformers model for Weaviate to connect to. We make pre-built models available here, but you can also attach another transformer model from Hugging Face or even a custom model.
-* The module adds a `summary {}` filter to the GraphQL `_additional {}` field.
-* The module returns the results in the GraphQL `_additional { summary {} }` field.
+* 摘要（`sum-transformers`）模块是一个 Weaviate 模块，用于将整个段落摘要成短文本。
+* 该模块将一个专注于摘要的 transformers 模型容器化，以供 Weaviate 连接使用。我们在这里提供了预构建的模型，但您也可以连接来自 Hugging Face 的其他 transformer 模型，甚至是自定义模型。
+* 该模块在GraphQL的`_additional{}`字段中添加了一个`summary{}`过滤器。
+* 该模块将结果返回到GraphQL的`_additional{ summary{} }`字段中。
 
-## Introduction
+## 简介
 
-As the name indicates, the summarization module can produce a summary of Weaviate text objects at query time.
+正如名称所示，摘要模块可以在查询时生成Weaviate文本对象的摘要。
 
-**For example**, it allows us to run a query on our data in Weaviate, which can take a text like this:
+**例如**，它允许我们在Weaviate中对我们的数据运行查询，可以使用以下文本：
 
-> <em>"The tower is 324 metres (1,063 ft) tall, about the same height as an 81-storey building, and the tallest structure in Paris. Its base is square, measuring 125 metres (410 ft) on each side. During its construction, the Eiffel Tower surpassed the Washington Monument to become the tallest man-made structure in the world, a title it held for 41 years until the Chrysler Building in New York City was finished in 1930. It was the first structure to reach a height of 300 metres. Due to the addition of a broadcasting aerial at the top of the tower in 1957, it is now taller than the Chrysler Building by 5.2 metres (17 ft). Excluding transmitters, the Eiffel Tower is the second tallest free-standing structure in France after the Millau Viaduct."</em>
+> <em>"这座塔高324米（1,063英尺），与一座81层楼高的建筑物相同高度，是巴黎最高的建筑物。它的底座呈正方形，每边长125米（410英尺）。在建造期间，埃菲尔铁塔超过了华盛顿纪念碑，成为世界上最高的人造结构，这个头衔保持了41年，直到1930年纽约的克莱斯勒大厦竣工。它是第一个达到300米高度的建筑物。由于1957年在塔顶增设了一个广播天线，它现在比克莱斯勒大厦高出5.2米（17英尺）。除了发射器，埃菲尔铁塔是法国第二高的独立支撑结构，仅次于米洛高架桥。"</em>
 
-and transform it to a short sentence like this:
+并将其转换为一个类似这样的简短句子：
 
-> <em>"The Eiffel Tower is a landmark in Paris, France."</em>
+> <em>“埃菲尔铁塔是法国巴黎的地标。”</em>
 
 :::note GPUs preferred
 For maximum performance of your queries, transformer-based models should run with GPUs.
 CPUs can be used, however, this will significantly slow down your queries.
 :::
 
-### Available modules
+### 可用模块
 
-Here is the current list of available `SUM` modules - sourced from [Hugging Face](https://huggingface.co/):
+以下是当前可用的`SUM`模块列表 - 来自[Hugging Face](https://huggingface.co/)：
 * [`bart-large-cnn`](https://huggingface.co/facebook/bart-large-cnn)
 * [`pegasus-xsum`](https://huggingface.co/google/pegasus-xsum)
 
-## How to enable (module configuration)
+## 如何启用（模块配置）
 
 ### Docker-compose
 
-The `sum-transformers` module can be added as a service to the Docker-compose file. You must have a text vectorizer like `text2vec-contextionary` or `text2vec-transformers` running.
+`sum-transformers`模块可以作为一个服务添加到Docker-compose文件中。您必须运行一个文本向量化器，例如`text2vec-contextionary`或`text2vec-transformers`。
 
-An example Docker-compose file for using the `sum-transformers` module (with the `facebook-bart-large-cnn` model) in combination with the `text2vec-contextionary` vectorizer module is below:
+以下是一个示例的Docker-compose文件，使用`sum-transformers`模块（使用`facebook-bart-large-cnn`模型）与`text2vec-contextionary`向量化器模块结合使用的情况：
 
 ```yaml
 ---
@@ -87,34 +87,33 @@ services:
 ...
 ```
 
-Variable explanations:
-* `SUM_INFERENCE_API`: where the summarization module is running
+变量解释：
+* `SUM_INFERENCE_API`：摘要模块运行的位置
 
-## How to use (GraphQL)
+## 如何使用（GraphQL）
 
-To make use of the modules capabilities, extend your query with the following new `_additional` property:
+为了利用模块的功能，可以在查询中扩展以下新的 `_additional` 属性：
 
-### GraphQL Token
+### GraphQL 令牌
 
-This module adds a search filter to the GraphQL `_additional` field in queries: `summary{}`. This new filter takes the following arguments:
+该模块在 GraphQL 查询的 `_additional` 字段中添加了一个搜索过滤器：`summary{}`。这个新的过滤器接受以下参数：
 
-| Field 	| Data Type 	| Required 	| Example value 	| Description 	|
-|-	|-	|-	|-	|-	|
-| `properties` 	| list of strings 	| yes 	| `["description"]` 	| The properties of the queries Class which contains text (`text` or `string` Datatype). You must provide at least one property	|
+| 字段 | 数据类型 | 是否必需 | 示例值 | 描述 |
+| `properties` | 字符串列表 | 是 | `["description"]` | 查询类的属性，其中包含文本（`text`或`string`数据类型）。您必须提供至少一个属性。|
 
-### Example query
+### 查询示例
 
 import CodeSumTransformer from '/_includes/code/sum-transformers-module.mdx';
 
 <CodeSumTransformer />
 
-### GraphQL response
+### GraphQL响应
 
-The answer is contained in a new GraphQL `_additional` property called `summary`, which returns a list of tokens. It contains the following fields:
-* `property` (`string`): The property that was summarized – this is useful when you summarize more than one property
-* `result` (`string`): The output summary
+答案包含在一个名为`summary`的新的GraphQL `_additional`属性中，它返回一个令牌列表。它包含以下字段：
+* `property` (`string`): 被总结的属性 - 当您总结多个属性时，这非常有用
+* `result` (`string`): 输出的总结
 
-### Example response
+### 示例响应
 
 ```json
 {
@@ -139,48 +138,47 @@ The answer is contained in a new GraphQL `_additional` property called `summary`
 }
 ```
 
-## Use another Summarization module from Hugging Face
+## 使用Hugging Face的另一个摘要模块
 
-You can build a Docker image which supports any summarization model from the [Hugging Face Model Hub](https://huggingface.co/models?pipeline_tag=summarization) with a two-line Dockerfile. In the following example, we are going to build a custom image for the [`google/pegasus-pubmed` model](https://huggingface.co/google/pegasus-pubmed).
+您可以使用两行Dockerfile构建一个支持[Hugging Face Model Hub](https://huggingface.co/models?pipeline_tag=summarization)中任何摘要模型的Docker映像。在以下示例中，我们将构建一个自定义映像，用于[`google/pegasus-pubmed`模型](https://huggingface.co/google/pegasus-pubmed)。
 
-#### Step 1: Create a `Dockerfile`
+#### 步骤1：创建`Dockerfile`
 
-Create a new `Dockerfile`. We will name it `my-model.Dockerfile`. Add the following lines to it:
+创建一个新的 `Dockerfile`。我们将其命名为 `my-model.Dockerfile`。将以下行添加到其中：
 ```
 FROM semitechnologies/sum-transformers:custom
 RUN chmod +x ./download.py
 RUN MODEL_NAME=google/pegasus-pubmed ./download.py
 ```
 
-#### Step 2: Build and tag your Dockerfile.
+#### 第2步：构建和标记您的Dockerfile。
 
-We will tag our Dockerfile as `google-pegasus-pubmed`:
+我们将把Dockerfile标记为`google-pegasus-pubmed`：
 ```
 docker build -f my-model.Dockerfile -t google-pegasus-pubmed .
 ```
 
-#### Step 3: Use the image with Weaviate
+#### 第三步：在Weaviate中使用图像
 
-You can now push your image to your favorite registry or reference it locally in your Weaviate `docker-compose.yaml` using the Docker tag `google-pegasus-pubmed`.
+您现在可以将图像推送到您喜欢的注册表，或者在您的Weaviate `docker-compose.yaml`中使用Docker标签`google-pegasus-pubmed`本地引用它。
 
+## 工作原理（在幕后）
 
-## How it works (under the hood)
-
-The `sum-transformers` module uses transformer-based summarizer models. They are abstractive, in that they generate new text from the input text, rather than to extract particular sentences. For example, a model may take text like this:
+`sum-transformers`模块使用基于transformer的摘要模型。它们是生成式的，即从输入文本中生成新的文本，而不是提取特定的句子。例如，模型可以接收这样的文本：
 
 <details>
-  <summary>See original text</summary>
+  <summary>查看原始文本</summary>
 
-> *The Loch Ness Monster (Scottish Gaelic: Uilebheist Loch Nis), affectionately known as Nessie, is a creature in Scottish folklore that is said to inhabit Loch Ness in the Scottish Highlands. It is often described as large, long-necked, and with one or more humps protruding from the water. Popular interest and belief in the creature has varied since it was brought to worldwide attention in 1933. Evidence of its existence is anecdotal, with a number of disputed photographs and sonar readings.*
-> *The scientific community explains alleged sightings of the Loch Ness Monster as hoaxes, wishful thinking, and the misidentification of mundane objects. The pseudoscience and subculture of cryptozoology has placed particular emphasis on the creature.*
+> *尼斯湖水怪（苏格兰盖尔语：Uilebheist Loch Nis），亲切地被称为尼西，是苏格兰民间传说中栖息在苏格兰高地尼斯湖的一种生物。它常被描述为体型庞大、长脖子，并且从水中突出一个或多个隆起。自从1933年引起全球关注以来，对这一生物的兴趣和信仰一直有所不同。对其存在的证据是凭证性的，包括一些有争议的照片和声纳读数。*
+> *科学界将所谓的尼斯湖水怪目击事件解释为恶作剧、一厢情愿的想法以及对平凡物体的误认。神秘科学和神秘动物学的亚文化对这种生物特别重视。*
 
 </details>
 
-And summarize it to produce a text like:
+并总结出一个类似的文本:
 
-> *The Loch Ness Monster is said to be a large, long-necked creature. Popular belief in the creature has varied since it was brought to worldwide attention in 1933. Evidence of its existence is disputed, with a number of disputed photographs and sonar readings. The pseudoscience and subculture of cryptozoology has placed particular emphasis on the creature.*
+> *尼斯湖水怪据说是一种又大又长脖子的生物。自1933年全球范围内引起关注以来，人们对这个生物的信仰一直不一致。关于它的存在证据存在争议，有许多有争议的照片和声纳读数。神秘科学和神秘动物学的次文化对这个生物特别重视。*
 
-Note that much of output does not copy the input verbatim, but is *based on* it. The `sum-transformers` module then delivers this output in the response.
+请注意，大部分的输出内容并非直接复制输入内容，而是基于输入内容生成的。然后，`sum-transformers` 模块将这个输出作为响应返回。
 
 :::note Input length
 Note that like many other language models, summarizer models can only process a limited amount of text. The `sum-transformers` module will be limited to the maximum length of the model it is using. For example, the `facebook/bart-large-cnn` model can only process 1024 tokens.
@@ -188,7 +186,7 @@ Note that like many other language models, summarizer models can only process a 
 On the other hand, be aware that providing an input of insufficient length and detail may cause the transformer model to [hallucinate](https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence)).
 :::
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

@@ -1,14 +1,13 @@
 ---
-title: (NEW) Hybrid Search
-sidebar_position: 4
 image: og/docs/search.jpg
-# tags: []
+sidebar_position: 4
+title: (NEW) Hybrid Search
 ---
 
-## Overview
+## 概述
 
-Learn how to perform hybrid searches using Weaviate
+了解如何使用Weaviate执行混合搜索
 
-<!-- TODO: Finish this page! -->
+<!-- TODO: 完善本页面！ -->
 :::caution This page is under construction.
 :::

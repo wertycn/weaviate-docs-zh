@@ -1,9 +1,9 @@
 ---
-title: GraphQL - Additional operators
-sidebar_position: 5
 image: og/docs/api.jpg
-# tags: ['graphql', 'additional operators']
+sidebar_position: 5
+title: GraphQL - Additional operators
 ---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBlock';
@@ -13,30 +13,30 @@ import TryEduDemo from '/_includes/try-on-edu-demo.mdx';
 
 <TryEduDemo />
 
+## 语法
 
-## Syntax
+类级别的查询可以使用额外的参数来修改，例如 `limit`、`autocut` 和 `sort`。
 
-Additional parameters such as `limit`, `autocut` and `sort` are available to modify queries at the class level.
 <!--
-For example:
+例如：
 
 import GraphQLFiltersExample from '/_includes/code/graphql.filters.example.mdx';
 
-<GraphQLFiltersExample/> -->
+<GraphQLFiltersExample/> 
+-->
 
+## Limit 参数
 
-## Limit argument
+`Get{}`、`Explore{}` 和 `Aggregate{}` 函数支持 `limit` 参数。
 
-Supported by the `Get{}`, `Explore{}` and `Aggregate{}` function.
-
-A `limit` argument limits the number of results to a specified positive integer:
+`limit` 参数可以限制结果的数量为指定的正整数：
 
 import GraphQLFiltersLimit from '/_includes/code/graphql.filters.limit.mdx';
 
 <GraphQLFiltersLimit/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 ```json
 {
@@ -66,20 +66,20 @@ import GraphQLFiltersLimit from '/_includes/code/graphql.filters.limit.mdx';
 
 </details>
 
-## Pagination with `offset`
+## 使用 `offset` 进行分页
 
-Supported by the `Get{}` and `Explore{}` functions.
+`Get{}` 和 `Explore{}` 函数支持 `offset` 参数。
 
-The `offset` parameter works in conjunction with the existing `limit` parameter. For example, to list the first ten results, set `limit: 10`. Then, to "display the second page of 10", set `offset: 10`, `limit:10` and so on. E.g. to show the 9th page of 10 results, set `offset: 80, limit: 10` to effectively display results 81-90.
+`offset` 参数与现有的 `limit` 参数配合使用。例如，要列出前十个结果，设置 `limit: 10`。然后，要"显示第二页的十个结果"，设置 `offset: 10`，`limit: 10`，依此类推。例如，要显示第9页的10个结果，设置 `offset: 80, limit: 10`，以有效地显示结果81-90。
 
-Here's an example of `limit` + `offset`:
+以下是 `limit` + `offset` 的示例：
 
 import GraphQLFiltersOffset from '/_includes/code/graphql.filters.offset.mdx';
 
 <GraphQLFiltersOffset/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 ```json
 {
@@ -109,25 +109,24 @@ import GraphQLFiltersOffset from '/_includes/code/graphql.filters.offset.mdx';
 
 </details>
 
-### Performance and resource considerations & limitations
+### 性能和资源考虑以及限制
 
-The pagination implementation is an offset-based implementation, not a cursor-based implementation. This has the following implications:
+分页实现是基于偏移量的实现，而不是基于游标的实现。这有以下几个影响：
 
-- The cost of retrieving one further page is higher than that of the last. Effectively when searching for search results 91-100, Weaviate will internally retrieve 100 search results and discard results 0-90 before serving them to the user. This effect is amplified if running in a multi-shard setup, where each shard would retrieve 100 results, then the results aggregated and ultimately cut off. So in a 10-shard setup asking for results 91-100 Weaviate will effectively have to retrieve 1000 results (100 per shard) and discard 990 of them before serving. This means, high page numbers lead to longer response times and more load on the machine/cluster.
-- Due to the increasing cost of each page outlined above, there is a limit to how many objects can be retrieved using pagination. By default setting the sum of `offset` and `limit` to higher than 10,000 objects, will lead to an error. If you must retrieve more than 10,000 objects, you can increase this limit by setting the environment variable `QUERY_MAXIMUM_RESULTS=<desired-value>`. Warning: Setting this to arbitrarily high values can make the memory consumption of a single query explode and single queries can slow down the entire cluster. We recommend setting this value to the lowest possible value that does not interfere with your users' expectations.
-- The pagination setup is not stateful. If the database state has changed between retrieving two pages there is no guarantee that your pages cover all results. If no writes happened, then pagination can be used to retrieve all possible within the maximum limit. This means asking for a single page of 10,000 objects will lead to the same results overall as asking for 100 pages of 100 results.
+- 获取下一页的成本比上一页的成本要高。实际上，在搜索结果91-100时，Weaviate会在内部检索100个搜索结果，并在向用户提供结果之前丢弃0-90的结果。如果在多分片设置下运行，这种效果会被放大，每个分片都会检索100个结果，然后对结果进行聚合并最终截断。因此，在一个10个分片的设置中，请求结果91-100的Weaviate实际上需要检索1000个结果（每个分片100个），并且在提供之前丢弃990个结果。这意味着，较高的页码会导致较长的响应时间和更多的负载对机器/集群的负荷。
+- 由于上述每页成本的增加，使用分页检索对象的数量是有限制的。默认情况下，将`offset`和`limit`的总和设置为超过10,000个对象将导致错误。如果您需要检索超过10,000个对象，可以通过设置环境变量`QUERY_MAXIMUM_RESULTS=<desired-value>`来增加此限制。警告：将此值设置为任意高值可能会导致单个查询的内存消耗急剧增加，而单个查询可能会减慢整个集群的速度。我们建议将此值设置为最低可能值，以不影响用户期望的情况下进行设置。
+- 分页设置不具备状态性。如果在检索两个页面之间数据库状态发生了变化，那么不能保证您的页面包含所有结果。如果没有进行写操作，则可以使用分页来检索最大限制内的所有可能结果。这意味着请求10,000个对象的单个页面的结果与请求100个结果的100个页面的结果是相同的。
 
+## 自动截断
 
-## Autocut
+从Weaviate `v1.20`版本开始，可以在通过`nearXXX`、`bm25`和`hybrid`操作符检索的类对象中添加`autocut`过滤器作为参数。 `autocut: <N>`，其中N是大于0的整数，限制了结果的数量，只返回到查询中距离/分数的第N个“跳跃”/“丢弃”的对象。例如，如果通过`nearText`返回的六个对象的距离是`[0.1899, 0.1901, 0.191, 0.21, 0.215, 0.23]`，那么`autocut: 1`将返回前三个对象，`autocut: 2`将返回除最后一个对象以外的所有对象，而`autocut: 3`将返回所有对象。默认情况下，禁用了Autocut，并且可以通过将其值设置为`0`或负数来明确禁用它。
 
-Starting with Weaviate `v1.20`, the `autocut` filter can be added as an argument to class objects retrieved via the `nearXXX`, `bm25` and `hybrid` operators. `autocut: <N>`, where N is an integer > 0, limits the number of results to those up to the Nth "jump"/"drop" in the distance/score from the query. For example, if the distances for six objects returned by `nearText` were `[0.1899, 0.1901, 0.191, 0.21, 0.215, 0.23]` then `autocut: 1` would return the first three objects, `autocut: 2` would return all but the last object, and `autocut: 3` would return all objects. Autocut is disabled by default, and can be disabled explicitly by setting its value to `0` or a negative number.
-
-If `autocut` is combined with `limit: N`, then `autocut`'s input will be limited to the first `N` objects.
+如果将`autocut`与`limit: N`结合使用，那么`autocut`的输入将被限制为前`N`个对象。
 
 <!-- TODO: Update with link to blog:
 For more `autocut` examples and to learn about the motivation behind this filter, see the [v1.20 release blog post](/blog). -->
 
-Autocut can be used as follows:
+可以按以下方式使用`autocut`：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -159,9 +158,9 @@ Autocut can be used as follows:
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成以下类似的响应:
 
 <FilteredTextBlock
   text={PythonCode}
@@ -172,25 +171,24 @@ It should produce a response like the one below:
 
 </details>
 
-For more client code examples for each operator category, see [autocut with similarity search](../../search/similarity.md#autocut), [autocut with `bm25`](../../search/bm25.md#autocut) and [autocut with `hybrid`](../../search/hybrid.md#autocut).
+对于每个操作符类别的更多客户端代码示例，请参阅[相似性搜索的自动切割](../../search/similarity.md#autocut)，[使用`bm25`的自动切割](../../search/bm25.md#autocut)和[使用`hybrid`的自动切割](../../search/hybrid.md#autocut)。
 
+## 使用`after`进行游标操作
 
-## Cursor with `after`
+从版本`v1.18`开始，可以使用`after`参数按顺序从Weaviate中检索类对象。这对于从Weaviate中检索整个对象集合可能很有用，例如。
 
-Starting with version `v1.18`, the `after` parameter can be used to sequentially retrieve class objects from Weaviate. This may be useful for retrieving an entire set of objects from Weaviate, for example.
+`after`参数依赖于ID的顺序。因此，它只能应用于没有任何搜索运算符的列表查询。换句话说，`after`与`where`、`near<Media>`、`bm25`、`hybrid`等不兼容。
 
-The `after` parameter relies on the order of ids. It can therefore only be applied to list queries without any search operators. In other words, `after` is not compatible with `where`, `near<Media>`, `bm25`, `hybrid`, etc.
+对于这些情况，请使用带有`offset`的分页。
 
-For those cases, use pagination with `offset`.
-
-An example of the `after` parameter usage:
+下面是`after`参数的使用示例：
 
 import GraphQLFiltersAfter from '/_includes/code/graphql.filters.after.mdx';
 
 <GraphQLFiltersAfter/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期的响应</summary>
 
 ```json
 {
@@ -240,48 +238,48 @@ The `after` cursor is available on both single-shard and multi-shard set-ups.
 :::
 
 
-## Sorting
+## 排序
 
 :::info
 Support for sorting was added in `v1.13.0`.
 :::
 
-You can sort results by any primitive property, typically a `text`, `string`, `number`, or `int` property. When a query has a natural order (e.g. because of a `near<Media>` vector search), adding a sort operator will override the order.
+您可以按任何基本属性对结果进行排序，通常是`text`、`string`、`number`或`int`属性。当查询具有自然顺序时（例如，由于`near<Media>`向量搜索），添加排序运算符将覆盖该顺序。
 
-### Cost of sorting / architecture
+### 排序的成本 / 架构
 
-Weaviate's sorting implementation is built in a way that it does not lead to massive memory spikes; it does not need to load all objects to be sorted into memory completely. Only the property value being sorted is kept in memory.
+Weaviate的排序实现方式不会导致内存占用过大；它不需要完全将所有待排序的对象加载到内存中。只有被排序的属性值被保留在内存中。
 
-As of now, Weaviate does not have any data structures on disk specific to sorting, such as a column-oriented storage mechanism. As a result when an object should be sorted, the whole object is identified on disk and the relevant property extracted. This works reasonably well for small scales (100s of thousand or millions), but comes with a high cost at large lists of objects to be sorted (100s of millions, billions).  A column-oriented storage mechanism may be introduced in the future to  overcome this performance limitation.
+截至目前，Weaviate在磁盘上没有针对排序的特定数据结构，例如列式存储机制。因此，当一个对象需要排序时，整个对象会被在磁盘上进行识别，并提取相关属性。这在小规模的情况下效果还不错（数十万或数百万），但在需要对大量对象进行排序（数亿）时，代价非常高。未来可能会引入列式存储机制，以克服这种性能限制。
 
-### Sorting decisions
+### 排序决策
 
-#### booleans order
-`false` is considered smaller than `true`. `false` comes before `true` in ascending order and after `true` in descending order.
+#### 布尔值排序
+`false` 被认为比 `true` 小。在升序中，`false` 排在 `true` 之前，在降序中排在 `true` 之后。
 
-#### nulls order
-`null` values are considered smaller than any non-`null` values. `null` values come first in ascending order and last in descending order.
+#### 空值排序
+`null` 值被认为比任何非 `null` 值小。在升序中，`null` 值排在最前面，在降序中排在最后面。
 
-#### arrays order
-Arrays are compared by each element separately. Elements at the same position are compared to each other, starting from the beginning of an array. First element smaller than its counterpart makes whole array smaller.
+#### 数组排序
+数组通过逐个元素进行比较。同一位置上的元素相互比较，从数组的开头开始。第一个元素小于其对应元素会使整个数组变小。
 
-Arrays are equal if they have the same size and all elements are equal. If array is subset of other array it is considered smaller.
+如果两个数组大小相同且所有元素都相等，则认为它们相等。如果一个数组是另一个数组的子集，则认为它比较小。
 
-Examples:
+示例：
 - `[1, 2, 3] = [1, 2, 3]`
 - `[1, 2, 4] < [1, 3, 4]`
 - `[2, 2] > [1, 2, 3, 4]`
 - `[1, 2, 3] < [1, 2, 3, 4]`
 
-### Sorting API
+### 排序 API
 
 import GraphQLGetSorting from '/_includes/code/graphql.get.sorting.mdx';
 
-### Additional properties
+### 附加属性
 
-Sometimes sorting by an additional property is required, such as `id`, `creationTimeUnix`, or `lastUpdateTimeUnix`.  This can be achieved by prefixing the property name with an underscore.
+有时需要按照其他属性进行排序，例如 `id`、`creationTimeUnix` 或 `lastUpdateTimeUnix`。可以通过在属性名前加下划线来实现这一点。
 
-For example:
+例如：
 ```graphql
 {
   Get {
@@ -295,7 +293,7 @@ For example:
 <GraphQLGetSorting/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>期望的响应</summary>
 
 ```json
 {
@@ -321,7 +319,7 @@ For example:
 
 </details>
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

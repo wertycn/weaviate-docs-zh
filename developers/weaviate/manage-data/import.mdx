@@ -1,8 +1,7 @@
 ---
-title: (Batch) Import items
-sidebar_position: 15
 image: og/docs/howto.jpg
-# tags: ['how-to', 'import']
+sidebar_position: 15
+title: (Batch) Import items
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,11 +10,11 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PythonCode from '!!raw-loader!/_includes/code/howto/manage-data.import.py';
 import TSCode from '!!raw-loader!/_includes/code/howto/manage-data.import.ts';
 
-## Overview
+## 概览
 
-This page shows how to efficiently add data objects and cross-references to Weaviate. We will collectively refer to these as "items".
+本页面展示了如何高效地向Weaviate添加数据对象和交叉引用。我们将统称这些为"items"。
 
-We suggest you use [batch imports](../tutorials/import.md#to-batch-or-not-to-batch) unless you have a specific reason not to. A batch import [drastically improves](../api/rest/objects.md#objects-vs-batch) import speed by processing multiple items per request, and clients can parallelize requests.
+我们建议您使用[批量导入](../tutorials/import.md#to-batch-or-not-to-batch)，除非您有特定的理由不这样做。批量导入通过处理每个请求中的多个项目，显著提高了导入速度，而且客户端可以并行处理请求。
 
 :::info See also
 - [How-to: Create objects](./create.mdx)
@@ -23,23 +22,23 @@ We suggest you use [batch imports](../tutorials/import.md#to-batch-or-not-to-bat
 :::
 
 
-## Requirements
+## 需求
 
-To import items in batches using a Weaviate client,
-1. Initialize a batcher,
-1. For each source data row:
-   * Build an item (object or cross-reference) for Weaviate,
-   * Specify the class to add to, and
-   * Add it to the batcher.
-1. Ensure that the batches are flushed (some clients require manual flushing).
-1. (If multi-tenancy is enabled) Specify the tenant name.
+要使用Weaviate客户端批量导入项目，需要进行以下步骤：
+1. 初始化一个批处理器。
+2. 对于每个源数据行：
+   * 构建一个适用于Weaviate的项目（对象或交叉引用）。
+   * 指定要添加到的类别。
+   * 将其添加到批处理器中。
+3. 确保批次被刷新（某些客户端可能需要手动刷新）。
+4. （如果启用了多租户）指定租户名称。
 
-Depending on the client, additional settings or auto-flushing of batches may be available.
+根据客户端的不同，可能还提供了其他设置或批次的自动刷新功能。
 
 
-## Basic batch import example
+## 基本批量导入示例
 
-The following example will add objects to `YourClassName` class using a batch import.
+以下示例将使用批量导入功能向`YourClassName`类添加对象。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -70,13 +69,13 @@ In this example, if the class `YourClassName` does not already exist, it will be
 :::
 
 
-## Optional object parameters
+## 可选的对象参数
 
-The following apply to objects only (not to cross-references).
+以下仅适用于对象（而不是交叉引用）。
 
 ### `id`
 
-You can optionally specify an ID in [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) format. Otherwise, Weaviate will generate a random UUID.
+您可以选择以 [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) 格式指定一个ID。否则，Weaviate 将生成一个随机的 UUID。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -105,7 +104,7 @@ You can optionally specify an ID in [UUID](https://en.wikipedia.org/wiki/Univers
 
 ### `vector`
 
-You can optionally specify a vector to represent each object. Otherwise, Weaviate will follow the relevant vectorizer setting.
+您可以选择指定一个向量来表示每个对象。否则，Weaviate将遵循相关的向量化设置。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -133,23 +132,23 @@ You can optionally specify a vector to represent each object. Otherwise, Weaviat
 </Tabs>
 
 
-## Batch parameters - Python client
+## 批量参数 - Python客户端
 
-### Performance parameters
+### 性能参数
 
-The following parameters will have the greatest impact on the batch import speed:
-- `batch_size` (int) - the number of items to batch before flushing
-- `num_workers` (int) - the number of parallel workers to use for the batch
-- `dynamic` (bool) - whether to dynamically adjust the `batch_size` based on the number of items in the batch
+以下参数将对批量导入速度产生最大的影响：
+- `batch_size`（整数）- 在刷新之前批处理的项目数量
+- `num_workers`（整数）- 用于批处理的并行工作进程数
+- `dynamic`（布尔值）- 是否根据批处理中的项目数量动态调整`batch_size`
 
-We recommend starting with batch sizes of 100-300 typically, and the number of workers at 1-4. The `dynamic` parameter is useful if you are not sure what the optimal batch size is.
+我们建议通常从100-300的批量大小开始，并且工作人员的数量为1-4。如果您不确定最佳批量大小，`dynamic`参数非常有用。
 
-Unless `batch_size` is set to `None`, the batch will be flushed when the number of items in the batch reaches `batch_size`.
+除非将`batch_size`设置为`None`，否则当批量中的项目数量达到`batch_size`时，批量将被刷新。
 
-Using these parameters, you can set dynamic or automatic batching:
+使用这些参数，您可以设置动态或自动批处理：
 
 <Tabs groupId="languages">
-<TabItem value="auto" label="Automatic">
+<TabItem value="auto" label="自动">
 
 ```python
 with client.batch(
@@ -161,7 +160,7 @@ with client.batch(
 ```
 
 </TabItem>
-<TabItem value="dynamic" label="Dynamic">
+<TabItem value="dynamic" label="动态">
 
 ```python
 with client.batch(
@@ -176,22 +175,22 @@ with client.batch(
 </Tabs>
 
 
-### Error handling parameters
+### 错误处理参数
 
-The following parameters will most impact error handling:
-- `timeout_retries` (int) & `connection_error_retries` (int) - Batch-level numbers of retries
-- `weaviate_error_retries` (int) - Object-level number of retries for an error originating from Weaviate (for example inference / transformer timeouts)
-- `callback` - Call a function at the end of batching - for example to inspect the response
-    - The default is `weaviate.util.check_batch_result`
+以下参数将最大程度地影响错误处理：
+- `timeout_retries`（int）和`connection_error_retries`（int）- 批处理级别的重试次数
+- `weaviate_error_retries`（int）- 源自Weaviate的错误的对象级别重试次数（例如推理/转换器超时）
+- `callback` - 在批处理结束时调用一个函数 - 例如用于检查响应
+    - 默认值为 `weaviate.util.check_batch_result`
 
-For a complete list of batch parameters and details about the types of batching, see the [Python client batching](../client-libraries/python.md#batching) section.
+有关批处理参数的完整列表以及有关批处理类型的详细信息，请参阅 [Python 客户端批处理](../client-libraries/python.md#batching) 部分。
 
 
-### How to set batch parameters
+### 如何设置批处理参数
 
-We recommend setting batch parameters via the `client.batch()` context manager, which will also automatically flush the batch when exiting.
+我们建议使用 `client.batch()` 上下文管理器来设置批处理参数，在退出时还会自动刷新批处理。
 
-The below example specifies a batch size of 200 and parallelizes the import process with 2 threads:
+下面的示例指定了批处理大小为200，并使用2个线程并行导入过程：
 
 ```python
 with client.batch(
@@ -201,35 +200,34 @@ with client.batch(
 ```
 
 
-## Batch parameters - other clients
+## 批处理参数 - 其他客户端
 
-At this point in time, the other clients do not support batch parameters, and manual flushing is required.
+目前，其他客户端不支持批处理参数，需要手动刷新。
 
+## 管理潜在的重复
 
-## Managing potential duplication
+在Weaviate中，唯一的字段是`id`。如果您尝试导入一个具有现有id的对象，Weaviate将覆盖已存在的对象。（在[单个对象创建](./create.mdx)中，如果`id`存在，Weaviate将抛出错误。）
 
-In Weaviate, the only unique field is the `id`. If you try to import an object with an existing id Weaviate will overwrite the object if one exists. (In [single-object creation](./create.mdx), Weaviate will throw an error if the `id` exists.)
+为了防止重复，我们建议：
+- 使用确定性ID生成方法。
 
-To prevent duplicates, we suggest:
-- Using a deterministic ID generation method.
+使用确定性ID，Weaviate将根据对象是否已存在，创建一个新对象或覆盖现有对象。
 
-With a deterministic ID, Weaviate will either be creating a new object or overwriting an existing one, depending on whether the object already exists.
+### 生成确定性ID
 
-### Generate deterministic ID
+您可以使用Python客户端中的[`generate_uuid5`](https://weaviate-python-client.readthedocs.io/en/stable/weaviate.util.html#weaviate.util.generate_uuid5)函数或TypeScript客户端中的`generateUuid5`函数来生成确定性ID。
 
-You can do so with the [`generate_uuid5`](https://weaviate-python-client.readthedocs.io/en/stable/weaviate.util.html#weaviate.util.generate_uuid5) function in the Python client, or the `generateUuid5` function in the TypeScript client.
+### 检查对象是否存在
 
-### Check if an object exists
-
-You can [check if an object exists](./read.mdx#check-object-existence) given its [id](../api/graphql/additional-properties.md#id).
+您可以根据对象的 [id](../api/graphql/additional-properties.md#id) 来 [检查对象是否存在](./read.mdx#check-object-existence)。
 
 :::info IDs unique to each class and tenants
 [Classes](../concepts/data.md#class-collections) and [tenants](../concepts/data.md#multi-tenancy) each work like namespaces. So, it is possible to have the same id in different classes and/or tenants.
 :::
 
-## Tip: Stream data from large files
+## 提示：从大文件中流式传输数据
 
-A good practice for importing large datasets is to stream the input file rather than risking running out of memory by loading it all at once. For Python, this can be achieved with libraries like [ijson](https://pypi.org/project/ijson/) for JSON files and [pandas for CSV files](https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html). For Node, a streams-based solution is presented below.
+导入大型数据集的一个好的实践是使用流式传输输入文件，而不是一次性加载整个文件，以防止内存耗尽。对于Python，可以使用诸如 [ijson](https://pypi.org/project/ijson/)（用于JSON文件）和 [pandas](https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html)（用于CSV文件）之类的库来实现。对于Node.js，下面介绍了一种基于流的解决方案。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python - JSON">
@@ -241,8 +239,8 @@ A good practice for importing large datasets is to stream the input file rather 
     language="py"
   />
 
-  </TabItem>
-  <TabItem value="pycsv" label="Python - CSV">
+</TabItem>
+<TabItem value="pycsv" label="Python - CSV">
 
   <FilteredTextBlock
     text={PythonCode}
@@ -251,8 +249,8 @@ A good practice for importing large datasets is to stream the input file rather 
     language="py"
   />
 
-  </TabItem>
-  <TabItem value="js" label="TypeScript - JSON">
+</TabItem>
+<TabItem value="js" label="TypeScript - JSON">
 
   <FilteredTextBlock
     text={TSCode}
@@ -275,7 +273,7 @@ A good practice for importing large datasets is to stream the input file rather 
 </Tabs>
 
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

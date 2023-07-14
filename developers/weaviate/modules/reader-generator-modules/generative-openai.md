@@ -1,86 +1,86 @@
 ---
-title: Generative Search - OpenAI
-sidebar_position: 10
 image: og/docs/modules/generative-openai.jpg
-# tags: ['generative', 'transformers', 'openai']
+sidebar_position: 10
+title: Generative Search - OpenAI
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## In short
+## 简介
 
-* The Generative OpenAI (`generative-openai`) module generates responses based on the data stored in your Weaviate instance.
-* The module can generate a response for each returned object, or a single response for a group of objects.
-* The module adds a `generate {}` parameter to the GraphQL `_additional {}` property of the `Get {}` queries.
-* Added in Weaviate `v1.17.3`.
-* The default OpenAI model is `gpt-3.5-turbo`, but other models (e.g. `gpt-4`) are supported.
-* For Azure OpenAI, a model must be specified.
+* 生成型OpenAI（`generative-openai`）模块基于存储在您的Weaviate实例中的数据生成响应。
+* 该模块可以为每个返回的对象生成一个响应，或者为一组对象生成一个单一的响应。
+* 该模块在GraphQL的`_additional {}`属性的`Get {}`查询中添加了一个`generate {}`参数。
+* 在Weaviate `v1.17.3`中添加。
+* 默认的OpenAI模型是`gpt-3.5-turbo`，但也支持其他模型（如`gpt-4`）。
+* 对于Azure OpenAI，必须指定一个模型。
 
 import OpenAIOrAzureOpenAI from '/_includes/openai.or.azure.openai.mdx';
 
 <OpenAIOrAzureOpenAI/>
 
-## Introduction
+## 简介
 
-`generative-openai` generates responses based on the data stored in your Weaviate instance.
+`generative-openai`根据存储在您的Weaviate实例中的数据生成响应。
 
-The module works in two steps:
-1. (Weaviate) Run a search query in Weaviate to find relevant objects.
-2. (OpenAI) Use an OpenAI model to generate a response based on the results (from the previous step) and the provided prompt or task.
+该模块分为两个步骤：
+1. （Weaviate）在Weaviate中运行搜索查询以找到相关的对象。
+2. (OpenAI) 使用OpenAI模型根据前一步的结果和提供的提示或任务生成回复。
 
 :::note
 You can use the Generative OpenAI module with non-OpenAI upstream modules. For example, you could use `text2vec-cohere` or `text2vec-huggingface` to vectorize and query your data, but then rely on the `generative-openai` module to generate a response.
 :::
 
-The generative module can provide results for:
-* each returned object - `singleResult{ prompt }`
-* the group of all results together – `groupedResult{ task }`
+生成模块可以提供以下结果：
+- 每个返回对象的结果 - `singleResult{ prompt }`
+- 所有结果的集合 - `groupedResult{ task }`
 
-You need to input both a query and a prompt (for individual responses) or a task (for all responses).
+您需要输入查询和提示（用于单个响应）或任务（用于所有响应）。
 
-## Inference API key
+## 推理 API 密钥
 
-`generative-openai` requires an API key from OpenAI or Azure OpenAI.
+`generative-openai` 需要来自 OpenAI 或 Azure OpenAI 的 API 密钥。
 
 :::tip
 You only need to provide one of the two keys, depending on which service (OpenAI or Azure OpenAI) you are using.
 :::
 
-### Providing the key to Weaviate
+### 提供 Weaviate 的密钥
 
-You can provide your API key in two ways:
+您可以通过两种方式提供 API 密钥：
 
-1. During the **configuration** of your Docker instance, by adding `OPENAI_APIKEY` or `AZURE_APIKEY` as appropriate under `environment` to your `docker-compose` file, like this:
+1. 在配置 Docker 实例时，通过在 `docker-compose` 文件的 `environment` 下添加相应的 `OPENAI_APIKEY` 或 `AZURE_APIKEY`，例如：
 
-  ```yaml
-  environment:
-    OPENAI_APIKEY: 'your-key-goes-here'  # For use with OpenAI. Setting this parameter is optional; you can also provide the key at runtime.
-    AZURE_APIKEY: 'your-key-goes-here'  # For use with Azure OpenAI. Setting this parameter is optional; you can also provide the key at runtime.
+   ```yaml
+   environment:
+     OPENAI_APIKEY: 'your-key-goes-here'  # 用于 OpenAI。设置此参数是可选的；您也可以在运行时提供密钥。
+    AZURE_APIKEY: 'your-key-goes-here'  # 用于Azure OpenAI。设置此参数是可选的；您也可以在运行时提供密钥。
     ...
   ```
 
-2. At **run-time** (recommended), by providing `"X-OpenAI-Api-Key"` or `"X-Azure-Api-Key"` through the request header. You can provide it using the Weaviate client, like this:
+2. **在运行时**（推荐），通过请求头提供`"X-OpenAI-Api-Key"`或`"X-Azure-Api-Key"`。您可以使用Weaviate客户端提供它，就像这样：
 
 import ClientKey from '/_includes/code/core.client.openai.apikey.mdx';
 
 <ClientKey />
 
-## Module configuration
+## 模块配置
 
 :::tip Not applicable to WCS
 This module is enabled and pre-configured on Weaviate Cloud Services.
 :::
 
-### Configuration file (Weaviate open source only)
+### 配置文件（仅适用于Weaviate开源版）
 
-You can enable the Generative OpenAI module in your configuration file (e.g. `docker-compose.yaml`). Add the `generative-openai` module (alongside any other module you may need) to the `ENABLE_MODULES` property, like this:
+您可以在配置文件（例如 `docker-compose.yaml`）中启用Generative OpenAI模块。 将`generative-openai`模块（以及您可能需要的任何其他模块）添加到`ENABLE_MODULES`属性中，如下所示：
 
 ```
 ENABLE_MODULES: 'text2vec-openai,generative-openai'
 ```
 
-Here is a full example of a Docker configuration, which uses the `generative-openai` module in combination with `text2vec-openai`:
+以下是一个完整的Docker配置示例，它使用`generative-openai`模块结合`text2vec-openai`进行操作:
 
 ```yaml
 ---
@@ -111,22 +111,22 @@ services:
       CLUSTER_HOSTNAME: 'node1'
 ```
 
-## Schema configuration
+## 模式配置
 
-You can define settings for this module in the schema.
+您可以在模式中定义此模块的设置。
 
 ### OpenAI vs Azure OpenAI
 
-- **OpenAI** users can optionally set the `model` parameter.
-- **Azure OpenAI** users must set the parameters `resourceName` and `deploymentId`.
+- **OpenAI** 用户可以选择设置 `model` 参数。
+- **Azure OpenAI** 用户必须设置参数 `resourceName` 和 `deploymentId`。
 
-### Model parameters
+### 模型参数
 
-You can also configure additional parameters for the generative model through the `xxxProperty` parameters shown below.
+您还可以通过下面显示的 `xxxProperty` 参数来配置生成模型的其他参数。
 
-### Example schema
+### 示例模式
 
-For example, the following schema configuration will set Weaviate to use the `generative-openai` model with the `Document` class.
+例如，以下模式配置将使Weaviate使用`generative-openai`模型和`Document`类。
 
 ```json
 {
@@ -155,28 +155,28 @@ For example, the following schema configuration will set Weaviate to use the `ge
 ```
 
 <details>
-  <summary>New to Weaviate Schemas?</summary>
+  <summary>初次接触Weaviate Schemas？</summary>
 
-If you are new to Weaviate, check out the [Weaviate schema tutorial](/developers/weaviate/tutorials/schema.md).
+如果您是第一次接触Weaviate，请查看[Weaviate模式教程](/developers/weaviate/tutorials/schema.md)。
 
 </details>
 
-## How to use
+## 如何使用
 
-This module extends the  `_additional {...}` property with a `generate` operator.
+该模块通过 `_additional {...}` 属性扩展了 `generate` 操作符。
 
-`generate` takes the following arguments:
+`generate` 接受以下参数：
 
-| Field | Data Type | Required | Example | Description |
+| 字段 | 数据类型 | 必需 | 示例 | 描述 |
 |- |- |- |- |- |
-| `singleResult {prompt}`  | string | no | `Summarize the following in a tweet: {summary}`  | Generates a response for each individual search result. You need to include at least one result field in the prompt, between braces. |
-| `groupedResult {task}`  | string | no | `Explain why these results are similar to each other`  | Generates a single response for all search results |
+| `singleResult {prompt}`  | string | no | `在一条推文中概括以下内容: {summary}`  | 为每个单独的搜索结果生成响应。在提示语中，您需要在大括号中包含至少一个结果字段。 |
+| `groupedResult {task}`  | string | no | `解释为什么这些结果彼此相似`  | 为所有搜索结果生成单个响应 |
 
-### Example of properties in the prompt
+### 提示语属性示例
 
-When piping the results to the prompt, at least one field returned by the query must be added to the prompt. If you don't add any fields, Weaviate will throw an error.
+当将结果导入到提示符中时，查询返回的至少一个字段必须添加到提示符中。如果您没有添加任何字段，Weaviate将会抛出一个错误。
 
-For example, assume your schema looks like this:
+例如，假设您的模式如下所示：
 
 ```graphql
 {
@@ -187,7 +187,7 @@ For example, assume your schema looks like this:
 }
 ```
 
-You can add both `title` and `summary` to the prompt by enclosing them in curly brackets:
+您可以通过将`title`和`summary`放在花括号中来添加到提示中：
 
 ```graphql
 {
@@ -214,18 +214,18 @@ You can add both `title` and `summary` to the prompt by enclosing them in curly 
 }
 ```
 
-### Example - single result
+### 示例 - 单个结果
 
-Here is an example of a query where:
-* we run a vector search (with `nearText`) to find articles about "Italian food"
-* then we ask the generator module to describe each result as a Facebook ad.
-  * the query asks for the `summary` field, which it then includes in the `prompt` argument of the `generate` operator.
+以下是一个查询的示例，其中:
+* 我们运行一个向量搜索（使用 `nearText`）来找到关于"意大利食品"的文章
+* 然后我们要求生成器模块将每个结果描述为 Facebook 广告。
+  * 查询要求返回 `summary` 字段，并将其包含在 `generate` 操作符的 `prompt` 参数中。
 
 import OpenAISingleResult from '/_includes/code/generative.openai.singleresult.mdx';
 
 <OpenAISingleResult/>
 
-### Example response - single result
+### 示例响应 - 单个结果
 
 ```json
 {
@@ -248,17 +248,17 @@ import OpenAISingleResult from '/_includes/code/generative.openai.singleresult.m
 }
 ```
 
-### Example - grouped result
+### 示例 - 分组结果
 
-Here is an example of a query where:
-* we run a vector search (with `nearText`) to find publications about finance,
-* then we ask the generator module to explain why these articles are about finance.
+以下是一个查询的示例，其中:
+* 我们运行了一个向量搜索（使用`nearText`）来查找关于金融的出版物，
+* 然后我们要求生成器模块解释为什么这些文章与金融有关。
 
 import OpenAIGroupedResult from '/_includes/code/generative.openai.groupedresult.mdx';
 
 <OpenAIGroupedResult />
 
-### Example response - grouped result
+### 示例响应 - 分组结果
 
 ```json
 {
@@ -292,22 +292,22 @@ import OpenAIGroupedResult from '/_includes/code/generative.openai.groupedresult
 }
 ```
 
-## Additional information
+## 附加信息
 
-### Supported models (OpenAI)
+### 支持的模型（OpenAI）
 
-You can use any of
+您可以使用以下任意模型：
 
-* [gpt-3.5-turbo](https://platform.openai.com/docs/models/gpt-3-5) (default)
+* [gpt-3.5-turbo](https://platform.openai.com/docs/models/gpt-3-5)（默认）
 * [gpt-4](https://platform.openai.com/docs/models/gpt-4)
 * [gpt-4-32k](https://platform.openai.com/docs/models/gpt-4)
 
-The module also supports these legacy models (not recommended)
+该模块还支持以下旧版模型（不建议使用）：
 
 * [davinci 002](https://platform.openai.com/docs/models/overview)
 * [davinci 003](https://platform.openai.com/docs/models/overview)
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

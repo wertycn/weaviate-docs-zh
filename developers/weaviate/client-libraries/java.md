@@ -1,9 +1,9 @@
 ---
-title: Java
-sidebar_position: 5
 image: og/docs/client-libraries.jpg
-# tags: ['java', 'client library']
+sidebar_position: 5
+title: Java
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -18,8 +18,9 @@ The `package` and `import` paths have been updated from `technology.semi.weaviat
 See the [Migration Guide](#from-3xx-to-400) for more info.
 :::
 
-## Installation and setup
-To get the latest stable version of the Java client library, add this dependency to your project:
+## 安装和设置
+
+要获取最新稳定版本的Java客户端库，请将此依赖项添加到您的项目中：
 
 ```xml
 <dependency>
@@ -29,9 +30,9 @@ To get the latest stable version of the Java client library, add this dependency
 </dependency>
 ```
 
-This API client is compatible with Java 8 and beyond.
+该 API 客户端兼容 Java 8 及以上版本。
 
-You can use the client in your project as follows:
+您可以按照以下方式在项目中使用该客户端：
 
 ```java
 package io.weaviate;
@@ -57,19 +58,19 @@ public class App {
 }
 ```
 
-## Authentication
+## 认证
 
 import ClientAuthIntro from '/developers/weaviate/client-libraries/_components/client.auth.introduction.mdx'
 
 <ClientAuthIntro clientName="Java"/>
 
-### WCS authentication
+### WCS认证
 
 import ClientAuthWCS from '/developers/weaviate/client-libraries/_components/client.auth.wcs.mdx'
 
 <ClientAuthWCS />
 
-### API key authentication
+### API密钥认证
 
 :::info Available in Weaviate Java client versions `4.0.2` and higher.
 :::
@@ -86,13 +87,13 @@ Config config = new Config("https", "some-endpoint.weaviate.network");
 WeaviateClient client = WeaviateAuthClient.apiKey(config, "YOUR-WEAVIATE-API-KEY");  // Replace w/ your Weaviate instance API key
 ```
 
-### OIDC authentication
+### OIDC身份验证
 
 import ClientAuthOIDCIntro from '/developers/weaviate/client-libraries/_components/client.auth.oidc.introduction.mdx'
 
 <ClientAuthOIDCIntro />
 
-#### <i class="fa-solid fa-key"></i> Resource Owner Password Flow
+#### <i class="fa-solid fa-key"></i> 资源所有者密码流程
 
 import ClientAuthFlowResourceOwnerPassword from '/developers/weaviate/client-libraries/_components/client.auth.flow.resource.owner.password.mdx'
 
@@ -111,7 +112,7 @@ WeaviateAuthClient.clientPassword(
 );
 ```
 
-#### <i class="fa-solid fa-key"></i> Client Credentials flow
+#### <i class="fa-solid fa-key"></i> 客户端凭证流程
 
 import ClientAuthFlowClientCredentials from '/developers/weaviate/client-libraries/_components/client.auth.flow.client.credentials.mdx'
 
@@ -129,7 +130,7 @@ WeaviateAuthClient.clientCredentials(
 );
 ```
 
-#### <i class="fa-solid fa-key"></i> Refresh Token flow
+#### <i class="fa-solid fa-key"></i> 刷新令牌流程
 
 import ClientAuthBearerToken from '/developers/weaviate/client-libraries/_components/client.auth.bearer.token.mdx'
 
@@ -148,9 +149,9 @@ WeaviateAuthClient.bearerToken(
 );
 ```
 
-## Custom headers
+## 自定义标头
 
-You can pass custom headers to the client, which are added at initialization:
+您可以在初始化时向客户端传递自定义标头，这些标头将被添加到请求中:
 
 ```java
 import io.weaviate.client.Config;
@@ -167,41 +168,41 @@ public class App {
 }
 ```
 
-## References
+## 参考文档
 
-All [RESTful endpoints](../api/rest/index.md) and [GraphQL functions](../api/graphql/index.md) references covered by the Java client, and explained on those reference pages in the code blocks.
+所有由Java客户端覆盖并在参考页面的代码块中解释的[RESTful端点](../api/rest/index.md)和[GraphQL函数](../api/graphql/index.md)的参考文档。
 
-## Design
+## 设计
 
-### Builder pattern
+### 构建器模式
 
-The Java client functions are designed with a 'Builder pattern'. A pattern is used to build complex query objects. This means that a function (for example to retrieve data from Weaviate with a request similar to a RESTful GET request, or a more complex GraphQL query) is built with single objects to reduce complexity. Some builder objects are optional, others are required to perform specific functions. All is documented on the [RESTful API reference pages](../api/rest/index.md) and the [GraphQL reference pages](../api/graphql/index.md).
+Java客户端函数采用了“Builder模式”进行设计。这种模式用于构建复杂的查询对象。这意味着一个函数（例如，用于从Weaviate检索数据的请求，类似于RESTful的GET请求，或者更复杂的GraphQL查询）是由单个对象构建的，以减少复杂性。一些构建对象是可选的，而其他构建对象则是执行特定功能所必需的。所有这些都在[RESTful API参考页面](../api/rest/index.md)和[GraphQL参考页面](../api/graphql/index.md)中进行了文档化。
 
-The code snippet above shows a simple query similar to `RESTful GET /v1/meta`. The client is initiated by requiring the package and connecting to the running instance. Then, a query is constructed by using the `.metaGetter()` on `.misc()`. The query will be sent with the `.run()` function, this object is thus required for every function you want to build and execute.
+上面的代码片段显示了一个类似于`RESTful GET /v1/meta`的简单查询。客户端通过引入包并连接到运行中的实例来初始化。然后，使用`.misc()`上的`.metaGetter()`构建查询。查询将使用`.run()`函数发送，因此对于您想要构建和执行的每个函数，都需要这个对象。
 
-## Migration Guides
+## 迁移指南
 
-### From `3.x.x` to `4.0.0`
+### 从`3.x.x`到`4.0.0`
 
-#### Moved from `technology.semi.weaviate` to `io.weaviate` package
+#### 从`technology.semi.weaviate`迁移到`io.weaviate`包
 
-Before:
+之前:
 ```java
 package technology.semi.weaviate;
 import technology.semi.weaviate.client.*;
 ```
 
-After:
+后续步骤:
 ```java
 package io.weaviate;
 import io.weaviate.client.*;
 ```
 
-### From `2.4.0` to `3.0.0`
+### 从 `2.4.0` 到 `3.0.0`
 
-#### Removed @Deprecated method `Aggregate::withFields(Fields fields)`
+#### 移除了 `@Deprecated` 方法 `Aggregate::withFields(Fields fields)`
 
-Before:
+之前的代码示例：
 ```java
 // import io.weaviate.client.v1.graphql.query.fields.Field;
 // import io.weaviate.client.v1.graphql.query.fields.Fields;
@@ -210,14 +211,14 @@ Fields fields = Fields.builder().fields(new Field[]{name, description}).build();
 client.graphQL().aggregate().withFields(fields)...
 ```
 
-After:
+之后：
 ```java
 client.graphQL().aggregate().withFields(name, description)...
 ```
 
-#### Removed @Deprecated method `Get::withFields(Fields fields)`
+#### 已移除的 @Deprecated 方法 `Get::withFields(Fields fields)`
 
-Before:
+之前：
 ```java
 // import io.weaviate.client.v1.graphql.query.fields.Field;
 // import io.weaviate.client.v1.graphql.query.fields.Fields;
@@ -226,19 +227,19 @@ Fields fields = Fields.builder().fields(new Field[]{name, description}).build();
 client.graphQL().get().withFields(fields)...
 ```
 
-After:
+之后：
 ```java
 client.graphQL().get().withFields(name, description)...
 ```
 
-#### Removed @Deprecated method `Get::withNearVector(Float[] vector)`
+#### 已移除的@Deprecated方法 `Get::withNearVector(Float[] vector)`
 
-Before:
+之前：
 ```java
 client.graphQL().get().withNearVector(new Float[]{ 0f, 1f, 0.8f })...
 ```
 
-After:
+After:（之后）
 ```java
 // import io.weaviate.client.v1.graphql.query.argument.NearVectorArgument;
 
@@ -246,13 +247,13 @@ NearVectorArgument nearVector = NearVectorArgument.builder().vector(new Float[]{
 client.graphQL().get().withNearVector(nearVector)...
 ```
 
-#### All `where` filters use the same implementation
+#### 所有的 `where` 过滤器使用相同的实现
 
-With `batch delete` feature, unified `filters.WhereFilter` implementation is introduced, which replaces `classifications.WhereFilter`, `graphql.query.argument.WhereArgument` and `graphql.query.argument.WhereFilter`.
+通过 `batch delete` 功能，引入了统一的 `filters.WhereFilter` 实现，取代了 `classifications.WhereFilter`、`graphql.query.argument.WhereArgument` 和 `graphql.query.argument.WhereFilter`。
 
 ##### GraphQL
 
-Before:
+之前的写法：
 ```java
 // import io.weaviate.client.v1.graphql.query.argument.GeoCoordinatesParameter;
 // import io.weaviate.client.v1.graphql.query.argument.WhereArgument;
@@ -272,7 +273,7 @@ WhereArgument where = WhereArgument.builder()
 client.graphQL().aggregate().withWhere(where)...
 ```
 
-After:
+之后:
 ```java
 // import io.weaviate.client.v1.filters.Operator;
 // import io.weaviate.client.v1.filters.WhereFilter;
@@ -297,7 +298,7 @@ WhereFilter where = WhereFilter.builder()
 client.graphQL().aggregate().withWhere(where)...
 ```
 
-Before:
+之前:
 ```java
 // import io.weaviate.client.v1.graphql.query.argument.WhereArgument;
 // import io.weaviate.client.v1.graphql.query.argument.WhereOperator;
@@ -311,7 +312,7 @@ WhereArgument where = WhereArgument.builder()
 client.graphQL().aggregate().withWhere(where)...
 ```
 
-After:
+之后:
 ```java
 // import io.weaviate.client.v1.filters.Operator;
 // import io.weaviate.client.v1.filters.WhereFilter;
@@ -325,7 +326,7 @@ WhereFilter where = WhereFilter.builder()
 client.graphQL().aggregate().withWhere(where)...
 ```
 
-Before:
+之前:
 ```java
 // import io.weaviate.client.v1.graphql.query.argument.WhereArgument;
 // import io.weaviate.client.v1.graphql.query.argument.WhereFilter;
@@ -350,7 +351,7 @@ WhereArgument where = WhereArgument.builder()
 client.graphQL().aggregate().withWhere(where)...
 ```
 
-After:
+之后:
 ```java
 // import io.weaviate.client.v1.filters.Operator;
 // import io.weaviate.client.v1.filters.WhereFilter;
@@ -374,9 +375,9 @@ WhereFilter where = WhereFilter.builder()
 client.graphQL().aggregate().withWhere(where)...
 ```
 
-##### Classification
+##### 分类
 
-Before:
+之前：
 ```java
 // import io.weaviate.client.v1.classifications.model.GeoCoordinates;
 // import io.weaviate.client.v1.classifications.model.Operator;
@@ -401,7 +402,7 @@ WhereFilter where = WhereFilter.builder()
 client.classifications().scheduler().withTrainingSetWhereFilter(where)...
 ```
 
-After:
+之后：
 ```java
 // import io.weaviate.client.v1.filters.Operator;
 // import io.weaviate.client.v1.filters.WhereFilter;
@@ -424,12 +425,12 @@ client.classifications().scheduler().withTrainingSetWhereFilter(where)...
 ```
 
 
-## Change logs
+## 更新日志
 
 
-Check the [change logs on GitHub](https://github.com/weaviate/weaviate-java-client/releases) for updates on the latest `Java client` changes.
+请查看[GitHub上的更新日志](https://github.com/weaviate/weaviate-java-client/releases)，了解最新`Java客户端`的变更信息。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

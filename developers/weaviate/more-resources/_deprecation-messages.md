@@ -1,13 +1,13 @@
 ---
-title: Deprecation messages
 image: og/docs/more-resources.jpg
-# tags: ['Deprecation messages']
+title: Deprecation messages
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-The list below contains deprecation messages:
+以下列表包含了废弃消息：
 <!--
 <ul>
     {% for message in site.data.deprecations.deprecations %}
@@ -25,50 +25,50 @@ The list below contains deprecation messages:
 <!--
 <table>
     <tr>
-        <td>status</td>
+        <td>状态</td>
         <td>{{ message.status }}</td>
     </tr>
     <tr>
-        <td>API type</td>
+        <td>API类型</td>
         <td>{{ message.apiType }}</td>
     </tr>
 
     {% for location in message.locations %}
 
         <tr>
-            <td>location</td>
+            <td>位置</td>
             <td>{{ location }}</td>
         </tr>
 
     {% endfor %}
 
     <tr>
-        <td>mitigation</td>
+        <td>缓解措施</td>
         <td>{{ message.mitigation | escape }}</td>
     </tr>
 
     <tr>
-        <td>since version</td>
+        <td>自版本开始</td>
         <td>{{ message.sinceVersion }}</td>
     </tr>
 
     <tr>
-        <td>since time</td>
+        <td>生效时间</td>
         <td>{{ message.sinceTime | date_to_rfc822 }}</td>
     </tr>
 
     <tr>
-        <td>planned removal version</td>
+        <td>计划移除版本</td>
         <td>{{ message.plannedRemovalVersion }}</td>
     </tr>
 
     <tr>
-        <td>removed in version</td>
+        <td>移除版本</td>
         <td>{{ message.removedIn }}</td>
     </tr>
 
     <tr>
-        <td>removed in date</td>
+        <td>移除日期</td>
         <td>{{ message.removedTime | date_to_rfc822 }}</td>
     </tr>
 

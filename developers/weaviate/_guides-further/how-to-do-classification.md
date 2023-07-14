@@ -1,62 +1,58 @@
 ---
-title: (TBC) Classification with Weaviate
-sidebar_position: 9
 image: og/docs/further-guides.jpg
-# tags: ['how to', 'classify data', 'classification']
+sidebar_position: 9
+title: (TBC) Classification with Weaviate
 ---
 
-## Overview
+## 概述
 
-Learn how to perform classification tasks with Weaviate
+了解如何使用Weaviate执行分类任务
 
-<!-- TODO: Finish this page! -->
-<!-- :::caution Under construction.
-Migrated from "how-to-do-classification" tutorial from Weaviate Docs Classic
-::: -->
-
+<!-- TODO: 完成本页面！ -->
+<!-- :::caution 正在施工中。
+从"Weaviate Docs Classic"的"how-to-do-classification"教程迁移而来 -->
 <!-- TODO: Difficult to understand; JPH to revise/refactor -->
-# Introduction
+# 介绍
 
-You can use Weaviate to automatically classify data, that is, you can ask Weaviate to automatically make references between concepts. Since Weaviate stores data objects based on semantics in a vector position, a variety of automated classification tasks can be performed in near-realtime. Weaviate offers two different types of classification:
+您可以使用Weaviate自动对数据进行分类，也就是说，您可以要求Weaviate自动在概念之间建立引用关系。由于Weaviate将数据对象基于语义存储在向量位置上，因此可以在几乎实时的情况下执行各种自动分类任务。Weaviate提供了两种不同类型的分类：
 
-1. **Contextual classification**. Provided by the `text2vec-contextionary` module, thus can only be used when this module is active in your Weaviate instance. Uses the context of data points to make new references. There is no training data needed, and this type of classification is the right pick if you have a strong semantic relation in your data. See [here](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md) for more information.
-2. **kNN classification**. To assign property values and references of data objects based on how similar objects are labeled that Weaviate finds. The more objects added and correctly labeled over time, the better a future classification becomes. Especially when there isn't a logical semantic relationship in the objects that need to be classified, the kNN algorithm is helpful. See more [here](../api/rest/classification.md#knn-classification).
+1. **上下文分类**。由`text2vec-contextionary`模块提供，因此只能在您的Weaviate实例中启用此模块时使用。利用数据点的上下文来建立新的引用关系。不需要训练数据，如果您的数据中存在强烈的语义关系，则选择此类型的分类。有关更多信息，请参见[此处](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md)。
+2. **kNN分类**。根据Weaviate发现的标记为相似对象的属性值和引用来为数据对象分配属性值和引用。随着时间的推移，添加和正确标记的对象越多，未来的分类就越好。特别是当需要对没有逻辑语义关系的对象进行分类时，kNN算法很有帮助。请参见[此处](../api/rest/classification.md#knn-classification)了解更多信息。
 
-In this how-to guide, you will learn how to classify with Contextual and kNN classification.
+在本教程中，您将学习如何使用上下文分类和kNN分类进行分类。
 
-# Prerequisites
+# 先决条件
 
-**1. Connect to a Weaviate instance**
+**1. 连接到Weaviate实例**
 
-If you haven't set up a Weaviate instance yet, check the [quickstart tutorial](/developers/weaviate/quickstart/index.md). In this guide we assume your instance is running at `http://localhost:8080` with [text2vec-contextionary](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md) as vectorization module.
+如果您尚未设置Weaviate实例，请查看[快速入门教程](/developers/weaviate/quickstart/index.md)。在本指南中，我们假设您的实例在`http://localhost:8080`上运行，并使用[text2vec-contextionary](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md)作为向量化模块。
 
-**2. Upload a schema**
+**2. 上传模式**
 
-Learn how to create and upload a schema [here](../tutorials/schema.md). In this guide we assume to have a similar schema uploaded with the classes `Publication`, `Article` and `Author` and `Category`.
+了解如何创建和上传模式[在此处](../tutorials/schema.md)。在本指南中，我们假设已经上传了类似的模式，其中包含类`Publication`、`Article`、`Author`和`Category`。
 
-**3. Add data**
+**3. 添加数据**
 
-Make sure there is data available in your Weaviate instance, you can read how to do this in the [previous guide](/developers/weaviate/tutorials/how-to-import-data.md). In this tutorial we assume there are data objects of `Publication`s, `Article`s, `Author`s and `Category` present.
+确保您的Weaviate实例中有可用的数据，您可以在[上一个指南](/developers/weaviate/tutorials/how-to-import-data.md)中了解如何操作。在本教程中，我们假设存在`Publication`、`Article`、`Author`和`Category`的数据对象。
 
-# Contextual classification
+# 上下文分类
 
-_This type of classification is only provided by the `text2vec-contextionary` module, thus can only be used when this module is active in your Weaviate instance._
+_此类型的分类仅由`text2vec-contextionary`模块提供，因此只能在您的Weaviate实例中启用此模块时使用。_
 
-We are going to classify the categories of articles by Contextual classification. No previous links between the articles and categories need to exist yet, we do not need any training data because we let Weaviate use the context of data objects for the classification.
+我们将使用上下文分类对文章的类别进行分类。尚未需要存在文章和类别之间的先前链接，我们不需要任何训练数据，因为我们让Weaviate使用数据对象的上下文进行分类。
 
-## Start a classification
+## 开始分类
 
-Make sure you have at least two categories present in your dataset, and that the class `Article` has the property `ofCategory` with a cross-reference to the class `Category`. The `Category` of an Article will be determined by the text content in its summary (`"basedOnProperties"` is set to `["summary"]`).
+确保您的数据集中至少有两个类别，并且`Article`类具有属性`ofCategory`，其中交叉引用到`Category`类。文章的`Category`将根据其摘要中的文本内容确定（`"basedOnProperties"`设置为`["summary"]`）。
 
-A classification can be started through one of the clients, or with a direct curl request to the RESTful API.
+可以通过其中一个客户端或通过对RESTful API的直接curl请求来启动分类。
 
 import ClassificationContextualPost from '/_includes/code/classification.contextual.post.mdx';
 
 <ClassificationContextualPost/>
 
-A classification is started, and will run in the background. The following response is given after starting the classification, and the status can be fetched via the `v1/classifications/{id}` endpoint.
+分类已经开始，并且将在后台运行。在启动分类后，可以通过`v1/classifications/{id}`端点获取状态。
 
-```json
 {
   "basedOnProperties": [
     "summary"
@@ -124,7 +120,7 @@ If we later want to know to which `Category` a specific `Article` refers to, we 
                 }
             }
         ],
-        "summary": "A New Mexico state senator was reportedly convicted on misdemeanor aggravated drunken driving and reckless driving charges Tuesday -- nearly six months after he rear-ended a driver stopped at a red light in the state. Third, the consequences," Mark Probasco, a special prosecutor with the state attorney general's office said, according to The Journal. — Mark Probasco, special prosecutor with New Mexico state attorney general's officeMartinez originally told officers he had only "a beer or two," but later admitted he had multiple glasses of wine. The officer who arrested Martinez said the senator was slurring his speech and had alcohol on his breath. CLICK HERE TO GET THE FOX NEWS APPA former Republican state senator in New Mexico was defeated last year after she was convicted for DUI in 2018, The Journal reported.",
+        "summary": "据《新闻报》报道，一位新墨西哥州参议员被判犯有轻罪醉酒驾驶和危险驾驶罪，此前将近六个月他在该州追尾一名在红灯处停车的司机。州总检察官办公室特别检察官马克·普罗巴斯科（Mark Probasco）表示：“第三个后果是......”，据悉，马克·普罗巴斯科是新墨西哥州总检察官办公室的特别检察官。马丁内斯最初告诉警官他只喝了“一两杯啤酒”，但后来承认他喝了多杯葡萄酒。逮捕马丁内斯的警官称，这位参议员讲话含糊不清，口中有酒气。点击这里获取《福克斯新闻》应用程序。据报道，一位前新墨西哥州共和党参议员在2018年因酒后驾车被定罪后，去年被击败。"
         "title": "New Mexico Democrat's DUI conviction could cost him panel chairmanship, state party leaders warn",
         "url": "https://www.foxnews.com/politics/new-mexico-democratic-state-senator-convicted-of-dui-reckless-driving-in-june-crash",
         "wordCount": 377
@@ -142,14 +138,14 @@ Imagine you have a property for the popularity of the `Article` by the audience,
 {
   "classes": [{
       "class": "Article",
-      "description": "A written text, for example a news article or blog post",
+      "description": "一篇文字，例如新闻文章或博客帖子",
       "properties": [
         ......
         {
           "dataType": [
             "Popularity"
           ],
-          "description": "The popularity of the article",
+          "description": "文章的受欢迎程度",
           "name": "hasPopularity"
         },
         ......
@@ -157,18 +153,16 @@ Imagine you have a property for the popularity of the `Article` by the audience,
     },
     {
       "class": "Popularity",
-      "description": "How popular an article is",
+      "description": "一篇文章的受欢迎程度",
       "properties": [
-        {
           "dataType": [
-            "text"
-          ],
-          "description": "The popularity level",
-          "name": "level"
-        }
-      ]
-    }]
+    "text"
+  ],
+  "description": "流行程度级别",
+  "name": "级别"
 }
+]
+}]
 ```
 
 Secondly, make sure there is a number of articles present where this property value is set, but also items without a known popularity value. For example, here are three articles, the first two with popularity and the third one without: (with the GraphQL query shown first)
@@ -200,8 +194,8 @@ Results in:
       "Article": [
         {
           "uuid": "00327619-fdfa-37cd-a003-5d2e66ae2fec",
-          "summary": "While businesses are looking to create their own changemaker strategies, charities and non-governmental organisations (NGOs) are carrying on with their day jobs. Consider the wide-reaching activities of Action Against Hunger, an NGO committed to saving children's lives across almost 50 countries. "Critical to this mission is creating change," says Matthew White, director of fundraising and communications. "We take an unwanted item, in the form of a bike, and use it to achieve social change. "We try to find and attract the people who want to make a difference," says White of Action Against Hunger.",
-          "title": "From chefs to cyclists: how inspiring charities make a change",
+          "summary": "当企业正在寻求创建自己的变革策略时，慈善机构和非政府组织（NGO）继续着他们的日常工作。以行动救助饥荒为例，这是一家致力于拯救儿童生命的非政府组织，在近50个国家开展广泛的活动。筹款和传播总监马修·怀特表示：“对于这项使命来说，创造变革至关重要。”“我们拿走一个不需要的物品，比如一辆自行车，并利用它来实现社会变革。”行动救助饥荒的怀特说：“我们努力寻找和吸引那些想要发挥作用的人。”
+          "title": "从厨师到骑行者：令人振奋的慈善机构如何改变世界",
           "wordCount": 908,
           "hasPopularity": [{
             "beacon": "weaviate://localhost/c9a0e53b-93fe-38df-a6ea-4c8ff4501798",
@@ -210,8 +204,8 @@ Results in:
         },
         {
           "uuid": "373d28fb-1898-313a-893b-5bc77ba061f6",
-          "summary": "I love E3 because it's a great event showcasing what's ahead for gaming. The Legend of Heroes: Trails of Cold Steel III (PS4)Release: September 24I've expressed my admiration for this series more than a few times, because it captures a classic-but-also-not-dated feel. At E3, I was able to see how Cold Steel III is shaping up by going hands-on with the beginning section of the game. If you choose to go in blind, Cold Steel III will feature a guide to catch you up on the previous games. Klei came out at E3 with a new trailer and post detailing the changes and why development is taking longer than expected.",
-          "title": "Five RPGs You May Have Overlooked From E3",
+          "summary": "我喜欢E3，因为这是一个展示游戏前景的伟大活动。《英雄传说：轨迹之钢3》（PS4）发布日期：9月24日我已经多次表达过对这个系列的喜爱，因为它捕捉到了一种经典但又不过时的感觉。在E3上，我亲自动手试玩了游戏的开头部分，看到了《轨迹之钢3》的发展情况。如果你选择不了解前作，《轨迹之钢3》将提供一个指南，帮助你了解前几款游戏的情节。Klei在E3上发布了一款新的预告片，并详细介绍了游戏的变化以及为什么开发时间比预期更长。"
+          "title": "E3中你可能忽视的五款角色扮演游戏",
           "wordCount": 361,
           "hasPopularity": [{
             "beacon": "weaviate://localhost/aca140a9-ac15-4b0c-a508-85534c4def44",
@@ -220,19 +214,19 @@ Results in:
         },
         {
           "uuid": "8676e36a-8d60-3402-b550-4e792bb9d32f",
-          "summary": "On this week's episode of The Game Informer Show, we discuss The Last of Us Part II's recent State of Play where we finally see some uninterrupted gameplay, and we cover the recent reviews of Minecraft Dungeons and Monster Train. You can watch the video above, subscribe and listen to the audio on iTunes or Google Play, listen on SoundCloud, stream it on Spotify, or download the MP3 at the bottom of the page. Our thanks to the talented Super Marcato Bros. for The Game Informer Show's intro song. You can hear more of their original tunes and awesome video game music podcast at their website. The Last of Us Part II State of Play Reactions: 6:32Minecraft Dungeons Review Discussion: 21:39Monster Train: 39:11Community Emails: 51:23",
-          "title": "GI Show - The Last of Us Part II State of Play, Minecraft Dungeons, and Monster Train",
+          "summary": "在本周的《Game Informer Show》节目中，我们讨论了《最后的生还者 第二部》最近的State of Play，我们终于看到了一些连续的游戏画面，并且我们还介绍了《Minecraft Dungeons》和《Monster Train》的最新评论。您可以在上方观看视频，订阅并在iTunes或Google Play上收听音频，也可以在SoundCloud上收听，或在Spotify上进行流媒体播放，或者在页面底部下载MP3文件。特别感谢才华横溢的Super Marcato Bros.提供《Game Informer Show》的介绍歌曲。您可以在他们的网站上听到更多他们的原创音乐和令人惊叹的视频游戏音乐播客。《最后的生还者 第二部》State of Play反应：6:32《Minecraft Dungeons》评论讨论：21:39《Monster Train》：39:11社区邮件：51:23"
+          "title": "GI Show - 《最后的我们2》播放状态，Minecraft Dungeons和Monster Train",
           "wordCount": 256,
           "hasPopularity": null
         }],
       "Popularity": [
         {
           "uuid": "c9a0e53b-93fe-38df-a6ea-4c8ff4501798",
-          "level": "low"
+          "level": "低"
         },
         {
           "uuid": "9c6a8314-ab95-4484-b621-d7b5be2ffb29",
-          "level": "medium"
+          "level": "中"
         },
         {
           "uuid": "aca140a9-ac15-4b0c-a508-85534c4def44",
@@ -290,12 +284,12 @@ And get the following result:
 
 ```json
 {
-  "class": "Article",
+  "class": "文章",
   "id": "8676e36a-8d60-3402-b550-4e792bb9d32f",
   "schema": {
     "uuid": "8676e36a-8d60-3402-b550-4e792bb9d32f",
-    "summary": "On this week's episode of The Game Informer Show, we discuss The Last of Us Part II's recent State of Play where we finally see some uninterrupted gameplay, and we cover the recent reviews of Minecraft Dungeons and Monster Train. You can watch the video above, subscribe and listen to the audio on iTunes or Google Play, listen on SoundCloud, stream it on Spotify, or download the MP3 at the bottom of the page. Our thanks to the talented Super Marcato Bros. for The Game Informer Show's intro song. You can hear more of their original tunes and awesome video game music podcast at their website. The Last of Us Part II State of Play Reactions: 6:32Minecraft Dungeons Review Discussion: 21:39Monster Train: 39:11Community Emails: 51:23",
-    "title": "GI Show - The Last of Us Part II State of Play, Minecraft Dungeons, and Monster Train",
+    "summary": "在本周的《游戏通报秀》中，我们讨论了《最后的生还者2》最近的State of Play，我们终于看到了一些连续的游戏画面，并且我们还介绍了《我的世界地下城》和《怪物列车》的最新评论。您可以在上方观看视频，订阅并在iTunes或Google Play上收听音频，通过SoundCloud收听，通过Spotify进行流媒体播放，或在页面底部下载MP3文件。特别感谢才华横溢的Super Marcato Bros.为《游戏通报秀》提供了开场曲。您可以在他们的网站上听到更多他们的原创音乐和精彩的视频游戏音乐播客。《最后的生还者2》State of Play反应：6:32《我的世界地下城》评论讨论：21:39《怪物列车》：39:11社区邮件：51:23"
+    "title": "GI Show - 《最后的我们 第二部分》State of Play，Minecraft Dungeons和Monster Train",
     "wordCount": 256,
     "hasPopularity": [{
       "beacon": "weaviate://localhost/aca140a9-ac15-4b0c-a508-85534c4def44",

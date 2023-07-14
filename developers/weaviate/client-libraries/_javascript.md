@@ -1,9 +1,9 @@
 ---
-title: JavaScript
-sidebar_position: 3
 image: og/docs/client-libraries.jpg
-# tags: ['JavaScript', 'client library']
+sidebar_position: 3
+title: JavaScript
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -16,16 +16,16 @@ import JavaScriptMaintenanceWarning from '/_includes/javascript-maintenance-warn
 
 <JavaScriptMaintenanceWarning />
 
-## Installation and setup
+## 安装和设置
 
-The JavaScript client library package can be easily installed using [npm](https://www.npmjs.com/).
+JavaScript客户端库包可以通过[npm](https://www.npmjs.com/)轻松安装。
 
-<!-- Replace $ .. examples to remove the prompt ($) as it gets copied too along with the actual command -->
+<!-- 将示例中的$ ..替换为删除提示符($)，因为它与实际命令一起复制 -->
 ```bash
 npm install weaviate-client
 ```
 
-Now you can use the client in your JavaScript scripts as follows:
+现在您可以按照以下方式在您的JavaScript脚本中使用客户端:
 
 ```javascript
 const weaviate = require("weaviate-client");
@@ -47,25 +47,25 @@ client
   });
 ```
 
-## Authentication
+## 认证
 
 import ClientAuthIntro from '/developers/weaviate/client-libraries/_components/client.auth.introduction.mdx'
 
 <ClientAuthIntro clientName="JavaScript"/>
 
-### WCS authentication
+### WCS认证
 
 import ClientAuthWCS from '/developers/weaviate/client-libraries/_components/client.auth.wcs.mdx'
 
 <ClientAuthWCS />
 
-### OIDC authentication
+### OIDC认证
 
 import ClientAuthOIDCIntro from '/developers/weaviate/client-libraries/_components/client.auth.oidc.introduction.mdx'
 
 <ClientAuthOIDCIntro />
 
-#### <i class="fa-solid fa-key"></i> Resource Owner Password Flow
+#### <i class="fa-solid fa-key"></i> 资源所有者密码流
 
 import ClientAuthFlowResourceOwnerPassword from '/developers/weaviate/client-libraries/_components/client.auth.flow.resource.owner.password.mdx'
 
@@ -84,7 +84,7 @@ const client = weaviate.client({
 });
 ```
 
-#### <i class="fa-solid fa-key"></i> Client Credentials flow
+#### <i class="fa-solid fa-key"></i> 客户端凭证流程
 
 import ClientAuthFlowClientCredentials from '/developers/weaviate/client-libraries/_components/client.auth.flow.client.credentials.mdx'
 
@@ -101,7 +101,7 @@ const client = weaviate.client({
 });
 ```
 
-#### <i class="fa-solid fa-key"></i> Refresh Token flow
+#### <i class="fa-solid fa-key"></i> 刷新令牌流程
 
 import ClientAuthBearerToken from '/developers/weaviate/client-libraries/_components/client.auth.bearer.token.mdx'
 
@@ -119,9 +119,9 @@ const client = weaviate.client({
 });
 ```
 
-## Custom headers
+## 自定义头部
 
-You can pass custom headers to the client, which are added at initialization:
+您可以在初始化时向客户端传递自定义头部，这些头部将被添加进去：
 
 ```js
 const client = weaviate.client({
@@ -131,30 +131,30 @@ const client = weaviate.client({
   });
 ```
 
-These headers will then be included in every request that the client makes.
+这些标题将包含在客户端发出的每个请求中。
 
-## References
+## 参考资料
 
-All [RESTful endpoints](../api/rest/index.md) and [GraphQL functions](../api/graphql/index.md) covered by the JS client have JavaScript examples in the code blocks.
+所有由JS客户端覆盖的[RESTful端点](../api/rest/index.md)和[GraphQL函数](../api/graphql/index.md)在代码块中都有JavaScript示例。
 
-## Design
+## 设计
 
-### Builder pattern
+### 构建器模式
 
-The JavaScript client is designed following the [Builder pattern](https://en.wikipedia.org/wiki/Builder_pattern). The pattern is used to build complex query objects. This means that calls (for example to retrieve data with a RESTful GET request, or using a more complex GraphQL query) are built with chained objects to reduce complexity. Some builder objects are optional, others are required to perform specific functions. Builder examples can be found in the [RESTful API reference pages](../api/rest/index.md) and the [GraphQL reference pages](../api/graphql/index.md).
+JavaScript客户端是根据[构建者模式](https://en.wikipedia.org/wiki/Builder_pattern)设计的。该模式用于构建复杂的查询对象。这意味着调用（例如使用RESTful的GET请求检索数据，或者使用更复杂的GraphQL查询）是通过链接对象来构建的，以减少复杂性。一些构建器对象是可选的，而其他构建器对象则需要执行特定的功能。构建器示例可以在[RESTful API参考页面](../api/rest/index.md)和[GraphQL参考页面](../api/graphql/index.md)中找到。
 
-The code snippet at the top of this page shows a simple query corresponding to the RESTful request `GET /v1/schema`. The client is initialized by requiring the package and connecting to a local instance. Then, a query is constructed by getting the `.schema` with `.getter()`. The query will be sent with the `.do()` call. `do()` is required for every function you want to build and execute.
+在本页顶部的代码片段展示了一个简单的查询，对应于RESTful请求`GET /v1/schema`。客户端通过引入包并连接到本地实例来进行初始化。然后，通过使用`.getter()`获取`.schema`构建查询。查询将通过`.do()`调用发送。对于您想要构建和执行的每个函数，都需要使用`do()`。
 
-### General notes
-- All methods use ES6 Promises to deal with asynchronous code, so you need to use `.then()` after function calls, or have `async`/`await` support.
-- In the case of an error, the Promise rejects with the specific error message. (If using `async`/`await`, a rejected promises acts like a thrown exception).
-- Internally the client uses `isomorphic-fetch` to make the REST calls, so it should work from both the browser and NodeJS applications without any required changes.
+### 一般注意事项
+- 所有的方法都使用ES6的Promise来处理异步代码，因此在函数调用后需要使用`.then()`，或者支持`async`/`await`语法。
+- 如果发生错误，Promise会拒绝并返回具体的错误消息。（如果使用`async`/`await`，拒绝的Promise会像抛出异常一样）
+- 客户端内部使用`isomorphic-fetch`来进行REST调用，因此在浏览器和Node.js应用程序中都可以正常工作，无需任何修改。
 
-## Changelog
+## 更新日志
 
-See the [change logs on GitHub](https://github.com/weaviate/weaviate-javascript-client/releases).
+请参阅GitHub上的[变更日志](https://github.com/weaviate/weaviate-javascript-client/releases)。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

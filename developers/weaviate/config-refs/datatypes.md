@@ -1,9 +1,9 @@
 ---
-title: Data types
-sidebar_position: 3
 image: og/docs/configuration.jpg
-# tags: ['Data types']
+sidebar_position: 3
+title: Data types
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -14,21 +14,21 @@ import Badges from '/_includes/badges.mdx';
 - [Concepts: Data Structure](../concepts/data.md)
 :::
 
-## Introduction
+## 简介
 
-When creating a property, Weaviate needs to know what type of data you will give it. Weaviate accepts the following types:
+在创建属性时，Weaviate需要知道你将提供的数据类型。Weaviate接受以下类型：
 
 import DataTypes from '/_includes/datatypes.mdx';
 
 <DataTypes />
 
-(*) Although Weaviate supports `int64`, GraphQL currently only supports `int32`, and does not support `int64`. This means that currently _integer_ data fields in Weaviate with integer values larger than `int32`, will not be returned using GraphQL queries. We are working on solving this [issue](https://github.com/weaviate/weaviate/issues/1563). As current workaround is to use a `string` instead.
+(*)虽然Weaviate支持`int64`，但GraphQL目前仅支持`int32`，不支持`int64`。这意味着当前在Weaviate中具有大于`int32`的整数值的_integer_数据字段将不会在使用GraphQL查询时返回。我们正在解决这个[问题](https://github.com/weaviate/weaviate/issues/1563)。目前的解决方法是使用`string`。
 
-## DataType: `text`
+## 数据类型：`text`
 
-### Tokenization configuration
+### 分词配置
 
-Refer to [this section](../config-refs/schema.md#property-tokenization) on how to configure the tokenization behavior of a `text` property.
+请参考[此部分](../config-refs/schema.md#property-tokenization)了解如何配置`text`属性的分词行为。
 
 :::tip `string` is deprecated
 
@@ -36,9 +36,9 @@ Prior to `v1.19`, Weaviate supported an additional datatype `string`, which was 
 
 Please use `text` instead, which now supports all tokenizations options previously available through `string`.
 :::
-## DataType: `cross-reference`
+## 数据类型: `cross-reference`
 
-The [`cross-reference`](../more-resources/glossary.md) type is the graph element of Weaviate: you can create a link from one object to another. In the schema you can define multiple classes to which a property can point, in a list of strings. The strings in the `dataType` list are names of classes defined elsewhere in the schema. For example:
+[`cross-reference`](../more-resources/glossary.md) 类型是 Weaviate 的图元素: 您可以创建一个从一个对象到另一个对象的链接。在模式中，您可以定义多个类，一个属性可以指向这些类中的一个，在一个字符串列表中。`dataType` 列表中的字符串是在模式的其他位置定义的类的名称。例如:
 
 ```json
 {
@@ -54,30 +54,30 @@ The [`cross-reference`](../more-resources/glossary.md) type is the graph element
 }
 ```
 
-## DataType: `date`
+## 数据类型: `date`
 
-Weaviate requires an [RFC 3339](https://datatracker.ietf.org/doc/rfc3339/) formatted date that includes the time and the offset.
+Weaviate要求使用包括日期、时间和偏移量的[RFC 3339](https://datatracker.ietf.org/doc/rfc3339/)格式的日期。
 
-For example:
+例如:
 
 - `"1985-04-12T23:20:50.52Z"`.
 - `"1996-12-19T16:39:57-08:00"`.
 - `"1937-01-01T12:00:27.87+00:20"`.
 
-In case you want to add a list of dates as one Weaviate data value, you can use above formatting in an array, for example like: `["1985-04-12T23:20:50.52Z", "1937-01-01T12:00:27.87+00:20"]`
+如果您想将日期列表作为一个Weaviate数据值添加，您可以使用上述格式在数组中，例如: `["1985-04-12T23:20:50.52Z", "1937-01-01T12:00:27.87+00:20"]`
 
-## DataType: `blob`
+## 数据类型: `blob`
 
-The datatype blob accepts any binary data. The data should be `base64` encoded, and passed as a `string`. Characteristics:
-* Weaviate doesn't make assumptions about the type of data that is encoded. A module (e.g. `img2vec`) can investigate file headers as it wishes, but Weaviate itself does not do this.
-* When storing, the data is `base64` decoded (so Weaviate stores it more efficiently).
-* When serving, the data is `base64` encoded (so it is safe to serve as `json`).
-* There is no max file size limit.
-* This `blob` field is always skipped in the inverted index, regardless of setting. This mean you can not search by this `blob` field in a Weaviate GraphQL `where` filter, and there is no `valueBlob` field accordingly. Depending on the module, this field can be used in module-specific filters (e.g. `nearImage`{} in the `img2vec-neural` filter).
+数据类型`blob`接受任何二进制数据。数据应该是`base64`编码的，并作为一个`string`传递。特点如下：
+* Weaviate不对编码的数据类型进行假设。一个模块（例如`img2vec`）可以根据需要检查文件头，但Weaviate本身不会这样做。
+* 在存储时，数据会进行`base64`解码（因此Weaviate存储更高效）。
+* 在提供服务时，数据会进行`base64`编码（因此可以安全地作为`json`提供）。
+* 没有最大文件大小限制。
+* 无论设置如何，该 `blob` 字段始终在倒排索引中被跳过。这意味着您不能在Weaviate GraphQL的`where`过滤器中按照该 `blob` 字段进行搜索，并且相应地没有 `valueBlob` 字段。根据模块的不同，该字段可以在模块特定的过滤器中使用（例如，在 `img2vec-neural` 过滤器中的 `nearImage`{}）。
 
-Example:
+示例：
 
-The dataType `blob` can be used as property dataType in the data schema as follows:
+数据类型 `blob` 可以在数据模式中作为属性数据类型使用，如下所示：
 
 ```json
 {
@@ -90,13 +90,13 @@ The dataType `blob` can be used as property dataType in the data schema as follo
 }
 ```
 
-To obtain the base64-encoded value of an image, you can run the following command - or use the helper methods in the Weaviate clients - to do so:
+要获取图像的Base64编码值，您可以运行以下命令，或者使用Weaviate客户端中的辅助方法来完成：
 
 ```bash
 $ cat my_image.png | base64
 ```
 
-You can then import data with `blob` dataType to Weaviate as follows:
+您可以使用`blob`数据类型将数据导入到Weaviate中，方法如下：
 
 ```bash
 $ curl \
@@ -111,25 +111,25 @@ $ curl \
   }' \
     http://localhost:8080/v1/objects
 ```
-## DataType: `uuid`
+## 数据类型：`uuid`
 
 :::info Available from `v1.19` onwards
 :::
 
-The dedicated `uuid` and `uuid[]` data types are more space-efficient than storing the same data as text.
+专用的`uuid`和`uuid[]`数据类型比将相同的数据存储为文本更节省空间。
 
--   Each `uuid` is a 128-bit (16-byte) number.
--   The filterable index uses roaring bitmaps.
+-   每个`uuid`是一个128位（16字节）的数字。
+-   可过滤的索引使用Roaring位图。
 
 :::note Aggregate/sort currently not possible
 It is currently not possible to aggregate or sort by `uuid` or `uuid[]` types.
 :::
 
-## DataType: `geoCoordinates`
+## 数据类型: `geoCoordinates`
 
-Weaviate allows you to store geo coordinates related to a thing or action. When querying Weaviate, you can use this type to find items in a radius around this area. A geo coordinate value is a float, and is processed as [decimal degree](https://en.wikipedia.org/wiki/Decimal_degrees) according to the [ISO standard](https://www.iso.org/standard/39242.html#:~:text=For%20computer%20data%20interchange%20of,minutes%2C%20seconds%20and%20decimal%20seconds).
+Weaviate允许您存储与事物或动作相关的地理坐标。在查询Weaviate时，您可以使用此类型在该区域的半径范围内查找项目。地理坐标值是一个浮点数，并按照[十进制度](https://en.wikipedia.org/wiki/Decimal_degrees)的方式进行处理，符合[ISO标准](https://www.iso.org/standard/39242.html#:~:text=For%20computer%20data%20interchange%20of,minutes%2C%20seconds%20and%20decimal%20seconds)。
 
-An example of how geo coordinates are used in a data object:
+一个使用地理坐标在数据对象中的示例：
 
 ```json
 {
@@ -142,9 +142,9 @@ An example of how geo coordinates are used in a data object:
 }
 ```
 
-## DataType: `phoneNumber`
+## 数据类型: `phoneNumber`
 
-There is a special, primitive data type `phoneNumber`. When a phone number is added to this field, the input will be normalized and validated, unlike the single fields as `number` and `string`. The data field is an object, as opposed to a flat type similar to `geoCoordinates`. The object has multiple fields:
+有一个特殊的原始数据类型 `phoneNumber`。当一个电话号码被添加到该字段时，输入将被规范化和验证，不同于单一字段，如 `number` 和 `string`。数据字段是一个对象，而不是类似于 `geoCoordinates` 的平面类型。该对象有多个字段:
 
 ```yaml
 {
@@ -160,23 +160,23 @@ There is a special, primitive data type `phoneNumber`. When a phone number is ad
 }
 ```
 
-There are two fields that accept input. `input` must always be set, while `defaultCountry` must only be set in specific situations. There are two scenarios possible:
-- When you entered an international number (e.g. `"+31 20 1234567"`) to the `input` field, no `defaultCountry` needs to be entered. The underlying parser will automatically recognize the number's country.
-- When you entered a national number (e.g. `"020 1234567"`), you need to specify the country in `defaultCountry` (in this case, `"nl"`), so that the parse can correctly convert the number into all formats. The string in `defaultCountry` should be an [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.
+有两个可接受输入的字段。`input`字段必须始终设置，而`defaultCountry`字段只在特定情况下设置。有两种可能的情况：
+- 当您在`input`字段中输入国际号码（例如`"+31 20 1234567"`）时，无需输入`defaultCountry`。底层解析器将自动识别号码的国家。
+- 当您输入一个国家号码（例如 `"020 1234567"`）时，您需要在 `defaultCountry` 中指定国家（在这种情况下为 `"nl"`），以便解析器能够将号码正确地转换为所有格式。 `defaultCountry` 中的字符串应该是一个 [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) 国家代码。
 
-As you can see in the code snippet above, all other fields are read-only. These fields are filled automatically, and will appear when reading back a field of type `phoneNumber`.
+如上述代码片段所示，所有其他字段都是只读的。这些字段会自动填充，并在读取`phoneNumber`类型的字段时显示。
 
-### Number of linked instances
+### 关联实例的数量
 
-The `cross-reference` type objects are `arrays` by default. This allows you to link to any number of instances of a given class (including zero).
+`cross-reference`类型的对象默认为`arrays`。这允许您链接到给定类的任意数量的实例（包括零个）。
 
-In the above example, our objects can be linked to:
-* **0** Articles and **1** Blog
-* **1** Article and **3** Blogs
-* **2** Articles and **5** Blogs
-* etc.
+在上面的示例中，我们的对象可以链接到：
+* **0** 篇文章和 **1** 个博客
+* **1** 篇文章和 **3** 个博客
+* **2** 篇文章和 **5** 篇博客
+* 等等。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

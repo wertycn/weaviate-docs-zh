@@ -1,26 +1,26 @@
 ---
-title: Enterprise Usage Collector
-sidebar_position: 7
 image: og/docs/configuration.jpg
-# tags: ['configuration']
+sidebar_position: 7
+title: Enterprise Usage Collector
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-<!-- Hidden for now as no longer used; to be removed in the future. -->
-## Introduction
+<!-- 目前已隐藏，因为不再使用；将来会被移除。 -->
+## 简介
 
-When using Weaviate Enterprise, a proxy service is placed in between the user (or load balancer) and Weaviate. The service measures how Weaviate is used without sending through any sensitive information (e.g., function, durations, payload sizes). Below you can find an outline on how to add the proxy service to your setup.
+在使用Weaviate Enterprise时，会在用户（或负载均衡器）和Weaviate之间放置一个代理服务。该服务通过不发送任何敏感信息（例如函数、持续时间、负载大小）来测量Weaviate的使用情况。以下是如何将代理服务添加到您的设置中的概要。
 
-## 1. Collect a Weaviate Enterprise Token
+## 1. 收集 Weaviate 企业版令牌
 
-- Login into the [Weaviate Console](https://console.weaviate.cloud).
-- Click the profile symbol in the top menu and collect the key, which is shown to you. Note, this key is a secret, and you should not make this available in public repositories.
+- 登录 [Weaviate 控制台](https://console.weaviate.cloud)。
+- 在顶部菜单中点击个人资料图标，收集显示给您的密钥。请注意，此密钥是机密的，不应在公共代码库中公开。
 
-## 2. Add the Weaviate Enterprise Usage Collector to your Docker-compose file
+## 2. 将 Weaviate 企业版使用收集器添加到您的 Docker-compose 文件中
 
-If you are using the Docker-compose file from the installation configurator, you need to add the following block to your YAML file.
+如果您正在使用安装配置工具生成的Docker-compose文件，您需要将以下代码块添加到您的YAML文件中。
 
 ```yaml
 services:
@@ -37,12 +37,12 @@ services:
       - weaviate
 ```
 
-* `weaviate_enterprise_token` = is the token you collected in the previous step.
-* `weaviate_enterprise_project` = can be any identifier picked by you to identify the Weaviate cluster. For example, if you have a development and production setup, you might choose `weaviate_enterprise_project=my-project-dev` and  `weaviate_enterprise_project=my-project-prod`.
+* `weaviate_enterprise_token` = 在前一步骤中收集到的令牌。
+* `weaviate_enterprise_project` = 可以是您选择的任意标识符，用于标识 Weaviate 集群。例如，如果您有开发和生产环境的设置，可以选择 `weaviate_enterprise_project=my-project-dev` 和 `weaviate_enterprise_project=my-project-prod`。
 
-## 3. Set the Weaviate ports to redirect to the proxy
+## 3. 设置 Weaviate 端口以重定向到代理
 
-Because you will route all traffic through the Enterprise proxy, you have to make sure Weaviate accepts the incoming traffic on port 4000.
+因为您将所有流量通过企业代理进行路由，所以您必须确保Weaviate接受端口4000上的传入流量。
 
 ```yaml
 services:
@@ -53,17 +53,17 @@ services:
     # rest of the docker-compose.yml
 ```
 
-## Using the Docker Compose configurator
+## 使用Docker Compose配置工具
 
-You can also use the Docker compose [configurator](/developers/weaviate/installation/docker-compose.md#configurator). Make sure to select `Enabled` for the Enterprise Usage Collector option.
+您还可以使用Docker Compose的[配置工具](/developers/weaviate/installation/docker-compose.md#configurator)。确保为企业使用收集器选项选择`Enabled`。
 
-## Collector proxy on Kubernetes using Helm
+## 使用Helm在Kubernetes上进行代理配置
 
-Obtain your token as described in step 1.
+按照步骤1中所述获取您的令牌。
 
-Get a Weaviate [helm chart](https://github.com/weaviate/weaviate-helm/releases) of version `||site.helm_version||` or higher.
+获取Weaviate的[helm chart](https://github.com/weaviate/weaviate-helm/releases)版本为`||site.helm_version||`或更高版本。
 
-Enable the proxy and configure the proxy using the `collector_proxy` key from the `values.yaml` like so:
+在`values.yaml`文件中启用代理并使用`collector_proxy`键配置代理，如下所示：
 ```
 collector_proxy:
   enabled: true
@@ -76,9 +76,9 @@ collector_proxy:
     type: LoadBalancer
 ```
 
-Deploy the helm chart and make sure to use the proxy service for your requests.
+部署Helm Chart，并确保在您的请求中使用代理服务。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

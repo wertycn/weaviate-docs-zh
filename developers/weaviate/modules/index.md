@@ -1,51 +1,48 @@
 ---
-title: References - Modules
-sidebar_position: 0
 image: og/docs/modules/_title.jpg
-# tags: ['modules']
+sidebar_position: 0
+title: References - Modules
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-<!-- :::caution Migrated From:
-- `Modules`
-- High-level configuration options are now in `Configuration/Modules`
-- Some theoretical elements are now in `Concepts:Essential/Modules`
+<!-- :::caution 迁移自：
+- `模块`
+- 高级配置选项现在在 `Configuration/Modules` 中
+- 一些理论元素现在在 `Concepts:Essential/Modules` 中 -->
 ::: -->
 
 ## Overview
 
 :::info Related pages
-- [Configuration: Modules](../configuration/modules.md)
-- [Concepts: Modules](../concepts/modules.md)
-:::
+- [配置: 模块](../configuration/modules.md)
+- [概念: 模块](../concepts/modules.md)
+这一部分介绍了Weaviate的各个模块，包括它们的功能和如何使用它们。
 
-This section describes Weaviate's individual modules, including their capabilities and how to use them.
+- Retrievers & Vectorizers模块（如`text2vec-*`或`img2vec-*`）将数据对象转换为向量。
+- Readers & Generators模块在从Weaviate检索数据后处理数据，例如回答问题或总结文本。
+- 其他模块包括其他所有模块，例如拼写检查模块。
 
-- The Retrievers & Vectorizaters modules such as `text2vec-*` or `img2vec-*` convert data objects to vectors.
-- The Readers & Generators modules process data after retrieving the data from Weaviate, such as to answer questions or summarize text.
-- The other modules include everything else, such as a spellcheck module.
+## 通用信息
 
-## General
+模块可以是"vectorizers"（定义向量中的数字如何从数据中选择）或提供其他功能的模块，如问答、自定义分类等。模块具有以下特点：
+- 命名约定：
+  - Vectorizer（Retriever模块）：`<media>2vec-<name>-<optional>`，例如`text2vec-contextionary`，`image2vec-RESNET`或`text2vec-transformers`。
+  - 其他模块：`<functionality>-<name>-<optional>`，例如`qna-transformers`。
+  - 模块名称必须是URL安全的，即不能包含需要URL编码的任何字符。
+  - 模块名称不区分大小写。`text2vec-bert`和`text2vec-BERT`是同一个模块。
+- 模块信息可以通过[`v1/modules/<module-name>/<module-specific-endpoint>` RESTful端点](../api/rest/modules.md)访问。
+- 通用模块信息（已连接的模块、版本等）可以通过Weaviate的[`v1/meta`端点](../api/rest/meta.md)访问。
+- 模块可以在RESTful API中添加`additional`属性和GraphQL API中的[`_additional`属性](../api/graphql/additional-properties.md)。
+- 模块可以在GraphQL查询中添加[过滤器](../api/graphql/filters.md)。
+- 哪个vectorizer和其他模块应用于哪些数据类别是在[模式](../configuration/schema-configuration.md#specify-a-vectorizer)中配置的。
 
-Modules can be "vectorizers" (defines how the numbers in the vectors are chosen from the data) or other modules providing additional functions like question answering, custom classification, etc. Modules have the following characteristics:
-- Naming convention:
-  - Vectorizer (Retriever module): `<media>2vec-<name>-<optional>`, for example `text2vec-contextionary`, `image2vec-RESNET` or `text2vec-transformers`.
-  - Other modules: `<functionality>-<name>-<optional>`, for example `qna-transformers`.
-  - A module name must be url-safe, meaning it must not contain any characters which would require url-encoding.
-  - A module name is not case-sensitive. `text2vec-bert` would be the same module as `text2vec-BERT`.
-- Module information is accessible through the [`v1/modules/<module-name>/<module-specific-endpoint>` RESTful endpoint](../api/rest/modules.md).
-- General module information (which modules are attached, version, etc.) is accessible through Weaviate's [`v1/meta` endpoint](../api/rest/meta.md).
-- Modules can add `additional` properties in the RESTful API and [`_additional` properties in the GraphQL API](../api/graphql/additional-properties.md).
-- A module can add [filters](../api/graphql/filters.md) in GraphQL queries.
-- Which vectorizer and other modules are applied to which data classes is configured in the [schema](../configuration/schema-configuration.md#specify-a-vectorizer).
+## 默认的vectorizer模块
 
-## Default vectorizer module
+除非您在Weaviate的配置中指定了默认的向量化模块，否则您需要为您添加到数据模式的每个类别指定使用哪个向量化模块（或者您需要手动为您添加的每个数据点输入一个向量）。在docker-compose配置文件中，使用环境变量`DEFAULT_VECTORIZER_MODULE`将默认设置为`text2vec-contextionary`：
 
-Unless you specify a default vectorization module in Weaviate's configuration, you'll need to specify which vectorization module is used per class you add to the data schema (or you need to enter a vector for each data point you add manually). Set the default with the environment variable `DEFAULT_VECTORIZER_MODULE` to `text2vec-contextionary` in the docker-compose configuration file:
-
-``` yaml
 services:
   weaviate:
     environment:

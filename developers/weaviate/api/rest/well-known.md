@@ -1,38 +1,38 @@
 ---
-title: REST - /v1/.well-known
-sidebar_position: 18
 image: og/docs/api.jpg
-# tags: ['RESTful API', 'references', 'discovery', 'oidc', 'well-known']
+sidebar_position: 18
+title: REST - /v1/.well-known
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## OpenID Configuration
-The RESTful API discovery gives information if [OpenID Connect (OIDC)](/developers/weaviate/configuration/authentication.md) authentication is enabled. The endpoint redirects to the token issued if one is configured.
+## OpenID 配置
+RESTful API 发现功能提供了有关是否启用 [OpenID Connect (OIDC)](/developers/weaviate/configuration/authentication.md) 认证的信息。如果配置了令牌，则端点将重定向到已发出的令牌。
 
-#### Usage
+#### 用法
 
-The discovery endpoint accepts a `GET` request:
+发现端点接受 `GET` 请求：
 
 ```js
 GET /v1/.well-known/openid-configuration
 ```
 
-And it returns the following fields:
-- `href`: The reference to the client.
-- `cliendID`: The ID of the client.
+并且它返回以下字段：
+- `href`：客户端的引用。
+- `cliendID`：客户端的ID。
 
-If no OIDC provider is present, a `404` code will be returned.
+如果没有OIDC提供程序存在，将返回`404`代码。
 
-#### Example
-The following command:
+#### 示例
+以下命令：
 
 import WellknownOpenIDConfig from '/_includes/code/wellknown.openid-configuration.mdx';
 
 <WellknownOpenIDConfig/>
 
-returns:
+返回：
 
 ```json
 {
@@ -41,53 +41,53 @@ returns:
 }
 ```
 
-## Liveness
+## 存活性
 
-Live determines whether the application is alive. It can be used for Kubernetes liveness probe.
+存活性用于确定应用程序是否存活。它可以用于Kubernetes的存活性探针。
 
-#### Usage
+#### 使用方法
 
-The discovery endpoint accepts a `GET` request:
+发现端点接受`GET`请求：
 
 ```js
 GET /v1/.well-known/live
 ```
 
-And it returns 200 if the application is able to respond to HTTP requests.
+如果应用程序能够响应HTTP请求，它将返回200。
 
-#### Example
-If the following command:
+#### 示例
+如果以下命令：
 
 import WellKnownLive from '/_includes/code/wellknown.live.mdx';
 
 <WellKnownLive/>
 
-returns nothing (a 200 response), you know the application is able to respond to HTTP requests.
+返回空值（200响应），则说明应用程序能够响应HTTP请求。
 
-## Readiness
+## 可用性
 
-Live determines whether the application is ready to receive traffic. It can be used for Kubernetes readiness probe.
+Live用于确定应用程序是否准备好接收流量。它可以用于Kubernetes的可用性探针。
 
-## Usage
+## 使用方法
 
-The discovery endpoint accepts a `GET` request:
+发现端点接受`GET`请求：
 
 ```js
 GET /v1/.well-known/ready
 ```
 
-And it returns 200 if the application is able to respond to HTTP requests, and 503 if the application is currently not able to serve traffic. If other horizontal replicas of Weaviate are available and they are capable of receiving traffic, all traffic should be redirected there instead.
+如果应用程序能够响应HTTP请求，它将返回200；如果应用程序当前无法提供服务，则返回503。如果其他水平复制的Weaviate可用且能够接收流量，则应将所有流量重定向到这些副本。
 
-#### Example
-If the following command:
+#### 示例
+如果执行以下命令：
 
 import WellknownReady from '/_includes/code/wellknown.ready.mdx';
 
 <WellknownReady/>
 
-returns nothing (a 200 response), you know the application is able to respond to HTTP requests.
+当返回空白（200响应）时，表示应用程序能够响应HTTP请求。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

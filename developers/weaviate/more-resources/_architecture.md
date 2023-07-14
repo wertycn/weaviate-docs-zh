@@ -1,181 +1,105 @@
 ---
-title: Architecture
-sidebar_position: 4
 image: og/docs/more-resources.jpg
-# tags: ['Architecture']
+sidebar_position: 4
+title: Architecture
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
 ...
 
-## More Resources - bullet points, not ready for publishing (!)
+## 更多资源 - 未准备好发布的项目符号
 
-The following are some bullet points, that need to be converted to proper text.
-I tried to be quite detailed, if there are details in there that should not be
-published, feel free to remove them, as long as the general message still makes
-sense. Similarly, all bullet points are brutally honest, for some there might be
-a more marketing-suited way of saying the same things. Feel free to adopt.
+以下是一些项目符号，需要转换为适当的文本。我试图尽可能详细，如果其中有一些细节不应该被发布，请随意删除它们，只要整个信息仍然有意义。同样，所有项目符号都是坦率的，对于其中的一些项目符号可能存在
+一个更适合市场的说法。随意采用。
 
-## 0.22.x ("Third-party setup")
+## 0.22.x（"第三方设置"）
 
-### 10,000 feet view
-* The "Core" Weaviate application (not to be confused with the Weaviate Stack)
-  itself is stateless and stores its data in third-party databases
-* The two databases used are `etcd` and `Elasticsearch`.
-* `Etcd` has mostly historic reasons and is currently used to store
-  configuration, the schema and contextionary extensions
-* `Elasticsearch` stores all data objects and provides search functionalities
-* The "Core" Weaviate application handles converting text-to-vector, enriching
-  the schema in data objects, building and resolving of cross-references,
-  validation and the APIs
+### 鸟瞰
+* "核心" Weaviate 应用程序（不要与 Weaviate Stack 混淆）本身是无状态的，并将其数据存储在第三方数据库中
+* 使用的两个数据库是 `etcd` 和 `Elasticsearch`
+* `etcd` 在很大程度上是出于历史原因，并且目前用于存储配置、模式和语境扩展
+* `Elasticsearch` 存储所有数据对象并提供搜索功能
+* "Core" Weaviate 应用程序处理将文本转换为向量，丰富数据对象的模式，建立和解析交叉引用，验证和提供API。
 
-### Vector Search
-* When a vector search happens, Core uses the Contextionary to convert the
-  query text to a vector and passes it to Elasticsearch.
-* Elasticsearch does a cosine similarity comparison using the OSS plugin
+### 向量搜索
+* 当进行向量搜索时，Core 使用 Contextionary 将查询文本转换为向量，并将其传递给 Elasticsearch。
+* Elasticsearch 使用 OSS 插件进行余弦相似度比较。
   `lior-k/fast-elasticsearch-vector-scoring`
-* This is a primitive, exhaustive approach, in other words, the query vector is
-  compared to every other vector in the index with O(n) time complexity
+* 这是一种原始的、穷举的方法，换句话说，查询向量与索引中的每个其他向量进行比较，时间复杂度为O(n)
 
-### Structured Search
-* A structured search uses the default ES/Lucene inverted indices
+### 结构化搜索
+* 结构化搜索使用默认的ES/Lucene倒排索引
 
-### Other
-* One Weaviate schema class maps to one Elasticsearch index
-* By default, 3 Elasticsearch shards are created for one index
-* Weaviate Core is stateless, so it can be horizontally scaled at will
-* Elasticsearch can be scaled horizontally
-* Etcd can be scaled horizontally, but it is unlikely that etcd will become the
-  bottleneck in the stack.
-* The contextionary container (only present when the "Semantic Search
-  Extension" is enabled), converts text to vectors, both on import, as well as
-  at query time.
-* During an import load typically peaks in both the contextionary containers,
-  as well as in the Elasticsearch containers. They are usually the first
-  components that require scaling. As a rule of thumb, monitor your cluster and
-  scale whatever requires the most resources, as different dataset have
-  different requirements.
+### 其他
+* 一个Weaviate模式类映射到一个Elasticsearch索引
+* 默认情况下，为一个索引创建3个Elasticsearch分片
+* Weaviate核心是无状态的，因此可以根据需要进行水平扩展
+* Elasticsearch可以水平扩展
+* Etcd可以水平扩展，但etcd不太可能成为堆栈中的瓶颈。
+* contextionary容器（仅在启用了"语义搜索扩展"时存在）在导入和查询时将文本转换为向量。
+* 在导入期间，contextionary容器和Elasticsearch容器通常会出现负载峰值。它们通常是首先受到影响的部分。
+  需要进行扩展的组件。通常情况下，监控您的集群并扩展需要最多资源的组件，因为不同的数据集有不同的要求。
 
-## 1.0.0 ("Standalone")
+## 1.0.0（"独立版"）
 
-### 10,000 feet view
-* The "Core" Weaviate application handles all persistence, no third-party
-  databases are involved.
-* Weaviate's persistence layer is built to be vector-native. At the same time
-  it provides the benefits of combined structured search with vector-search
-  that has been popular in 0.22.x.
-* Each class maps to an index. An index is a self-contained unit consisting
-  of 1..n shards.
-* Each shard is a self-contained unit consisting of 3 parts: (1) A key-value
-  store holding all data objects as presented by the user, (2) a Lucene-like
-  inverted index allowing for structured search, (3) a vector index allowing
-  for vector search.
-* The key-value store and inverted index use `boltdb` for its disk-interaction
-* The vector-index is a custom `hnsw` implementation, optimized for
-  persistence. In the future, other vector indices can be used, however HNSW
-  should be a good fit for most cases.
+### 概览
+* "核心" Weaviate 应用程序处理所有持久化数据，没有涉及第三方数据库。
+* Weaviate 的持久化层是为向量计算而构建的。同时，它提供了结构化搜索和向量搜索的综合优势。
+  在0.22.x版本中很受欢迎。
+* 每个类都映射到一个索引。一个索引是一个自包含的单元，由1到n个分片组成。
+* 每个分片是一个自包含的单元，由3部分组成：(1) 一个键值存储，保存用户呈现的所有数据对象，(2) 一个类似于Lucene的倒排索引，允许结构化搜索，(3) 一个向量索引，允许向量搜索。
+* 键值存储和倒排索引使用`boltdb`进行磁盘交互。
+* 向量索引是一种自定义的`hnsw`实现，针对持久性进行了优化。将来可以使用其他向量索引，但对于大多数情况，HNSW应该是一个很好的选择。
 
-### Vector-Search
-* If the "Semantic Search Extension" is used, the Contextionary translates the
-  text to a query vector, otherwise the user provides a query vector directly.
-* The internal HNSW index for that particular class-index is used for a kNN search.
-* HNSW returns document ids, they are "resolved" to their full data objects
-  using the inverted index and object data key-value store
-* This process roughly has O(log n) time complexity and is therefore orders of
-  magnitude faster on large indices
+### 向量搜索
+* 如果使用了"语义搜索扩展"，Contextionary会将文本转换为查询向量，否则用户直接提供查询向量。
+* 该特定类索引的内部HNSW索引用于进行kNN搜索。
+* HNSW返回文档ID，通过倒排索引和对象数据键值存储"解析"为完整的数据对象
+* 这个过程大致具有O(log n)的时间复杂度，因此在大型索引上速度更快
 
-### Structured search
-* If the search is a pure structured search (without combining it with a vector
-  search), the inverted indices are used to retrieve the document ids. The
-  document ids are resolved to data objects, which are then served to the user.
-* If the search is a combined vector and structured search, the inverted index
-  is used to build an allow list of matching document ids. This allow list is
-  passed to the vector index. (The rest of this answer is specific to HNSW:)
-  The vector index follows all links normally, but in the lowest level, it only
-  includes document ids which are present on the allow list in the result list.
-* A future optimization will skip the vector index and perform a primitive
-  search on the allow list. There is a point where a primitive search can be
-  more efficient for two reasons: (1) If the allow list is already short, only
-  few vector comparisons have to be made, in other words a primitive approach
-  becomes faster with fewer items. (2) HNSW on the other hand can actually
-  become slower with a short allow list. Because if the allowed items happen to
-  be very-far from the query vector - in other words, there are closer matches,
-  but they aren't contained on the allowlist - the search can become
-  exhaustive. However, exhaustive in this case means exhaustive against the
-  entire index, which can be considerably slower. Imagine the following extreme
-  example. The index contains 1bn elements, the allow list contains two
-  elements. There are 500m items closer to the query vector than the two
-  results, but they are not contained on the allow list. The primitive approach
-  will have to do only two comparisons. The HNSW approach will have to do 500m
-  vector comparisons until it even discovers the allowed items.
+### 结构化搜索
+* 如果搜索是纯粹的结构化搜索（不与向量搜索结合），则使用倒排索引来检索文档ID。
+  文档ID被解析为数据对象，然后提供给用户。
+* 如果搜索是向量和结构化搜索的组合，倒排索引用于构建匹配文档ID的允许列表。该允许列表被传递给向量索引。（以下内容仅适用于HNSW：）
+  向量索引按照正常的方式遍历所有链接，但在最低层级中，只包括在结果列表中允许列表中存在的文档ID。
+* 未来的优化将跳过向量索引并在允许列表上执行原始搜索。原始搜索之所以更高效有两个原因：（1）如果允许列表已经很短，只需要进行少量向量比较，换句话说，原始方法在较少条目时变得更快。（2）另一方面，HNSW在允许列表较短时实际上可能变慢。因为如果允许的项目恰好发生在...
+  与查询向量非常远-换句话说，存在更接近的匹配项，但它们不包含在允许列表中-搜索可能变得详尽无遗。然而，在这种情况下，详尽无遗意味着针对整个索引进行详尽无遗，这可能会导致速度明显变慢。想象一个极端的例子，索引包含10亿个元素，允许列表包含两个元素。存在500百万个比这两个元素更接近查询向量的项。
+  结果，但它们没有包含在允许列表中。原始方法只需要进行两次比较。HNSW方法需要进行500m个向量比较，直到发现允许的项目为止。
 
-### Multi-node setup / distributed setup / horizontal scaling
-* This feature will not be present in `1.0.0` yet, it will follow in a future
-  released. However, the entire persistence layer has been build with
-  horizontal scalability in mind.
-* The purpose of shards is to distribute parts of the index among multiple
-  nodes in the cluster.
-* Replication is masterless, i.e. there are no primary or secondary shards,
-  each replication can accept writes. Therefore true horizontal scaling is
-  possible, even when the number of shards is set to 1
-* Examples:
-  * in a 5-node cluster with 1 index made up of 1 shard and replication set to
-    5, each node owns a copy of the entire index. The total disk/memory
-    requirements are five times that of the index. The cluster is highly
-    available, as up to 4 nodes could fail and all data could still be served.
-    Additionally, this configuration has the highest query performance - even
-    on queries which are biased towards a certain area of the index - as every
-    node can fully answer every query.
-  * in a 5-node cluster with 1 index made up of 5 shards and replication set to
-    three, each node owns three (different) shards. Therefore the total
-    disk/memory requirements are three times that of the index (5 shards each
-    containing one 5th of the index replicated 3 times -> 5/5 * 3 = 3). The
-    cluster is highly-available, up to 2 nodes can fail and the cluster can
-    still serve everything. If more than 2 nodes fail, there is a chance that
-    all 3 nodes containing a shard are down. In this case the affected shard
-    (i.e. one fifth of the total index) cannot be served.
-  * in a 5-node cluster with 1 index made up of 1 shard and replication is set
-    to 3: The cluster is not utilized properly. The single shard is replicated
-    onto 3 nodes, therefore two nodes don't hold any data at all and are
-    idling. In this case the index should have been made up of more shards.
-* Weaviate is an AP-database with respect to the CAP theorem.
+### 多节点设置/分布式设置/水平扩展
+* 此功能在`1.0.0`版本中尚未提供，将在未来的发布版本中提供。但是，整个持久化层已经考虑到了水平可扩展性。
+* shards的目的是将索引的部分分布在集群中的多个节点之间。
+* 复制是无主的，即没有主分片或副本分片，每个复制都可以接受写入。因此，即使将分片数设置为1，也可以实现真正的水平扩展。
+* 示例：
+  * 在一个由5个节点组成的集群中，有1个由1个分片组成的索引，并将复制设置为5，每个节点都拥有整个索引的副本。总的磁盘/内存
+    索引的要求是索引大小的五倍。集群具有高可用性，因为最多可以有4个节点故障，仍然可以提供所有数据。此外，该配置具有最高的查询性能-即使是对于偏向于索引某个特定区域的查询-因为每个节点都可以完全回答每个查询。
 
-### Memory usage
-* The HNSW index needs to fit into memory. Note that this doesn't mean that
-  every single vector has to fit into memory, just the index structure (a graph
-  with plenty of links) needs to fit. Failing to provide enough memory for the
-  index to fit, Weaviate cannot start up.
-* Vectors which are commonly used in similarity comparisons are cached, it is
-  therefore not required that every single vector fits into memory. If the
-  cache runs full, items are deleted. If the cache is deleted to frequently a
-  lot of disk reads are required. For maximum performance the cache should be
-  designed so that it fits all vectors. However - on very large clusters, which
-  is where memory requirements are most relevant - it is unlikely that incoming
-  search queries are evenly distributed over the entire index. So, most real
-  life cases can use a vector cache that is smaller than all vectors and still
-  achieve great performance.
-* The key-value stores for the inverted indices and object storage are
-  memory-mapped. So roughly 50% of the available memory (YMMV, depends on the
-  data set and query profile) should be left as linux page cache.
+* 在一个由5个分片组成且复制设置为3的5节点集群中，每个节点拥有三个（不同的）分片。因此，总共有
+    磁盘/内存需求是索引的三倍（每个包含索引五分之一的分片复制三次 -> 5/5 * 3 = 3）。集群是高可用的，最多可以容忍两个节点故障，仍然可以提供全部服务。如果超过两个节点故障，存在所有三个包含分片的节点都宕机的可能性。在这种情况下，受影响的分片（即总索引的五分之一）无法提供服务。
+  * 在一个由1个分片组成的5节点集群中，复制设置为3：集群未正确利用。单个分片被复制到3个节点上，因此另外两个节点根本不保存任何数据，处于空闲状态。在这种情况下，索引应该由更多的分片组成。
+* Weaviate是根据CAP定理的AP数据库。
 
-## Standalone mode in 0.22.x
-<!-- **NOTE: KEEP THIS HEADER FOR REFS FROM THE SOFTWARE ERROR MESSAGES (/developers/weaviate/more-resources/architecture.html#standalone-mode-in-022x)** -->
+### 内存使用
+* HNSW索引需要适应内存。请注意，这并不意味着
+  每个单独的向量都必须适应内存，只需索引结构（一个有很多链接的图）适应即可。如果未提供足够的内存来适应索引，Weaviate无法启动。
+* 常用于相似性比较的向量会被缓存，因此不需要每个单独的向量都适应内存。如果缓存已满，项目将被删除。如果缓存被频繁清除，则会出现...
+  大量的磁盘读取是必需的。为了达到最佳性能，缓存应该被设计成适应所有向量。然而，在非常大的集群上，内存需求最相关的地方，搜索查询不太可能均匀分布在整个索引上。因此，大多数实际情况下可以使用比所有向量更小的向量缓存，仍然可以实现出色的性能。
+* 反向索引和对象存储的键值存储
+  内存映射。因此，应该保留大约50%的可用内存（具体取决于数据集和查询配置文件）作为Linux页面缓存。
 
-* **Important**: While standalone mode is a preview of the standalone feature
-  which will become the standard in 1.0.0, standalone mode is **not a preview
-  of 1.0.0**. In other words, the switch to 1.0.0 will probably contain
-  breaking changes which are not currently reflected in 0.22.x standalone mode
-* As of 0.22.16, standalone mode is not feature complete.
-* Instead, standalone mode in 0.22.x is meant as a preview to see what Weaviate
-  will be like once it no longer depends on third-party DBs for its persistence
-* As of 0.22.16, standalone mode currently still requires `etcd` in the stack.
-  This has no technical reasons, a replacement for the data currently stored
-  there, simply hasn't been built yet into Weaviate Standalone. `Etcd` will be
-  removed completely before `1.0.0`
-* as of 0.22.16 each index has a single shard. Support for a custom number of
-  shards will be added before `1.0.0`
+## 0.22.x中的独立模式
+<!-- **注意：为了从软件错误消息中引用（/developers/weaviate/more-resources/architecture.html#standalone-mode-in-022x），请保留此标题** -->
+
+* **重要提示**：虽然独立模式是1.0.0中将成为标准的独立功能的预览版本，但独立模式不是一个预览版。
+  * 以1.0.0版本为例，切换到1.0.0可能会包含目前0.22.x独立模式中尚未反映的破坏性更改
+* 从0.22.16版本开始，独立模式尚未完全实现功能
+* 相反，0.22.x版本中的独立模式是为了预览Weaviate在不再依赖第三方数据库进行持久化后的状态
+* 从0.22.16版本开始，独立模式仍然需要在栈中安装`etcd`
+  这没有技术原因，目前没有构建替代存储在其中的数据的方法，Weaviate Standalone还没有完全移除`Etcd`，在`1.0.0`之前将会完全移除。
+* 从0.22.16版本开始，每个索引只有一个分片。在`1.0.0`之前将添加对自定义分片数量的支持。
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

@@ -1,24 +1,24 @@
 ---
-title: Modules - an introduction
-sidebar_position: 90
 image: og/docs/tutorials.jpg
-# tags: ['modules']
+sidebar_position: 90
+title: Modules - an introduction
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-In this guide, you will get an introduction to the role that modules play in Weaviate.
+在本指南中，您将了解到模块在Weaviate中扮演的角色。
 
-As their name suggest, Weaviate modules are options components to enhance Weaviate's functionality, such as to vectorize data or process results (e.g., question answering). The structure of the module name (`x2vec`) informs you of what the module does. E.g., `text2vec` generates text embeddings, `img2vec` image embeddings, etc.
+正如它们的名字所示，Weaviate模块是用于增强Weaviate功能的可选组件，例如将数据进行向量化或处理结果（例如问答）。模块名称的结构（`x2vec`）告诉您模块的功能。例如，`text2vec` 生成文本嵌入，`img2vec` 生成图像嵌入等。
 
-## Retrievers & Vectorizers
+## 检索器和向量化器
 
-Retrievers & Vectorizers are mostly used to vectorize data, which goes both for vectorizing the data objects and the queries. For example, if you use the `text2vec` modules, the GraphQL filter [`nearText`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers.md#neartext) becomes available. It will automatically vectorize your query and match it against the vectors stored in the index.
+检索器和向量化器主要用于对数据进行向量化处理，包括对数据对象和查询进行向量化。例如，如果您使用`text2vec`模块，那么GraphQL过滤器[`nearText`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers.md#neartext)将可用。它会自动将您的查询向量化，并将其与存储在索引中的向量进行匹配。
 
-You can set up the vectorization per class as follows:
+您可以按以下方式为每个类别设置向量化处理：
 
 ```json
 {
@@ -27,7 +27,7 @@ You can set up the vectorization per class as follows:
 }
 ```
 
-Next, you need to tell Weaviate what you want to have vectorized. Only the payload, or do you also want to include the class name and the property name?
+接下来，您需要告诉Weaviate您想要对什么进行向量化。仅仅是负载数据，还是您还想包括类名和属性名？
 
 ```json
 {
@@ -54,7 +54,7 @@ Next, you need to tell Weaviate what you want to have vectorized. Only the paylo
 The reason you can index class names and property names is that they sometimes give semantic context. For example, a class _Product_ could have the property _name_. If you vectorize everything you get a vector for _Product_ with the _name_ _some product_. This only goes for `text2vec` modules.
 :::
 
-If you don't want to vectorize a property at all, you can simply skip it.
+如果您不想对某个属性进行向量化，可以直接跳过它。
 
 ```json
 {
@@ -78,13 +78,13 @@ If you don't want to vectorize a property at all, you can simply skip it.
 }
 ```
 
-## Example
+## 示例
 
-The below is a complete example of a schema.
+下面是一个完整的架构示例。
 
-Let's take a look at the definition for the `Article` class. Look for the `"moduleConfig"` entries on the class and on the property level.
+让我们来看一下`Article`类的定义。请在类和属性级别上查找`"moduleConfig"`条目。
 
-You will see that the class and property names are not indexed, but the article _itself_ is. So if you now retrieve a single article, you know that the vector comes from the transformers module.
+您会发现类和属性名称没有被索引，但文章本身是被索引的。因此，如果您现在检索一篇单独的文章，您会知道该向量来自transformers模块。
 
 ```json
 {
@@ -269,11 +269,11 @@ You will see that the class and property names are not indexed, but the article 
 }
 ```
 
-## Readers & Generators
+## 读取器和生成器
 
-Readers & Generators are used to process data after retrieving the data from the database. Question answering is a good example of this. If you set a limit of 10, the 10 results will be run through the Q&A module.
+读取器和生成器用于在从数据库获取数据后对数据进行处理。问答系统是一个很好的例子。如果您设置了一个限制为10，那么这10个结果将会通过问答模块进行处理。
 
-Like retrievers & vectorizers, the modules can extend the GraphQL-API. The question-answering module shows best.
+和检索器和向量化器一样，这些模块可以扩展GraphQL-API。问答模块是最好的示例。
 
 ```graphql
 {
@@ -297,11 +297,11 @@ Like retrievers & vectorizers, the modules can extend the GraphQL-API. The quest
 }
 ```
 
-## Recap
+## 总结
 
-Modules are add-ons to Weaviate, they can take care of vectorization ([retrievers & vectorizers](#retrievers--vectorizers)) or extend the core with new functionality ([readers & generators](#readers--generators)). You don't have to use them, but you can.
+模块是Weaviate的插件，它们可以处理向量化（[检索器和矢量化器](#retrievers--vectorizers)）或通过新功能扩展核心（[读取器和生成器](#readers--generators)）。您不必使用它们，但可以使用。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

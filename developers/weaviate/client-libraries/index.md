@@ -1,17 +1,17 @@
 ---
-title: References - Client Libraries
-sidebar_position: 0
 image: og/docs/client-libraries.jpg
-# tags: ['client libraries', 'cli']
+sidebar_position: 0
+title: References - Client Libraries
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
-You can interact with Weaviate by using the GraphQL or RESTful API directly, or with one of the available client libraries.
+## 概述
+您可以直接使用GraphQL或RESTful API与Weaviate进行交互，也可以使用其中一个可用的客户端库。
 
-Currently, Weaviate supports:
+目前，Weaviate支持以下语言：
 
 - [Python](/developers/weaviate/client-libraries/python.md)
 - [TypeScript/JavaScript](/developers/weaviate/client-libraries/typescript.mdx)
@@ -30,15 +30,15 @@ import ClientCapabilitiesOverview from '/_includes/client.capabilities.mdx'
 
 <ClientCapabilitiesOverview />
 
-### Community clients
+### 社区客户端
 
-There also exist [community clients](./community.md) that were prepared by our wonderful community members. These clients are not maintained by the core Weaviate team, but by the community members themselves. If you want to contribute to these clients, please contact the maintainers of the client.
+还有一些由我们出色的社区成员准备的[社区客户端](./community.md)。这些客户端不是由Weaviate核心团队维护，而是由社区成员自己维护。如果您想为这些客户端做出贡献，请联系客户端的维护人员。
 
-## Native vs GraphQL queries
+## 本地查询 vs GraphQL 查询
 
-When querying Weaviate you can choose to write your queries in GraphQL and send the raw GraphQL query to Weaviate, or you can write the query natively to the client language you are using.
+当查询Weaviate时，您可以选择使用GraphQL编写查询，并将原始的GraphQL查询发送到Weaviate，或者您可以使用客户端语言本地编写查询。
 
-For example, if you were using the Weaviate Python client:
+例如，如果您正在使用Weaviate Python客户端：
 
 ```python
 import weaviate
@@ -50,7 +50,7 @@ result = client.query.get("Article", ["title", "url", "wordCount"]).do()
 print(result)
 ```
 
-Yields the same result as:
+产生的结果与以下相同：
 
 ```python
 import weaviate
@@ -74,24 +74,24 @@ result = client.query.raw(query)
 print(result)
 ```
 
-## Client-specific functions
+## 客户端特定函数
 
-Additional to complete reflection of the RESTful and GraphQL API, the clients have some client-specific functions. These functions are documented on the client pages. An overview of features of the clients:
+除了完整反映 RESTful 和 GraphQL API 外，客户端还具有一些客户端特定的函数。这些函数在客户端页面上有文档记录。以下是客户端功能的概述：
 
-| Feature  | Python client | TypeScript client | Java client | Go client |
+| 功能 | Python 客户端 | TypeScript 客户端 | Java 客户端 | Go 客户端 |
 | --- | --- | --- | --- | --- |
-| RESTful API endpoints | **V** | **V** | **V** | **V** |
-| GraphQL Get | **V** | **V** | **V** | **V** |
-| GraphQL Aggregate | **V** | **V** | **V** | **V** |
-| GraphQL Explore | **V** | **V** | **V** | **V** |
-| Uploading a full JSON schema | **V** | X | X | X |
-| Deleting a full JSON schema | **V** | X | X | X |
-| Check schema | **V** | X | X | X |
+| RESTful API 端点 | **V** | **V** | **V** | **V** |
+| GraphQL 获取 | **V** | **V** | **V** | **V** |
+| GraphQL 聚合 | **V** | **V** | **V** | **V** |
+| GraphQL 探索 | **V** | **V** | **V** | **V** |
+| 上传完整的 JSON 模式 | **V** | X | X | X |
+| 删除完整的 JSON 模式 | **V** | X | X | X |
+| 检查模式 | **V** | X | X | X |
 
-## Command Line Interface (CLI)
-You can interact with Weaviate via a command line interface. Information about how to install and use can be found [here](./cli.md).
+## 命令行界面 (CLI)
+您可以通过命令行界面与 Weaviate 进行交互。有关安装和使用的信息，请参阅[这里](./cli.md)。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

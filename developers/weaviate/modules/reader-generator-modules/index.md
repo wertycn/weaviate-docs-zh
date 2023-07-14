@@ -1,13 +1,13 @@
 ---
-title: Readers & Generators
-sidebar_position: 0
 image: og/docs/modules/readers-generators-overview.jpg
-# tags: ['modules', 'transformers']
+sidebar_position: 0
+title: Readers & Generators
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-This section includes reference guides for reader & generator modules, such as the [QA module](./qna-transformers.md), [NER module](./ner-transformers.md) and the [Summarization module](./sum-transformers.md).
+本节包括读取器和生成器模块的参考指南，例如[问答模块](./qna-transformers.md)，[命名实体识别模块](./ner-transformers.md)和[摘要生成模块](./sum-transformers.md)。

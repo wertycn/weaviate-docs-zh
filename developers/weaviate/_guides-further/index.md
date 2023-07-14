@@ -1,13 +1,12 @@
 ---
-title: Tutorials - Further Topics
-sidebar_position: 0
 image: og/docs/further-guides.jpg
-# tags: ['how to']
+sidebar_position: 0
+title: Tutorials - Further Topics
 ---
 
-<!-- TODO: Remove explanatory header once layout review complete -->
-<!-- :::caution UNDER CONSTRUCTION
-The various "Tutorials" sections are made up of documents from Tutorials in Weaviate Docs Classic, plus a some new documents.
+<!-- TODO: 完成布局审核后删除解释性标题 -->
+<!-- :::caution 正在建设中
+"Tutorials" 部分由 Weaviate Docs Classic 中的教程文档以及一些新文档组成。
 ::: -->
 
 ## Overview
@@ -18,7 +17,7 @@ These **further** tutorials are somewhat narrower in scope, to show you how to a
 Whether you read these tutorials will be mostly dependent on whether you would like to make the specific dish - that is, whether the topic of the tutorial is relevant to you. It can also be a great way to see what Weaviate is capable of.
 
 :::info What would you like to know?
-If you would like to see particular tutorial - let us know on [the forum](https://forum.weaviate.io/)! We can help you with your specific problem, and help make the documentation better.
+如果您想查看特定的教程，请在[论坛](https://forum.weaviate.io/)上告诉我们！我们可以帮助您解决特定的问题，并改进文档内容。
 :::
 
 import BasicPrereqs from '/_includes/prerequisites-quickstart.md';

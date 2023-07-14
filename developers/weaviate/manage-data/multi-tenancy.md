@@ -1,8 +1,7 @@
 ---
-title: Multi-tenancy operations
-sidebar_position: 60
 image: og/docs/configuration.jpg
-# tags: ['configuration', 'multi-tenancy']
+sidebar_position: 60
+title: Multi-tenancy operations
 ---
 
 import Badges from '/_includes/badges.mdx';
@@ -21,9 +20,9 @@ import TSCode from '!!raw-loader!/_includes/code/howto/manage-data.multi-tenancy
 - [Concepts: Data Structure](../concepts/data.md#multi-tenancy)
 :::
 
-## Enable multi-tenancy
+## 启用多租户
 
-Multi-tenancy is disabled by default. To enable it, set the `multiTenancyConfig` variable in the class definition as shown below:
+默认情况下，多租户是被禁用的。要启用多租户，请按照下面的示例在类定义中设置`multiTenancyConfig`变量。
 
 ```json
 {
@@ -34,19 +33,19 @@ Multi-tenancy is disabled by default. To enable it, set the `multiTenancyConfig`
 }
 ```
 
-## Class operations
+## 类操作
 
-### Add tenant(s)
+### 添加租户
 
-To add tenants to a class, you must provide the tenant names to the Weaviate class.
+要将租户添加到类中，您必须向Weaviate类提供租户名称。
 
 import TenantNameFormat from '/_includes/tenant-names.mdx';
 
 <TenantNameFormat/>
 
-Code examples are shown below in which the tenants `tenantA` and `tenantB` are added to the class `MultiTenancyClass`:
+下面是代码示例，其中将租户`tenantA`和`tenantB`添加到类`MultiTenancyClass`中：
 
-<!-- TODO: Add TS/Go/Java examples -->
+<!-- TODO: 添加TS/Go/Java示例 -->
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -69,11 +68,11 @@ Code examples are shown below in which the tenants `tenantA` and `tenantB` are a
 </Tabs>
 
 
-### List tenant(s)
+### 列出租户
 
-To list existing tenants in a class, you must provide the Weaviate class name.
+要列出类中现有的租户，您必须提供 Weaviate 类的名称。
 
-Code examples are shown below for listing the existing tenants in the `MultiTenancyClass` class:
+以下是在`MultiTenancyClass`类中列出现有租户的代码示例：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -96,11 +95,11 @@ Code examples are shown below for listing the existing tenants in the `MultiTena
 </Tabs>
 
 
-### Delete tenant(s)
+### 删除租户
 
-You can delete one or more existing tenants in a class by providing the Weaviate class name.
+您可以通过提供Weaviate类名来删除一个或多个现有的租户。
 
-If a tenant specified for deletion doesn't belong to the class, it is ignored.
+如果指定要删除的租户不属于该类，则会被忽略。
 
 
 <Tabs groupId="languages">
@@ -123,13 +122,13 @@ If a tenant specified for deletion doesn't belong to the class, it is ignored.
   </TabItem>
 </Tabs>
 
-## Object operations
+## 对象操作
 
-### CRUD operations
+### CRUD操作
 
-If multi-tenancy is enabled, you must provide the tenant name to Weaviate in each CRUD operation.
+如果启用了多租户功能，在每个CRUD操作中，您必须向Weaviate提供租户名称。
 
-Code examples are shown below for creating an object in the `MultiTenancyClass` class:
+下面是在`MultiTenancyClass`类中创建对象的代码示例：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -152,13 +151,13 @@ Code examples are shown below for creating an object in the `MultiTenancyClass` 
 </Tabs>
 
 
-### Search queries
+### 搜索查询
 
-`Get` and `Aggregate` queries support multi-tenancy operations. (`Explore` queries do not support multi-tenancy operations at this point.)
+`Get`和`Aggregate`查询支持多租户操作。（`Explore`查询目前不支持多租户操作。）
 
-If multi-tenancy is enabled, you must provide the tenant name to Weaviate in each search query.
+如果启用了多租户功能，您必须在每个搜索查询中向Weaviate提供租户名称。
 
-Code examples are shown below for fetching one object in the `MultiTenancyClass` class from the tenant `tenantA`:
+以下是从租户`tenantA`中的`MultiTenancyClass`类中获取一个对象的代码示例：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -181,15 +180,15 @@ Code examples are shown below for fetching one object in the `MultiTenancyClass`
 </Tabs>
 
 
-## Cross-references
+## 交叉引用
 
-If multi-tenancy is enabled, you must provide the tenant name to Weaviate while creating, updating or deleting cross-references.
+如果启用了多租户功能，在创建、更新或删除交叉引用时，您必须向Weaviate提供租户名称。
 
-You can establish a cross-reference from a multi-tenancy class object to:
-- A non-multi-tenancy class object, or
-- A multi-tenancy class object belonging to the same tenant.
+您可以从多租户类对象建立到以下内容的交叉引用：
+- 非多租户类对象，或
+- 属于同一租户的多租户类对象。
 
-The example below creates a cross-reference between two objects. It links an object in the `MultiTenancyClass` class that belongs to `tenantA`, to an object in the `JeopardyCategory` class:
+下面的示例创建了两个对象之间的交叉引用。它将属于`tenantA`的`MultiTenancyClass`类中的一个对象链接到`JeopardyCategory`类中的一个对象：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -212,11 +211,11 @@ The example below creates a cross-reference between two objects. It links an obj
 </Tabs>
 
 
-As described above, the `JeopardyCategory` class object can be either:
-- A non-multi-tenancy object or
-- A multi-tenancy object belonging to `tenantA`.
+如上所述，`JeopardyCategory`类对象可以是以下之一：
+- 非多租户对象或
+- 属于`tenantA`的多租户对象。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

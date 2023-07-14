@@ -1,8 +1,7 @@
 ---
-title: Read all objects
-sidebar_position: 25
 image: og/docs/howto.jpg
-# tags: ['how-to', 'cursor']
+sidebar_position: 25
+title: Read all objects
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,11 +10,11 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PythonCode from '!!raw-loader!/_includes/code/howto/read-all-objects.py';
 import TSCode from '!!raw-loader!/_includes/code/howto/read-all-objects.ts';
 
-## Overview
+## 概述
 
-Sometimes, you may wish to list every object in a class, such as for manual backup when the [`backup`](../configuration/backups.md) feature is not suitable, or to export vectors or specific object properties. You may also wish to then restore these objects as well, to a different Weaviate instance for example.
+有时候，您可能希望列出类中的每个对象，例如在[`backup`](../configuration/backups.md)功能不适用时进行手动备份，或者导出向量或特定对象属性。您还可能希望将这些对象恢复到不同的Weaviate实例中。
 
-The best way to do this is with the `after` parameter, also called the [cursor API](../api/graphql/additional-operators.md#cursor-with-after).
+最好的方法是使用`after`参数，也称为[游标API](../api/graphql/additional-operators.md#cursor-with-after)。
 
 :::info Alternative ordering not possible
 The `after` parameter is based on the order of IDs. No other ordering of data, such as sorting or searching, is possible.
@@ -27,17 +26,17 @@ The `after` parameter is based on the order of IDs. No other ordering of data, s
 :::
 
 
-## Retrieve and restore objects
+## 检索和恢复对象
 
 :::tip Multi-tenancy
 For classes where [multi-tenancy](../concepts/data.md#multi-tenancy) is enabled, you will also need to specify the tenant name when reading or creating objects. See [Manage data: multi-tenancy operations](./multi-tenancy.md) for details on how.
 :::
 
-### List every object
+### 列出每个对象
 
-You can list (i.e. retrieve) every object as shown in the below example, looping through the data with the `after` parameter.
+您可以像下面的示例一样列出（检索）每个对象，通过使用`after`参数循环遍历数据。
 
-The below example connects to a "source" instance at `https://some-endpoint.weaviate.network`. It also defines a function that will fetch a group of objects (and their `title` property) in the `WineReview` class from using the ID of the last object retrieved as the cursor.
+下面的示例连接到`https://some-endpoint.weaviate.network`上的一个"source"实例。它还定义了一个函数，该函数将使用上一个检索到的对象的ID作为游标，从`WineReview`类中获取一组对象（以及它们的`title`属性）。
 
 :::tip
 To retrieve (and restore) vectors as well, include the `vector` parameter as shown in the highlighted lines.
@@ -65,58 +64,58 @@ To retrieve (and restore) vectors as well, include the `vector` parameter as sho
 
 </Tabs>
 
-### Fetch the schema
+### 获取模式信息
 
-You can fetch the existing class definition like this:
+您可以通过以下方式获取现有的类定义：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
   <FilteredTextBlock
     text={PythonCode}
-    startMarker="# Fetch the schema"
-    endMarker="# Finished fetching the schema"
+    startMarker="# 获取模式"
+    endMarker="# 完成获取模式"
     language="py"
   />
   </TabItem>
   <TabItem value="js" label="TypeScript">
   <FilteredTextBlock
     text={TSCode}
-    startMarker="// Fetch the schema"
-    endMarker="// Finished fetching the schema"
+    startMarker="// 获取模式"
+    endMarker="// 完成获取模式"
     language="ts"
   />
   </TabItem>
 </Tabs>
 
-### Restore to a target instance
+### 恢复到目标实例
 
-And then restore to a target instance, by:
-- Creating the same class in the target instance using the fetched class definition, and
-- Then streaming the objects from the source instance to the target instance using batch imports.
+然后通过以下步骤将数据恢复到目标实例：
+- 在目标实例中创建与获取的类定义相同的类
+- 然后使用批量导入将对象从源实例流式传输到目标实例
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
   <FilteredTextBlock
     text={PythonCode}
-    startMarker="# Restore to a new (target) instance"
-    endMarker="# Finished restoring to the target instance"
+    startMarker="# 恢复到新的（目标）实例"
+    endMarker="# 完成恢复到目标实例"
     language="py"
   />
   </TabItem>
   <TabItem value="js" label="TypeScript">
   <FilteredTextBlock
     text={TSCode}
-    startMarker="// Restore to a new (target) instance"
-    endMarker="// Finished restoring to the target instance"
+    startMarker="// 恢复到新的（目标）实例"
+    endMarker="// 恢复到目标实例完成"
     language="ts"
   />
   </TabItem>
 </Tabs>
 
 
-### Putting it together
+### 将它们放在一起
 
-Putting the pieces together, the below example will retrieve all objects and the schema from the `WineReview` class from `https://some-endpoint.weaviate.network` and populate `https://anon-endpoint.weaviate.network` with the same:
+将这些组件放在一起，下面的示例将从`https://some-endpoint.weaviate.network`检索`WineReview`类的所有对象和模式，并将其填充到`https://anon-endpoint.weaviate.network`中:
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -138,7 +137,7 @@ Putting the pieces together, the below example will retrieve all objects and the
 </Tabs>
 
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

@@ -1,54 +1,54 @@
 ---
-title: REST - /v1/classification
-sidebar_position: 15
 image: og/docs/api.jpg
-# tags: ['RESTful API', 'references', 'classification']
+sidebar_position: 15
+title: REST - /v1/classification
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Start a classification
+## 开始分类
 
-Weaviate's classification features allows you to classify data objects by predicting cross-references based on the semantic meaning of the data objects. Weaviate Core (without any modules) provides one type of classification:
-- **[kNN classification](#knn-classification)**: Uses the k-nearest neighbors algorithm and requiring training data to predict cross-references. Weaviate finds similar objects and checks how they were labeled in the past. Especially when there isn't a logical semantic relationship in the objects that need to be classified, the kNN algorithm is helpful.
+Weaviate的分类功能允许您通过基于数据对象的语义含义进行交叉引用预测，从而对数据对象进行分类。Weaviate Core（不带任何模块）提供一种类型的分类：
+- **[kNN分类](#knn-classification)**：使用k最近邻算法，需要训练数据来预测交叉引用。Weaviate找到相似的对象，并检查它们在过去是如何标记的。特别是当需要分类的对象之间没有逻辑语义关系时，kNN算法非常有帮助。
 
-The vectorizer module `text2vec-contextionary` provides a second type of classification. Information about this classification type can be found [here](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md).
-- **[Contextual classification](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md)**: Predicts cross-references based on the context, without training data. If you don't have any training data and want to classify how similar a source item is to a potential target item, contextual classification is the right pick. Especially when there is a strong semantic relation in your data (e.g., `The Landmark Eiffel Tower` and `The City Paris`).
+向量化模块 `text2vec-contextionary` 提供了第二种类型的分类。有关此分类类型的信息可以在 [这里](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md) 找到。
+- **[上下文分类](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md)**: 基于上下文预测交叉引用，无需训练数据。如果您没有任何训练数据，并且想要分类源项目与潜在目标项目的相似程度，上下文分类是一个不错的选择。特别是当您的数据中存在强烈的语义关系时（例如，`The Landmark Eiffel Tower`和`The City Paris`）。
 
-A classification can be started using the RESTful API, via the `v1/classification` endpoint with a `POST` request. This triggers the start of the classification, after which it will run in the background. This can also be achieved using one of the client libraries. Use the [`GET` method](#get-status-results-and-metadata) to see the status of the classification:
+使用RESTful API可以启动一个分类，通过`v1/classification`端点进行`POST`请求。这将触发分类的开始，之后它将在后台运行。也可以使用其中一个客户端库来实现。使用[`GET`方法](#get-status-results-and-metadata)来查看分类的状态:
 
 import ClassificationPost from '/_includes/code/classification.post.mdx';
 
 <ClassificationPost/>
 
-Which will return [information](#response) about the started classification, including the classification `id`.
+该方法将返回有关已启动的分类的[信息](#response)，包括分类的 `id`。
 
-## Clients and async classification
-Some classification jobs can take some time to complete. With the Weaviate clients, there are two ways to deal with this. Although there is no explicit async method for classification available, you can do the following:
-  - Wait for the classification function to finish before continuing with the rest of the script (see examples in the code block above).
-    - `Python`: add `with_wait_for_completion()` to the builder pattern.
-    - `Go`: add `.WithWaitForCompletion()` to the builder pattern.
-    - `JavaScript`: add `.withWaitForCompletion()` to the builder pattern.
-  - Don't wait for the classification to be finished and return directly. You can check if the classification is completed using the classification meta endpoint with the id of the classification (which can be found in the return body of the classification start). The field `status` in the return body will either be `running` or `completed`. See [here](#get-status-results-and-metadata) how to query this information.
+## 客户端和异步分类
+某些分类作业可能需要一些时间来完成。使用Weaviate客户端，有两种处理方式。虽然没有专门的异步分类方法可用，但可以按照以下步骤操作：
+  - 在继续执行脚本的其余部分之前，等待分类函数完成（请参考上面代码块中的示例）。
+    - `Python`：在构建模式中添加`with_wait_for_completion()`。
+    - `Go`：在构建模式中添加`.WithWaitForCompletion()`。
+    - `JavaScript`：在构建模式中添加`.withWaitForCompletion()`。
+  - 不要等待分类完成后再返回。您可以使用分类元端点和分类的id（可以在分类开始的返回体中找到）来检查分类是否已完成。返回体中的`status`字段将是`running`或`completed`。请参阅[此处](#get-status-results-and-metadata)了解如何查询此信息。
 
-## Get status, results and metadata
+## 获取状态、结果和元数据
 
-The `GET` endpoint returns the status, results and metadata of a previously created classification:
+`GET`端点返回先前创建的分类的状态、结果和元数据:
 
-### Method
+### 方法
 
 ```js
 GET /v1/classifications/{id}
 ```
 
-### Parameters
+### 参数
 
-The classification `id` should be passed to the request. This `id` is obtained from the result of starting the classification.
+应将分类`id`传递给请求。这个`id`是从开始分类的结果中获得的。
 
-### Response
+### 响应
 
-It returns the following fields for all classification types:
+对于所有分类类型，它返回以下字段：
 ```json
 {
   "id": "string", // classification id
@@ -73,7 +73,7 @@ It returns the following fields for all classification types:
 }
 ```
 
-The following fields additionally when the classification was based on kNN:
+当基于kNN进行分类时，还有以下附加字段：
 ```json
 {
   "settings": {
@@ -82,15 +82,15 @@ The following fields additionally when the classification was based on kNN:
 }
 ```
 
-### Example
-A `knn` classification according to [the example](#start-a-knn-classification)
-The following command:
+### 示例
+根据[示例](#start-a-knn-classification)进行`knn`分类
+以下命令:
 
 import ClassificationGet from '/_includes/code/classification.get.mdx';
 
 <ClassificationGet/>
 
-returns:
+返回:
 
 ```json
 {
@@ -116,52 +116,52 @@ returns:
 }
 ```
 
-### Evaluation of single data object results
-After the classification is completed, the concerning reference properties data objects in the Weaviate instance are updated according to the classification. These data objects will be represented similarly to other data objects. The results of a classification can be requested for the individual data objects through the [`v1/objects/{id}/?include=classification` RESTful endpoint](./objects.md#response-fields) or with the [GraphQL `_additional {classification}` field](../graphql/additional-properties.md#classification).
+### 单个数据对象结果的评估
+分类完成后，Weaviate实例中相关的引用属性数据对象将根据分类进行更新。这些数据对象将类似于其他数据对象的表示形式。可以通过[`v1/objects/{id}/?include=classification` RESTful端点](./objects.md#response-fields)或通过[GraphQL `_additional {classification}`字段](../graphql/additional-properties.md#classification)来请求单个数据对象的分类结果。
 
-## KNN classification
+## KNN分类
 
-With [*k*-nearest neighbor](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) classification, Weaviate finds similar objects and checks how they were labeled in the past. The more objects added and correctly labeled over time, the better a future classification becomes. Especially when there isn't a logical semantic relationship in the objects that need to be classified, the kNN algorithm is helpful.
+使用 [*k*-近邻](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) 分类算法，Weaviate可以找到相似的对象并查看它们在过去是如何被标记的。随着时间的推移，添加和正确标记的对象越多，未来的分类结果就会越好。特别是当需要对没有逻辑语义关系的对象进行分类时，kNN算法非常有帮助。
 
-### Example use cases
+### 示例用例
 
 
-#### Email spam classification
-Imagine you have a data set of emails. Some of those emails are useful, others are spam. The decision between whether an email is spam follows a set of business rules which you may not know about. For example. it could be likely that if email mentions certain words, such as brand names for a specific medication, an email is more likely to be spam. You can let Weaviate learn based on the training data you provide it with. Next to the "Email" class (source), you also introduce an "Importance" class of which adds three data objects: "Spam", "Neutral", "Important". With "kNN" Weaviate never compares source objects to target objects. Instead, it compares source objects to similar source objects and "inherits" their labeling. In turn, it also improves in quality the more (correctly) labeled data you add. For example, if Weaviate finds an email object with the text "Buy the best stamina drugs for cheap prices at very-questionable-shop.com", it will now scan the training data set for a close match. Imagine it finds the email with "Buy cheap pills online" and similar emails. Because these pre-labeled objects were marked as spam, Weaviate will make the decision to label the unseen data object as spam as well. The same will happen for "neutral" and "important" emails respectively.
+#### 电子邮件垃圾分类
+假设您有一个包含电子邮件的数据集。其中一些邮件是有用的，而其他邮件是垃圾邮件。判断一封邮件是否是垃圾邮件遵循一组您可能不知道的业务规则。例如，如果一封邮件提到特定药物的品牌名称等特定词汇，那么它更有可能是垃圾邮件。您可以让Weaviate根据您提供的训练数据进行学习。除了"Email"类（源）之外，您还引入了一个"Importance"类，其中包含三个数据对象："Spam"、"Neutral"和"Important"。使用"kNN"算法，Weaviate不会将源对象与目标对象进行比较。相反，它将源对象与相似的源对象进行比较，并"继承"它们的标记。随着您添加更多（正确）标记的数据，它的质量也会提高。例如，如果Weaviate找到一封文本为"在非常可疑的商店以低价购买最好的耐力药物"的电子邮件对象，它将扫描训练数据集以寻找相似的匹配项。假设它找到了文本为"在线购买廉价药丸"和类似邮件的邮件。由于这些预先标记的对象被标记为垃圾邮件，Weaviate将决定将未见数据对象也标记为垃圾邮件。对于"中性"和"重要"的电子邮件，也会发生同样的情况。
 
-#### Article popularity prediction
-Imagine you have a property for the popularity of the `Article` by the audience, and you would like to predict the `popularity` for new articles based on known properties. You can use kNN classification, use the popularity of previous articles and predict the popularity of new articles.
+#### 文章受欢迎度预测
+假设您有一种衡量受众对`文章`受欢迎程度的属性，并且您希望基于已知属性预测新文章的`受欢迎程度`。您可以使用kNN分类，利用先前文章的受欢迎程度，并预测新文章的受欢迎程度。
 
-### Requirements
-- A schema with at least two classes and a cross-reference between both classes.
-- Some training data, which are data objects in the class with a reference (you want to predict for other objects) to another class already made.
+### 要求
+- 至少两个类别和两个类别之间的交叉引用的模式。
+- 一些训练数据，这些数据对象在类中与另一个已创建的类具有引用（您希望为其他对象进行预测）。
 
-### Endpoint and parameters
+### 端点和参数
 
-A classification can be started via the `v1/classifications` endpoint, which can also be accessed via the client libraries. The following fields must (required) or can (optional) be specified along with the `POST` request:
+可以通过 `v1/classifications` 端点启动分类，也可以通过客户端库访问。以下字段必须（必填）或可以（可选）与 `POST` 请求一起指定：
 
-**Required**:
-- `type: "knn"`: the type of the classification, which is "knn" here.
-- `class`: the class name of the data objects to be classified.
-- `classifyProperties`: a list of properties which values to classify. The individual properties of the class should be reference properties to other classes, which should only refer to one class. This is defined by the `dataType` in the schema, which thus should be an array consisting of exactly one class name.
-- `basedOnProperties`: one or more of the other properties of the class (NOTE: current Weaviate supports only one property given, so make sure to pass a list with a string of one property name), this field must be specified, but the current implementation takes the whole vector of the class (objects) into account.
+**必填**：
+- `type: "knn"`：分类的类型，在此处为 "knn"。
+- `class`: 要分类的数据对象的类名。
+- `classifyProperties`: 要对其值进行分类的属性列表。类的各个属性应该是对其他类的引用属性，这些引用属性应该只引用一个类。这由模式中的`dataType`定义，因此应该是一个包含且只包含一个类名的数组。
+- `basedOnProperties`: 类的其他属性之一或多个（注意：当前的Weaviate仅支持给定一个属性名称的情况，因此请确保传递一个只包含一个属性名称的字符串列表），此字段必须指定，但当前的实现将考虑类的整个向量（对象）。
 
-**Optional, with default values:**
-- `settings {k: 3}`. The number of neighbors to base the classification on.
-- Parameters to add limitations (based on e.g. background business knowledge).
-  - `filters: {}` with the following possible properties:
-    - `sourceWhere: {}`. Parameter to determine which data objects to classify (i.e. you can use this if you want to leave out some data objects to classify them later based on background knowledge). It accepts a [`where` filter body](../graphql/filters.md#where-filter).
-    - `targetWhere: {}`. Parameter to limit possible targets (i.e. when it you want to make sure no data objects will be classified as such). It accepts a [`where` filter body](../graphql/filters.md#where-filter).
-    - `trainingSetWhere: {}`. Parameter to limit possible data objects in the training set. It accepts a [`where` filter body](../graphql/filters.md#where-filter).
+**可选项，默认值为：**
+- `settings {k: 3}`。用于基于邻居进行分类的数量。
+- 添加限制条件的参数（基于背景业务知识）。
+  - `filters: {}`，具有以下可能的属性：
+    - `sourceWhere: {}`。用于确定要分类的数据对象（即，如果您想根据背景知识稍后对一些数据对象进行分类，可以使用此参数）。它接受一个[`where`过滤器体](../graphql/filters.md#where-filter)。
+    - `targetWhere: {}`。限制可能目标的参数（例如，当您希望确保没有数据对象被分类为目标时）。它接受一个[`where`过滤器条件](../graphql/filters.md#where-filter)。
+- `trainingSetWhere: {}`。限制训练集中可能的数据对象的参数。它接受一个[`where`过滤器条件](../graphql/filters.md#where-filter)。
 
-### Start a kNN classification
-A classification can be started through one of the clients, or with a direct `curl` request to the RESTful API.
+### 启动kNN分类
+通过其中一个客户端或直接使用`curl`请求RESTful API可以启动分类。
 
 import ClassificationKNNPost from '/_includes/code/classification.knn.post.mdx';
 
 <ClassificationKNNPost/>
 
-A classification is started, and will run in the background. The following response is given after starting the classification, and the status can be fetched via the [`v1/classifications/{id}`](#get-status-results-and-metadata) endpoint.
+分类已经启动，并将在后台运行。在启动分类后，将返回以下响应，并且可以通过[`v1/classifications/{id}`](#get-status-results-and-metadata)端点获取状态。
 
 ```json
 {
@@ -187,43 +187,42 @@ A classification is started, and will run in the background. The following respo
 }
 ```
 
-### Evaluation of single data object results
-After the classification is completed, the concerning reference properties data objects in the Weaviate instance are updated according to the classification. These data objects will be represented similarly to other data objects. The results of a classification can be requested for the individual data objects through the [`v1/objects/{id}/?include=classification` RESTful endpoint](./objects.md#response-fields) or with the [GraphQL `_additional {classification}` field](../graphql/additional-properties.md#classification).
+### 单个数据对象结果的评估
+分类完成后，Weaviate实例中与分类相关的引用属性数据对象将根据分类结果进行更新。这些数据对象将类似于其他数据对象的表示方式。可以通过[`v1/objects/{id}/?include=classification` RESTful端点](./objects.md#response-fields)或[GraphQL `_additional {classification}`字段](../graphql/additional-properties.md#classification)来请求单个数据对象的分类结果。
 
-## Zero-Shot Classification
+## 零样本分类
 
-Zero-shot classification is an unsupervised classification method, meaning you don't need any training data. Zero-shot allows you to classify data which wasn't seen before to build the classifier. This type of classification is perfect if you want to label data objects with classes, but you don't have or don't want to use training data. It picks the label objects that have the lowest distance to the source objects. The link is made using cross-references, similar to existing classifications in Weaviate.
+零样本分类是一种无监督分类方法，意味着您不需要任何训练数据。零样本允许您对以前未见过的数据进行分类，以构建分类器。如果您想要给数据对象打上类别标签，但又没有或不想使用训练数据，这种类型的分类非常适合。它选择与源对象距离最近的标签对象进行关联。这种关联使用交叉引用进行，类似于Weaviate中的现有分类。
 
-Weaviate's zero-shot classification measures how similar (how close) a data item is to a potential target item (a class or label). More specifically, Weaviate uses `vector search and similarity` algorithms to classify data objects with other data objects. Internally, Weaviate performs a `nearVector` search (which you can also [perform manually with GraphQL](../graphql/vector-search-parameters.md#nearvector)), and takes the closes result out of a given set of options (data objects) to classify.
+Weaviate的零-shot分类衡量了数据项与目标项（类别或标签）之间的相似性（接近程度）。更具体地说，Weaviate使用“向量搜索和相似度”算法将数据对象与其他数据对象进行分类。在内部，Weaviate执行`nearVector`搜索（您也可以使用GraphQL手动执行此操作），并从给定的选项（数据对象）中选择最接近的结果来进行分类。
 
-Zero-shot classification works with all (text/image/..) vectorizers (or no vectorizer, as long as you have vectors stored in Weaviate).
+零样本分类适用于所有（文本/图像/...）向量化器（或者没有向量化器，只要您在Weaviate中存储了向量）。
 
-### Endpoint and parameters
+### 端点和参数
 
-A classification can be started via the `v1/classifications` endpoint, which can also be accessed via the client libraries. The following fields must (required) or can (optional) be specified along with the `POST` request:
+可以通过`v1/classifications`端点启动分类，也可以通过客户端库进行访问。与`POST`请求一起必须（必需）或可以（可选）指定以下字段：
 
-**Required**:
-- `type: "zeroshot"`: the type of the classification, which is zeroshot here.
-- `class`: the class name of the data objects to be classified.
-- `classifyProperties`: a list of properties which values to classify. The individual properties of the class should be reference properties to other classes, which should only refer to one class. This is defined by the `dataType` in the schema, which thus should be an array consisting of exactly one class name.
+**必需**：
+- `type: "zeroshot"`：分类的类型，在此处为零样本。
+- `class`：要分类的数据对象的类名。
+- `classifyProperties`：要分类的属性值的属性列表。类的各个属性应该是对其他类的引用属性，这些引用属性应该只引用一个类。这是由模式中的`dataType`定义的，因此应该是由一个类名组成的数组。
 
-**Optional, with default values**:
-- Parameters to add limitations (based on e.g. background business knowledge).
-  - `filters: {}` with the following possible properties:
-    - `sourceWhere: {}`. Parameter to determine which data objects to classify (i.e. you can use this if you want to leave out some data objects to classify them later based on background knowledge). It accepts a [`where` filter body](../graphql/filters.md#where-filter).
-    - `targetWhere: {}`. Parameter to limit possible targets (i.e. when it you want to make sure no data objects will be classified as such). It accepts a [`where` filter body](../graphql/filters.md#where-filter).
-    - `trainingSetWhere: {}`. Parameter to limit possible data objects in the training set. It accepts a [`where` filter body](../graphql/filters.md#where-filter).
+**可选项，默认值**：
+- 添加限制条件的参数（基于背景业务知识等）。
+  - `filters: {}` 可以包含以下可能的属性:
+    - `sourceWhere: {}`。用于确定要分类的数据对象（例如，如果您希望根据背景知识稍后分类某些数据对象，则可以使用此参数）。它接受一个[`where`过滤器](../graphql/filters.md#where-filter)。
+    - `targetWhere: {}`。用于限制可能的目标对象的参数（例如，当您希望确保没有数据对象被分类为此类时）。它接受一个[`where`筛选条件](../graphql/filters.md#where-filter)。
+- `trainingSetWhere: {}`。用于限制训练集中可能的数据对象的参数。它接受一个[`where`筛选条件](../graphql/filters.md#where-filter)。
 
+### 开始零样本分类
 
-### Start a zeroshot classification
-
-A classification can be started through one of the clients, or with a direct `curl` request to the RESTful API.
+分类可以通过其中一个客户端或直接使用`curl`请求RESTful API来启动。
 
 import ClassificationZeroshotPost from '/_includes/code/classification.zeroshot.post.mdx';
 
 <ClassificationZeroshotPost/>
 
-A classification is started, and will run in the background. The following response is given after starting the classification, and the status can be fetched via the `v1/classifications/{id}` endpoint.
+分类已经启动，并且将在后台运行。在启动分类后，将返回以下响应，可以通过`v1/classifications/{id}`端点获取状态。
 
 ```json
 {
@@ -241,10 +240,10 @@ A classification is started, and will run in the background. The following respo
 }
 ```
 
-### Evaluation of single data object results
-After the classification is completed, the concerning reference properties data objects in the Weaviate instance are updated according to the classification. These data objects will be represented similarly to other data objects. The results of a classification can be requested for the individual data objects through the [`v1/objects/{id}/?include=classification` RESTful endpoint](../rest/objects.md) or with the [GraphQL `_additional {classification}` field](../graphql/additional-properties.md#classification).
+### 单个数据对象结果的评估
+分类完成后，Weaviate实例中相关的引用属性数据对象将根据分类进行更新。这些数据对象将与其他数据对象类似地表示。可以通过[`v1/objects/{id}/?include=classification` RESTful端点](../rest/objects.md)或使用[GraphQL `_additional {classification}`字段](../graphql/additional-properties.md#classification)来请求每个数据对象的分类结果。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

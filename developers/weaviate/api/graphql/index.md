@@ -1,37 +1,37 @@
 ---
-title: GraphQL API
-sidebar_position: 0
 image: og/docs/api.jpg
-# tags: ['GraphQL references']
+sidebar_position: 0
+title: GraphQL API
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
 ## GraphQL
 
-Weaviate's basic query language is [GraphQL](https://graphql.org/). GraphQL is a query language built on using graph data structures. It is an efficient method of data retrieval and mutation, since it mitigates the common over-fetching and under-fetching problems of other query languages.
+Weaviate的基本查询语言是[GraphQL](https://graphql.org/)。GraphQL是一种基于图数据结构的查询语言。它是一种高效的数据检索和修改方法，因为它解决了其他查询语言中常见的过度获取和欠获取的问题。
 
-## All references
+## 所有引用
 
-All references have their individual subpages. Click on one of the references below for more information.
+所有引用都有各自的子页面。点击下面的一个引用以获取更多信息。
 
-- [Get{}](./get.md)
-- [Aggregate{}](./aggregate.md)
-- [Explore{}](./explore.md)
-- [filters](./filters.md)
-- [vector search parameters](./vector-search-parameters.md)
-- [additional properties](./additional-properties.md)
+- [获取{}](./get.md)
+- [聚合{}](./aggregate.md)
+- [探索{}](./explore.md)
+- [筛选器](./filters.md)
+- [向量搜索参数](./vector-search-parameters.md)
+- [附加属性](./additional-properties.md)
 
-## Query structure
+## 查询结构
 
-You can query Weaviate for semantic kinds based on standard GraphQL queries. The examples below only contain the GraphQL query. You can POST a GraphQL query to Weaviate as follows:
+您可以使用标准的GraphQL查询在Weaviate中查询语义类型。下面的示例只包含GraphQL查询。您可以将GraphQL查询POST到Weaviate，如下所示：
 
 ```bash
 $ curl http://localhost/v1/graphql -X POST -H 'Content-type: application/json' -d '{GraphQL query}'
 ```
 
-A GraphQL JSON object is defined as:
+GraphQL JSON对象的定义如下：
 
 ```json
 {
@@ -39,7 +39,7 @@ A GraphQL JSON object is defined as:
 }
 ```
 
-GraphQL queries follows a defined structure, defined to interact with your data in Weaviate as good as possible. Queries are structured as follows:
+GraphQL查询遵循一种定义好的结构，旨在尽可能有效地与您的Weaviate数据进行交互。查询的结构如下：
 
 
 ```graphql
@@ -53,7 +53,7 @@ GraphQL queries follows a defined structure, defined to interact with your data 
 }
 ```
 
-- There are three **functions** currently defined in Weaviate's GraphQL: `Get{}`, `Aggregate{}` and `Explore{}`. [`Get{}`](./get.md) functions are used to easily retrieve data from your Weaviate instance, while [`Aggregate{}`](./aggregate.md) is used to obtain meta information about data objects and its properties. With [`Explore{}`](./explore.md) you can browse through the data to with semantic search, and a slightly different query structure than above is used (there is no `<className>` defined, since you are searching in a fuzzy way):
+- 当前在Weaviate的GraphQL中定义了三个函数：`Get{}`、`Aggregate{}`和`Explore{}`。[`Get{}`](./get.md)函数用于从Weaviate实例中轻松检索数据，而[`Aggregate{}`](./aggregate.md)用于获取数据对象及其属性的元信息。使用[`Explore{}`](./explore.md)，您可以通过语义搜索浏览数据，并使用略微不同的查询结构（没有定义`<className>`，因为您是以模糊的方式进行搜索）：
 
 ```graphql
 {
@@ -65,8 +65,8 @@ GraphQL queries follows a defined structure, defined to interact with your data 
 }
 ```
 
-- [**Class**](/developers/weaviate/more-resources/glossary.md) is the name of the class you want to fetch, defined in the [schema](../rest/schema.md).
-- With including a [**property**](/developers/weaviate/more-resources/glossary.md) (lowercase) list in the query, you specify exactly which property values you want to return. If the property is a reference to another object (beacon), then use the following structure:
+- [**类**](/developers/weaviate/more-resources/glossary.md) 是您想要获取的类的名称，它在[模式](../rest/schema.md)中定义。
+- 在查询中包含一个[**属性**](/developers/weaviate/more-resources/glossary.md)（小写）列表，可以指定您要返回的属性值。如果属性是指向另一个对象（信标）的引用，则使用以下结构：
 
 ```graphql
 {
@@ -88,17 +88,17 @@ GraphQL queries follows a defined structure, defined to interact with your data 
 }
 ```
 
-- To obtain meta information about a data object (for example for interpretation or visualization purposes), use an [**additional property**](./additional-properties.md).
+- 要获取有关数据对象的元信息（例如用于解释或可视化目的），请使用[**附加属性**](./additional-properties.md)。
 
-## Limitations
+## 限制
 
-GraphQL _integer_ data currently only supports `int32`, and does not support `int64`. This means that currently _integer_ data fields in Weaviate with integer values larger than `int32`, will not be returned using GraphQL queries. We are working on solving this [issue](https://github.com/weaviate/weaviate/issues/1563). As current workaround is to use a `string` instead.
+GraphQL的整数数据目前只支持`int32`，不支持`int64`。这意味着在Weaviate中，当前具有大于`int32`的整数值的整数数据字段将无法通过GraphQL查询返回。我们正在解决这个[问题](https://github.com/weaviate/weaviate/issues/1563)。目前的解决方法是使用`string`代替。
 
-## Consistency level
+## 一致性级别
 
-GraphQL (`Get`) queries are run with a tunable [consistency level](../../concepts/replication-architecture/consistency.md#tunable-read-consistency).
+GraphQL（`Get`）查询使用可调整的[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-read-consistency)运行。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

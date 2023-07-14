@@ -1,16 +1,16 @@
 ---
-title: Weaviate Cloud Services
-sidebar_position: 1
 image: og/docs/installation.jpg
-# tags: ['installation', 'Weaviate Cloud Services']
+sidebar_position: 1
+title: Weaviate Cloud Services
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-Weaviate Cloud Services (WCS) is a managed SaaS service that requires no maintenance at your end. Accordingly, it may be the easiest way to run Weaviate.
+Weaviate Cloud Services (WCS) 是一项托管的 SaaS 服务，无需在您的端进行维护。因此，这可能是运行 Weaviate 最简单的方式。
 
 :::tip How to access
 
@@ -26,7 +26,7 @@ You can learn more about WCS from the dedicated [WCS documentation](/developers/
 
 :::
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

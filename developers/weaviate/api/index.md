@@ -1,20 +1,20 @@
 ---
-title: References - API
-sidebar_position: 0
 image: og/docs/api.jpg
-# tags: ['schema']
+sidebar_position: 0
+title: References - API
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-<!-- :::caution Migrated From:
+<!-- :::caution 迁移自:
 - `GraphQL`
 - `RESTful API`
 ::: -->
 
 :::info Related pages
-- [Concepts: Interface](../concepts/interface.md)
+- [概念：接口](../concepts/interface.md)
 :::
 
 ## Overview

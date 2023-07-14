@@ -1,95 +1,94 @@
 ---
-title: Schemas in detail
-sidebar_position: 10
 image: og/docs/tutorials.jpg
-# tags: ['basics']
+sidebar_position: 10
+title: Schemas in detail
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-In this section, we will explore schema construction, including discussing some of the more commonly specified parameters. We will also discuss the auto-schema feature and why you might want to take the time to manually set the schema.
+在本节中，我们将探讨模式构建，包括讨论一些常见的参数。我们还将讨论自动模式特性以及为什么您可能希望花时间手动设置模式。
 
-## Prerequisites
+## 先决条件
 
-We recommend you complete the [Quickstart tutorial](../quickstart/index.md) first.
+我们建议您先完成[快速入门教程](../quickstart/index.md)。
 
-Before you start this tutorial, you should follow the steps in the tutorials to have:
+在开始本教程之前，您应该按照教程中的步骤进行操作，以确保具备以下内容：
 
-- A new instance of Weaviate running (e.g. on the [Weaviate Cloud Services](https://console.weaviate.cloud)),
-- An API key for your preferred inference API, such as OpenAI, Cohere, or Hugging Face, and
-- Installed your preferred Weaviate client library.
+- 已启动的Weaviate实例（例如在[Weaviate云服务](https://console.weaviate.cloud)上），
+- 适用于您首选的推理API（如OpenAI、Cohere或Hugging Face）的API密钥，以及
+- 已安装您首选的Weaviate客户端库。
 
-If you have completed the entire Quickstart tutorial, your Weaviate instance will contain data objects and a schema. **We recommend deleting the `Question` class before starting this section.** See below for details on how to do so:
+如果您已完成整个快速入门教程，您的Weaviate实例将包含数据对象和模式。**我们建议在开始本节之前删除`Question`类。** 请参阅下面的详细信息：
 
-### Deleting classes
+### 删除类
 
 import CautionSchemaDeleteClass from '/_includes/schema-delete-class.mdx'
 
 <CautionSchemaDeleteClass />
 
-## Introduction
+## 介绍
 
-### What is a schema?
+### 什么是模式？
 
 import SchemaDef from '/_includes/definition-schema.md';
 
 <SchemaDef/>
 
-### Quickstart recap
+### 快速入门回顾
 
-In the [Quickstart tutorial](../quickstart/index.md), you saw how to specify the name and the vectorizer for a data collection, called a "class" in Weaviate:
+在[快速入门教程](../quickstart/index.md)中，您学习了如何为数据集合指定名称和矢量化器，这在Weaviate中称为“类”。
 
 import CodeAutoschemaMinimumSchema from '/_includes/code/quickstart.autoschema.minimum.schema.mdx'
 
 <CodeAutoschemaMinimumSchema />
 
-Then when you navigated to the [`schema` endpoint](../api/rest/schema.md) at `https://some-endpoint.weaviate.network/v1/schema`, you will have seen the above-specified class name and the vectorizer.
+然后当你导航到[`schema`端点](../api/rest/schema.md)，在`https://some-endpoint.weaviate.network/v1/schema`上，你会看到上面指定的类名和向量化器。
 
-But you might have also noticed that the `schema` included a whole lot of information that you did not specify.
+但你可能也注意到`schema`包含了你没有指定的大量信息。
 
-That's because Weaviate inferred them for us, using the "auto-schema" feature.
+这是因为Weaviate使用了"auto-schema"功能为我们推断出了它们。
 
-### Auto-schema vs. manual schema
+### 自动模式与手动模式
 
-Weaviate requires a complete schema for each class of data objects.
+Weaviate对于每个数据对象类别都需要一个完整的模式。
 
-If any required information is missing, Weaviate will use the [auto-schema feature](../config-refs/schema.md#auto-schema) to fill in infer the rest from the data being imported as well as the default settings.
+如果缺少任何必需的信息，Weaviate将使用[auto-schema功能](../config-refs/schema.md#auto-schema)从导入的数据以及默认设置中推断出其余部分。
 
-While this may be suitable in some circumstances, in many cases you may wish to explicitly define a schema. Manually defining the schema will help you ensure that the schema is suited for your specific data and needs.
+虽然在某些情况下这可能是适用的，但在许多情况下，您可能希望明确定义一个模式。手动定义模式将帮助您确保模式适合您的特定数据和需求。
 
-## Create a class
+## 创建一个类
 
-A collection of data in Weaviate is called a "class". We will be adding a class to store our quiz data.
+在Weaviate中，数据集合被称为"类"。我们将添加一个类来存储我们的测验数据。
 
-### About classes
+### 关于类
 
-Here are some key considerations about classes:
+以下是关于类的一些关键考虑因素：
 
-Each Weaviate class:
-- Is always written with a capital letter first. This is to distinguish them from generic names for cross-referencing.
-- Constitutes a distinct vector space. A search in Weaviate is always restricted to a class.
-- Can have its own vectorizer. (e.g. one class can have a `text2vec-openai` vectorizer, and another might have `multi2vec-clip` vectorizer, or `none` if you do not intend on using a vectorizer).
-- Has `property` values, where each `property` specifies the data type to store.
+每个Weaviate类：
+- 总是以大写字母开头。这是为了将其与用于交叉引用的通用名称区分开来。
+- 构成一个独立的向量空间。Weaviate中的搜索总是限制在一个类中进行。
+- 可以有自己的向量化器（例如，一个类可以有一个 `text2vec-openai` 向量化器，另一个可以有 `multi2vec-clip` 向量化器，或者如果您不打算使用向量化器，可以使用 `none`）。
+- 有 `property` 值，其中每个 `property` 指定要存储的数据类型。
 
 :::info Can I specify my own vectors?
 Yes! You can bring your own vectors and pass them to Weaviate directly. See [this reference](../api/rest/objects.md#with-a-custom-vector) for more information.
 :::
 
-### Create a basic class
+### 创建一个基本类
 
-Let's create a class called **Question** for our data.
+让我们为我们的数据创建一个名为 **Question** 的类。
 
-Our **Question** class will:
-- Contain three properties:
-    - name `answer`: type `text`
-    - name `question`: type `text`
-    - name `category`: type `text`
-- Use a `text2vec-openai` vectorizer
+我们的 **Question** 类将包含以下三个属性：
+- 属性名为 `answer`，类型为 `text`
+- 属性名为 `question`，类型为 `text`
+- 属性名为 `category`，类型为 `text`
+- 使用 `text2vec-openai` 的向量化器
 
-Run the below code with your client to define the schema for the **Question** class and display the created schema information.
+通过使用你的客户端运行以下代码，定义 **Question** 类的模式，并显示创建的模式信息。
 
 import CodeCreateSchema from '/_includes/code/quickstart.schema.create.mdx';
 
@@ -99,10 +98,10 @@ import CodeCreateSchema from '/_includes/code/quickstart.schema.create.mdx';
 Classes always start with a capital letter. Properties always begin with a small letter. You can use `CamelCase` class names, and property names allow underscores. Read more about schema classes, properties and data types [here](../config-refs/schema.md).
 :::
 
-The result should look something like this:
+结果应该类似于这样：
 
 <details>
-  <summary>See the returned schema</summary>
+  <summary>查看返回的模式</summary>
 
 ```json
 {
@@ -209,21 +208,21 @@ The result should look something like this:
 
 </details>
 
-We get back a lot of information here.
+这里返回了很多信息。
 
-Some of it is what we specified, such as the class name (`class`), and `properties` including their `dataType` and `name`. But the others are inferred by Weaviate based on the defaults and the data provided.
+其中一些是我们指定的，比如类名（`class`），以及`properties`包括它们的`dataType`和`name`。但其他的则是Weaviate根据默认值和提供的数据进行推断的。
 
-### Class property specification examples
+### 类属性规范示例
 
-And depending on your needs, you might want to change any number of these. For example, you might change:
+根据您的需求，您可能想要更改其中的任意数量。例如，您可能要更改：
 
-- `dataType` to modify the type of data being saved. For example, classes with dataType `text` will be tokenized differently to those with `string` dataType ([read more](../config-refs/schema.md#property-tokenization)).
-- `moduleConfig` to modify how each module behaves. In this case, you could change the model and/or version for the OpenAI inference API, and the vectorization behavior such as whether the class name is used for vectorization.
-- `properties` / `moduleConfig` to further modify module behavior at a class data property level. You might choose to skip a particular property being included for vectorization.
-- `invertedIndexConfig` to add or remove particular stopwords, or change BM25 indexing constants.
-- `vectorIndexConfig` to change vector index (e.g. HNSW) parameters, such as for speed / recall tradeoffs.
+- `dataType` 用于修改要保存的数据类型。例如，具有 `text` 数据类型的类将与具有 `string` 数据类型的类进行不同的标记化处理（[了解更多](../config-refs/schema.md#property-tokenization)）。
+- `moduleConfig` 用于修改每个模块的行为。在这种情况下，您可以更改 OpenAI 推理 API 的模型和/或版本，以及矢量化行为，例如是否使用类名进行矢量化。
+- `properties` / `moduleConfig` 可以在类数据属性级别进一步修改模块行为。您可以选择跳过包含特定属性进行向量化。
+- `invertedIndexConfig` 可以添加或删除特定的停用词，或者更改BM25索引常量。
+- `vectorIndexConfig` 可以更改向量索引（例如HNSW）的参数，例如用于速度/召回率的平衡。
 
-So for example, you might specify a schema like the one below:
+因此，例如，您可以指定以下类似的模式：
 
 ```json
 {
@@ -256,33 +255,33 @@ So for example, you might specify a schema like the one below:
 }
 ```
 
-With this you will have changed the specified properties from their defaults. Note that in the rest of the tutorials, we assume that you have not done this.
+通过这样做，您将会修改指定属性的默认值。请注意，在其他教程中，我们假设您还没有进行过这样的修改。
 
-You can read more about various schema, data types, modules, and index configuration options in the pages below.
+您可以在以下页面了解更多关于各种模式、数据类型、模块和索引配置选项的内容。
 
-- [Schema](../configuration/schema-configuration.md)
-- [Data types](../config-refs/datatypes.md)
-- [Modules](../configuration/modules.md)
-- [Indexes](../configuration/indexes.md)
+- [模式](../configuration/schema-configuration.md)
+- [数据类型](../config-refs/datatypes.md)
+- [模块](../configuration/modules.md)
+- [索引](../configuration/indexes.md)
 
-## Recap
+## 概述
 
-- The schema is where you define the structure of the information to be saved.
-- A schema consists of classes and properties, which define concepts.
-<!-- - Words in the schema (names of classes and properties) must be part of the `text2vec-contextionary`. -->
-- Any unspecified setting is inferred by the auto-schema feature based on the data and defaults.
-- The schema can be modified through the [RESTful API](../api/rest/schema.md).
-- A class or property in Weaviate is immutable, but can always be extended.
+- 模式是您定义要保存的信息结构的地方。
+- 模式由类和属性组成，它们定义了概念。
+<!-- - 模式中的词汇（类和属性的名称）必须是`text2vec-contextionary`的一部分。 -->
+- 任何未指定的设置都将由自动模式功能根据数据和默认值推断。
+- 可以通过[RESTful API](../api/rest/schema.md)修改模式。
+- Weaviate中的类或属性是不可变的，但始终可以扩展。
 
-## Suggested reading
+## 推荐阅读
 
-- [Reference: `schema` endpoint RESTful API](../api/rest/schema.md)
-- [Tutorial: Import in detail](./import.md)
-- [Tutorial: Queries in detail](./query.md)
-- [Tutorial: Introduction to modules](./modules.md)
-- [Tutorial: Introduction to Weaviate Console](../../wcs/guides/console.mdx)
+- [参考：`schema`端点RESTful API](../api/rest/schema.md)
+- [教程：详细导入](./import.md)
+- [教程：详细查询](./query.md)
+- [教程：模块介绍](./modules.md)
+- [教程：Weaviate控制台介绍](../../wcs/guides/console.mdx)
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

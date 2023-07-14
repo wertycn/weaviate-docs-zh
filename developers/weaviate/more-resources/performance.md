@@ -1,56 +1,55 @@
 ---
-title: Index types and performance
-sidebar_position: 7
 image: og/docs/more-resources.jpg
-# tags: ['performance']
+sidebar_position: 7
+title: Index types and performance
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-<!-- TODO: Unclear whether this page should be incorporated into another page, e.g. something to do with indexing, resource planning or architecture. -->
-## Index types
-Weaviate uses two types of data indexing. Next to the vector indexes that are created and powers the semantic search capability, there is also the [inverted index](https://en.wikipedia.org/wiki/Inverted_index).
+<!-- TODO: 不清楚这个页面是否应该合并到另一个页面中，例如与索引、资源规划或架构相关的内容。 -->
+## 索引类型
+Weaviate使用两种类型的数据索引。除了创建和驱动语义搜索功能的向量索引之外，还有[倒排索引](https://en.wikipedia.org/wiki/Inverted_index)。
 
-### Inverted index
-The inverted index is essentially what powers all the [GraphQL `where` filters](../api/graphql/filters.md#where-filter), where vectors or semantics are needed to find results. With inverted indexes, contents or data object properties such as words and numbers are mapped to its location in the database. This is the opposite of the more traditional forward index, which maps from documents to its content.
+### 倒排索引
+倒排索引实际上是支持所有[GraphQL `where` 过滤器](../api/graphql/filters.md#where-filter)的核心，当需要使用向量或语义来查找结果时。通过倒排索引，内容或数据对象的属性（如单词和数字）被映射到数据库中的位置。这与传统的正向索引相反，正向索引是从文档到其内容的映射。
 
-Inverted indices are used often in document retrieval systems and search engines, because it allows fast full-text search and fast key-based search instead of brute-force. This fast data retrieval comes with the only cost of slight increase of processing time when a new data object is added, since the data object will indexed and stored in an inverted way, rather than only storing the index of the data object. In the database (Weaviate), there is a big lookup table which contains all the inverted indices. If you want to retrieve objects with a specific property or content, then the database starts looking for only one row with this property which points to the relevant data objects (the row contains pointers to the data object IDs). This makes data object retrieval with these kind of queries very fast. Even if there are more than a billion entries, if you only care about the entries that contain the specific words or properties you're looking for, only one row will be read with the document pointers.
+倒排索引经常在文档检索系统和搜索引擎中使用，因为它可以快速进行全文搜索和基于关键词的快速搜索，而不需要进行暴力搜索。这种快速的数据检索的代价是在添加新的数据对象时稍微增加了处理时间，因为数据对象将以倒排的方式进行索引和存储，而不仅仅存储数据对象的索引。在数据库（Weaviate）中，有一个大的查找表，其中包含所有的倒排索引。如果您想检索具有特定属性或内容的对象，则数据库会开始查找指向相关数据对象的仅含有该属性的一行（该行包含指向数据对象ID的指针）。这使得使用这种类型的查询检索数据对象非常快速。即使有超过十亿条记录，如果您只关心包含特定单词或属性的记录，只有一行文档指针将被读取。
 
-The inverted index currently does not do any weighing (e.g. tf-idf) for sorting, since the vector index is used for these features like sorting. The inverted index is thus, at the moment, rather a binary operation: including or excluding data objects from the query result list, which results in an 'allow list'.
+当前的倒排索引在排序时没有进行任何加权（如tf-idf），因为向量索引用于这些排序特性。因此，倒排索引目前更像是一个二进制操作：将数据对象包含或排除在查询结果列表中，这将产生一个“允许列表”。
 
-### Vector index
-Everything that has a vector, thus every data object in Weaviate, is also indexed in the vector index. Although Weaviate currently supports [HNSW](https://arxiv.org/abs/1603.09320) vector indexes, it is built to be [configurable](/developers/weaviate/concepts/vector-index.md), with more vector index types on the way.
+### 向量索引
+所有具有向量的内容，也就是Weaviate中的每个数据对象，都会被索引到向量索引中。虽然Weaviate目前支持[HNSW](https://arxiv.org/abs/1603.09320)向量索引，但它可以[配置](/developers/weaviate/concepts/vector-index.md)，并且将来还会有更多的向量索引类型。
 
 #### HNSW
-[HNSW](https://arxiv.org/abs/1603.09320) is the first vector index type [supported by Weaviate](/developers/weaviate/concepts/vector-index.md#hnsw). Typically for HNSW is that this index type is super fast at query time, but more costly when it comes to building (adding data with vectors). This means that the process of adding data objects might take longer than you expect or to what you are used to (with other database systems for example). Other database systems, like Elasticsearch, do not make use of vector indexing, but only rely on inverted index. By adding vectorization of data with HNSW, semantic and context-based search is enables, with very high performance on query time.
+[HNSW](https://arxiv.org/abs/1603.09320) 是由Weaviate支持的第一种向量索引类型。HNSW在查询时非常快速，但在构建索引时更加耗时（添加带有向量的数据）。这意味着添加数据对象的过程可能比您预期的时间更长，或者与您以前使用的其他数据库系统相比更长。其他数据库系统（如Elasticsearch）不使用向量索引，而仅依赖于倒排索引。通过使用HNSW对数据进行向量化，可以实现语义和基于上下文的高性能查询。
 
-#### Other vector index types
-The vector index type used Weaviate is pluggable. This means that other types than HNSW can be used for vectorization and querying. If your use case values fast data upload higher than super fast query time and high scalability, then other vector index types may be a better solution (e.g. [Spotify's Annoy](https://github.com/spotify/annoy)). If you want to contribute to a new index type, you can always contact us or make a pull request to Weaviate and build your own index type. Stay tuned for updates!
-
-
-## Costs of queries and operations
-
-### Cost of data import
-At the moment, data import is relatively slow compared to the query times, because of the HNSW indexing. The cheapest data import operation is a simple 'write' operation of a data object that was not seen before. It will get a completely new index. If you update a data object, the update itself is also really cheap, because in the backend an entirely new object will be created and indexed as if it was new. The 'old' object will be cleaned up, which happens asynchronous and will thus add up to the operation time.
-
-### Cost of queries
-Simple `Get` queries that only have a `where` filter are very cheap, because the [inverted index](#inverted-index) is used. A simple `Get` query that uses only the `explore` filter (vector search) is also very cheap, since the very efficient vector index HNSW is used. Sub-50ms 20NN-vector queries on datasets of over 1-100M objects are possible. Weaviate relies on a number of caches, but does not require keeping all vectors in memory. Thus it is also possible to run Weaviate on machines where the available memory is smaller than the size of all vectors.
-
-Combining the `explore` (vector) and `where` filters in one search query (which is what makes Weaviate unique), is slightly more expensive. The inverted index is called first which returns all data items that match the `where` filter. This list is then passed on to the vector index search with HNSW. The cost of this combined operation depends on the dataset size and the amount of data returned by the inverted index search. The less items that are returned from the `where` filter search, the more items the vector search needs to skip, thus the longer it will take. These differences are however very small, perhaps not even noticeable.
-
-### Cost of resolving referencing
-Weaviate is a database with a graph-like data model, not a pure graph database. Graph databases are built in a fashion where following links and references are very cheap, where querying links is cheaper than querying multiple items. Weaviate, on the other hand, is a vector database. This means that one of the cheapest operations you can do with Weaviate is listing data. In a traditional graph database that is quite expensive. Weaviate does however have graph functionalities on top of the vector-search focus. So although its primary focus is on searching through data objects with the inverted index and/or vector index, we offer graph references between data objects. Searching, following and retrieving graph references between data objects is therefore less optimized than pure search. This means that using the graph-like features like resolving object references need more query time than pure data object search as described above.
-
-Important to know is that the more connections between data objects and the deeper you try to query in a single query, the more costly the query operation gets. The best you can deal with these kind of queries is to not do *wide* and *deep* searches at the same time. If you have to resolve a lot of nested references, try to set a low limit (a low number of data objects to be returned). A second tip is to not try to resolve all the references. This could perhaps be split into separate queries, depending on your query. In practice, this could mean that you do a first search to retrieve the top 100 data objects of your query, and only get the deeper references of the top 5 results you're actually interested in.
-
-### Cost of filtering by reference
-If you have a nested reference filter, Weaviate starts by resolving the deepest reference and from there go upwards to the inner layers resolving other references. It thus finds the beacons of the deepest references first. This allows to use inverted index lookups for the other layers, which makes matching of results relatively cheap. However, queries that have nested references in the filter are still relatively costly because multiple search queries (for each nested layer) are performed and the results need to be combined into one result. The cost increases when a lot of results are returned on an inner layer, which needs to be searched through by the one layer deeper, and so on. Thus, this cost could in theory go up exponentially.
-
-A tip is to avoid deeply nested filters in the queries. Additionally, try to make your queries as restrictive as possible, because a ten-level deep query would for example not be so expensive if all levels return only a single ID. In that case only ten one ID searches need to be performed, which is a lot of searches in one query, but each search is very cheap.
+#### 其他向量索引类型
+Weaviate使用的向量索引类型是可插拔的。这意味着除了HNSW之外，还可以使用其他类型进行向量化和查询。如果您的用例更注重快速数据上传而不是超快速查询时间和高可扩展性，那么其他向量索引类型可能是更好的解决方案（例如[Spotify的Annoy](https://github.com/spotify/annoy)）。如果您想为新的索引类型做出贡献，您可以随时与我们联系或向Weaviate提交拉取请求，并构建您自己的索引类型。敬请关注更新！
 
 
-## More Resources
+## 查询和操作的成本
+
+### 数据导入成本
+目前，由于HNSW索引的原因，数据导入相对于查询时间来说比较慢。最便宜的数据导入操作是对之前未见过的数据对象进行简单的“写入”操作。它将获得一个全新的索引。如果更新数据对象，更新本身也非常便宜，因为在后台将创建一个全新的对象，并将其索引，就像它是新的一样。旧的对象将被清理，这是异步进行的，因此会增加操作时间。
+
+### 查询成本
+只具有`where`筛选器的简单`Get`查询非常廉价，因为使用了[倒排索引](#倒排索引)。只使用`explore`筛选器（向量搜索）的简单`Get`查询也非常廉价，因为使用了非常高效的向量索引HNSW。在包含1-100M个对象的数据集上进行20NN-vector查询，响应时间可以在50毫秒以下。Weaviate依赖于多个缓存，但不要求将所有向量保留在内存中。因此，可以在可用内存小于所有向量大小的机器上运行Weaviate。
+
+将`explore`（向量）和`where`筛选器组合在一个搜索查询中（这是Weaviate独特之处），会稍微增加一些开销。首先调用倒排索引，返回与`where`筛选器匹配的所有数据项。然后将该列表传递给使用HNSW的向量索引搜索。这个组合操作的成本取决于数据集的大小和倒排索引搜索返回的数据量。从`where`筛选器搜索返回的项越少，向量搜索需要跳过的项就越多，因此所需的时间就越长。然而，这些差异非常小，可能甚至不会被注意到。
+
+### 解析引用的成本
+Weaviate是一个具有类似图形的数据模型的数据库，而不是纯粹的图形数据库。图形数据库是以一种方式构建的，其中跟随链接和引用非常廉价，查询链接比查询多个项目更便宜。另一方面，Weaviate是一个向量数据库。这意味着您可以使用Weaviate执行的最廉价的操作之一是列出数据。在传统的图形数据库中，这是非常昂贵的。然而，Weaviate在向量搜索焦点之上也具有图形功能。因此，尽管它的主要重点是使用倒排索引和/或向量索引搜索数据对象，我们提供数据对象之间的图形引用。因此，搜索、跟随和检索数据对象之间的图形引用不如纯搜索优化。这意味着使用类似图形的功能（例如解析对象引用）需要比上述纯数据对象搜索更多的查询时间。
+
+重要的是要知道，数据对象之间的连接越多，您在单个查询中进行的深度查询越多，查询操作的成本就越高。在处理这种类型的查询时，最好的方法是不同时进行*广泛*和*深入*的搜索。如果您必须解析大量嵌套引用，请尝试设置一个较低的限制（返回的数据对象数量较少）。第二个提示是不要尝试解析所有的引用。根据您的查询，这可能需要将其拆分为单独的查询。实际上，这意味着您可以首先进行一次搜索，检索查询的前100个数据对象，然后只获取您实际感兴趣的前5个结果的更深层次的引用。
+
+### 按引用进行过滤的成本
+如果您有一个嵌套的引用过滤器，Weaviate会从最深的引用开始解析，然后向上解析其他引用的内部层。因此，它首先找到最深引用的信标。这允许对其他层使用倒排索引查找，从而使结果的匹配相对廉价。然而，具有嵌套引用的查询在过滤器中仍然相对昂贵，因为需要执行多个搜索查询（针对每个嵌套层），并且需要将结果合并为一个结果。当内部层返回大量结果时，成本会增加，需要通过更深一层来搜索，依此类推。因此，这个成本理论上可能呈指数增长。
+
+一个提示是尽量避免在查询中使用深层嵌套的过滤器。此外，尽量使查询尽可能具有限制性，因为一个十层深的查询如果每个层级只返回一个 ID，那么查询的开销就不会很大。在这种情况下，只需要执行十次一个 ID 的搜索，虽然在一个查询中进行了很多次搜索，但每次搜索的开销都很小。
+
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

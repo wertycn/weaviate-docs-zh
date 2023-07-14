@@ -1,3 +1,7 @@
+---
+{}
+---
+
 import Admonition from '@theme/Admonition';
 
 export default function Text2vecInferenceYamlNotes(props) {
@@ -5,10 +9,10 @@ export default function Text2vecInferenceYamlNotes(props) {
     <div>
       <Admonition type="note">
         <ul>
-          <li>You can also use the <a href="/developers/weaviate/installation/docker-compose#configurator">Weaviate configuration tool</a> to create a Weaviate setup with this module.</li>
-          <li>The <code>{props.apiname}</code> environment variable is optional and the client can instead provide the key at insert/query time as an HTTP header (<a href="#usage">see the 'usage' section for instructions</a>)</li>
-        </ul>
-      </Admonition>
-    </div>
-  );
+          <li>您还可以使用<a href="/developers/weaviate/installation/docker-compose#configurator">Weaviate配置工具</a>创建一个带有此模块的Weaviate设置。</li>
+          <li>环境变量<code>{props.apiname}</code>是可选的，客户端可以在插入/查询时作为HTTP头部提供密钥（<a href="#usage">请参阅“用法”部分的说明</a>）</li>
+</ul>
+</Admonition>
+</div>
+);
 }

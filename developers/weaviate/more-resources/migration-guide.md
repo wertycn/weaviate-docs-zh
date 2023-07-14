@@ -1,46 +1,49 @@
 ---
-title: Migration Guide
-sidebar_position: 8
 image: og/docs/more-resources.jpg
-# tags: ['migration']
+sidebar_position: 8
+title: Migration Guide
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Migration for version 1.19.0
+## 版本1.19.0的迁移
 
-This version introduces `indexFilterable` and `indexSearchable` variables for the new text indexes, whose values will be set based on the value of `indexInverted`.
+此版本引入了`indexFilterable`和`indexSearchable`变量，用于新的文本索引，其值将根据`indexInverted`的值进行设置。
 
-Since filterable & searchable are separate indexes, filterable does not exist in Weaviate instances upgraded from pre-`v1.19` to `v1.19`. The missing `filterable` index can be created though on startup for all `text/text[]` properties if env variable `INDEX_MISSING_TEXT_FILTERABLE_AT_STARTUP` is set.
+由于可筛选和可搜索是分开的索引，因此在从 `v1.19` 之前的 Weaviate 实例升级到 `v1.19` 时，`filterable` 不存在。但是，如果设置了环境变量 `INDEX_MISSING_TEXT_FILTERABLE_AT_STARTUP`，则可以在启动时为所有 `text/text[]` 属性创建缺失的 `filterable` 索引。
 
-## Changelog for version v1.9.0
+## 版本 v1.9.0 的更改日志
 
-* no breaking changes
+* 没有破坏性的更改
 
-* *New Features*
-  * ### First Multi-modal module: CLIP Module (#1756, #1766)
-    This release [introduces the `multi2vec-clip` module](/developers/weaviate/modules/retriever-vectorizer-modules/multi2vec-clip.md), a module that allows for multi-modal vectorization within a single vector space. A class can have `image` or `text` fields or both. Similarly, the module provides both a `nearText` and a `nearImage` search and allows for various search combinations, such as text-search on image-only content and various other combinations.
+* *新功能*
+  * ### 第一个多模态模块：CLIP 模块 (#1756, #1766)
+    本版本[引入了`multi2vec-clip`模块](/developers/weaviate/modules/retriever-vectorizer-modules/multi2vec-clip.md)，该模块允许在单个向量空间中进行多模态矢量化。一个类可以拥有`image`或`text`字段，或者两者都有。同样，该模块提供了`nearText`和`nearImage`搜索，并允许进行各种搜索组合，例如在仅包含图像内容的情况下进行文本搜索以及其他各种组合。
 
-    #### How to use
+    #### 如何使用
 
-    The following is a valid payload for a class that vectorizes both images and text fields:
-    ```json
-    {
-        "class": "ClipExample",
-        "moduleConfig": {
-            "multi2vec-clip": {
-                "imageFields": [
-                    "image"
-                ],
-                "textFields": [
-                    "name"
-                ],
-                "weights": {
-                  "textFields": [0.7],
-                  "imageFields": [0.3]
-                }
+    下面是一个用于对图像和文本字段进行向量化的类的有效负载示例：
+```json
+{
+    "class": "ClipExample",
+    "moduleConfig": {
+        "multi2vec-clip": {
+            "imageFields": [
+                "image"
+            ],
+            "textFields": [
+                "name"
+            ],
+            "weights": {
+              "textFields": [0.7],
+              "imageFields": [0.3]
             }
+        }
+    }
+}
+```
         },
         "vectorIndexType": "hnsw",
         "vectorizer": "multi2vec-clip",
@@ -61,119 +64,121 @@ Since filterable & searchable are separate indexes, filterable does not exist in
       }
       ```
 
-    Note that:
-       - `imageFields` and `textFields` in `moduleConfig.multi2vec-clip` do not both need to be set. However at least one of both must be set.
-       - `weights` in `moduleConfig.multi2vec-clip` is optional. If only a single property the property takes all the weight. If multiple properties exist and no weights are specified, the properties are equal-weighted.
+    注意：
+       - 在`moduleConfig.multi2vec-clip`中，`imageFields`和`textFields`不需要同时设置，但至少其中一个必须设置。
+   - 在`moduleConfig.multi2vec-clip`中，`weights`是可选的。如果只有一个属性，则该属性承载全部权重。如果存在多个属性且未指定权重，则属性具有相等的权重。
 
-    You can then import data objects for the class as usual. Fill the `text` or `string` fields with text and/or fill the `blob` fields with a base64-encoded image.
+    然后您可以像往常一样导入类的数据对象。将`text`或`string`字段填充为文本，或将`blob`字段填充为Base64编码的图像。
 
-    #### Limitations
-    * As of `v1.9.0` the module requires explicit creation of a class. If you rely on auto-schema to create the class for you, it will be missing the required configuration about which fields should be vectorized. This will be addressed in a future release.
+#### 限制
+* 在`v1.9.0`版本中，该模块需要显式创建一个类。如果您依赖自动模式创建类，它将缺少有关哪些字段应该被矢量化的必需配置。这将在将来的版本中解决。
 
-* *Fixes*
-  * fix an error where deleting a class with `geoCoordinates` could lead to a panic due to missing cleanup (#1730)
-  * fix an issue where an error in a module would not be forwarded to the user (#1754)
-  * fix an issue where a class could not be deleted on some file system (e.g. AWS EFS) (#1757)
+* *修复*
+  * 修复了删除带有`geoCoordinates`的类会导致清理不完整而引发恐慌的错误（#1730）
+  * 修复了模块中的错误不会转发给用户的问题（#1754）
+  * 修复了某些文件系统（例如AWS EFS）上无法删除类的问题（#1757）
 
+## 迁移到版本v1.8.0
 
-## Migration to version v1.8.0
+### 迁移注意事项
 
-### Migration Notice
+版本`v1.8.0`引入了多分片索引和水平扩展。作为
+数据集需要进行迁移。此迁移在首次启动Weaviate版本`v1.8.0`时会自动执行，无需用户干预。但是，迁移无法撤销。因此，我们建议仔细阅读以下迁移说明，并根据您的需求逐案进行最佳升级路径的决策。
 
-Version `v1.8.0` introduces multi-shard indices and horizontal scaling. As a
-result the dataset needs to be migrated. This migration is performed automatically -
-without user interaction - when first starting up with Weaviate version
-`v1.8.0`. However, it cannot be reversed. We, therefore, recommend carefully
-reading the following migration notes and making a case-by-case decision about the
-best upgrade path for your needs.
+#### 为什么需要进行数据迁移？
 
-#### Why is a data migration necessary?
+在`v1.8.0`之前的Weaviate版本不支持多分片索引功能。该功能是为了提高性能和扩展性而引入的。
+已经计划好，因此数据已经包含在一个具有固定名称的单个分片中。需要进行迁移，将数据从单个固定分片移动到多分片设置中。分片的数量不会更改。当您在数据集上运行 `v1.8.0` 时，以下步骤会自动发生：
 
-Prior to `v1.8.0` Weaviate did not support multi-shard indices. The feature was
-already planned, therefore data was already contained in a single shard with a
-fixed name. A migration is necessary to move the data from a single fixed shard
-into a multi-shard setup. The amount of shards is not changed. When you run
-`v1.8.0` on a dataset the following steps happen automatically:
+* Weaviate会发现您的类别缺少分片配置，并用默认值填充。
+* 当分片启动时，如果它们在磁盘上不存在，但具有固定名称的分片存在，它们会自动填充缺失的分片。
+  当 `v1.7.x` 版本中的名称存在时，Weaviate 会自动识别到需要进行迁移，并将数据移动到磁盘上。
+* 当 Weaviate 运行起来后，数据已经迁移完成。
 
-* Weaviate discovers the missing sharding configuration for your classes and fills it with the default values
-* When shards start-up and they do not exist on disk, but a shard with a fixed
-  name from `v1.7.x` exists, Weaviate automatically recognizes that a migration
-  is necessary and moves the data on disk
-* When Weaviate is up and running the data has been migrated.
+**重要提示：** 在迁移过程中，Weaviate 会将分片分配给集群中唯一可用的节点。您需要确保该节点具有稳定的主机名。如果您在 Kubernetes 上运行，主机名是稳定的（例如，第一个节点的主机名为 `weaviate-0`）。然而，在 `docker-compose` 下主机名可能不稳定。
+默认为容器的ID。如果您删除了容器（例如`docker-compose down`）并重新启动它们，主机名将发生变化。这将导致Weaviate无法找到分片所属的节点而出现错误。发送错误消息的节点是拥有该分片的节点，但它无法识别它，因为它自己的名称已经更改。
 
-**Important Notice:** As part of the migration Weaviate will assign the shard
-to the (only) node available in the cluster. You need to make sure that this
-node has a stable hostname. If you run on Kubernetes, hostnames are stable
-(e.g. `weaviate-0` for the first node). However with `docker-compose` hostnames
-default to the id of the container. If you remove your containers (e.g.
-`docker-compose down`) and start them up again, the hostname will have changed.
-This will lead to errors where Weaviate mentions that it cannot find the node
-that the shard belongs to. The node sending the error message is the node that
-owns the shard itself, but it cannot recognize it, since its own name has
-changed.
+为了解决这个问题，在启动之前您可以设置一个稳定的主机名。
+通过设置环境变量`CLUSTER_HOSTNAME=node1`，可以解决Weaviate v1.8.0**的错误。实际名称并不重要，只要它是稳定的即可。
 
-To remedy this, you can set a stable hostname **before starting up with
-v1.8.0** by setting the env var `CLUSTER_HOSTNAME=node1`. The actual name does
-not matter, as long as it's stable.
+如果您忘记设置稳定的主机名，现在遇到了上述错误，您仍然可以显式设置之前使用的主机名，您可以从错误消息中推导出来。
 
-If you forgot to set a stable hostname and are now running into the error
-mentioned above, you can still explicitly set the hostname that was used before
-which you can derive from the error message.
+示例：
 
-Example:
+如果您看到错误消息`"shard Knuw6a360eCY: resolve node name \"5b6030dbf9ea\" to host"`，您可以通过设置来使Weaviate再次可用。
+`5b6030dbf9ea` 是主机名：`CLUSTER_HOSTNAME=5b6030dbf9ea`。
 
-If you see the error message `"shard Knuw6a360eCY: resolve node name
-\"5b6030dbf9ea\" to host"`, you can make Weaviate usable again, by setting
-`5b6030dbf9ea` as the host name: `CLUSTER_HOSTNAME=5b6030dbf9ea`.
+#### 应该升级还是重新导入？
 
-#### Should you upgrade or reimport?
+请注意，除了新功能外，`v1.8.0` 还包含了大量的错误修复。其中一些错误也会影响到 HNSW 索引的写入磁盘方式。因此，不能排除磁盘上的索引与 `v1.8.0` 版本中新建的索引相比，质量较差的情况。
+因此，如果您可以使用脚本进行导入，我们通常建议从头开始。
+在进行新的`v1.8.0`设置并重新导入而不是迁移的情况下。
 
-Please note that besides new features, `v1.8.0` also contains a large
-collection of bugfixes. Some of those bugs also affected how the HNSW index was
-written to disk. Therefore, it cannot be ruled out that the index on disk has a
-subpar quality compared to a freshly built index in version `v1.8.0`.
-As such, if you can import using a script, we generally recommend starting
-with a fresh `v1.8.0` setup and reimporting instead of migrating.
+#### 升级后是否可以降级？
 
-#### Is downgrading possible after upgrading?
+请注意，在首次启动`v1.8.0`时发生的数据迁移不可自动逆转。如果您计划在升级后降级到`v1.7.x`，则必须在升级之前显式创建状态备份。
 
-Note that the data migration which happens at the first startup of v1.8.0 is
-not automatically reversible. If you plan on downgrading to `v1.7.x` again
-after upgrading, you must explicitly create a backup of the state prior to
-upgrading.
-
-### Changelog
+### 更新日志
 
 
-## Changelog for version v1.7.2
-* No breaking changes
-* New features
-  * ### Array Datatypes (#1691)
-    Added `boolean[]` and `date[]`.
-  * ### Make property names less strict (#1562)
-   Property names in a data schema allows: `/[_A-Za-z][_0-9A-Za-z]*/`. i.e. it will allow for using underscores, will allow numbers and will fix the issue about trailing upper-case characters. But it won't allow for many other special characters, such as dash (-) or language-specific characters like Umlauts, etc, due to GraphQL restrictions.
-* Bug fixes
-  * ### Aggregation on array data type (#1686)
+## 版本v1.7.2的更新日志
+* 没有破坏性变更
+* 新功能
+  * ### 数组数据类型(#1691)
+    添加了`boolean[]`和`date[]`类型。
+* ### 使属性名称更宽松 (#1562)
+  数据模式中的属性名称允许使用`/[_A-Za-z][_0-9A-Za-z]*/`的格式，即允许使用下划线，允许使用数字，并修复了关于结尾大写字符的问题。但是，由于GraphQL的限制，它不允许使用许多其他特殊字符，如破折号(-)或特定于语言的字符，如Umlauts等。
+* Bug修复
+  * ### 对数组数据类型进行聚合 (#1686)
 
 
-## Changelog for version v1.7.0
-* No breaking changes
-* New features
-  * ### Array Datatypes (#1611)
-    Starting with this release, primitive object properties are no longer limited to individual properties, but can also include lists of primitives. Array types can be stored, filtered and aggregated in the same way as other primitives.
+## 版本 v1.7.0 的更新日志
+* 没有破坏性改变
+* 新功能
+  * ### 数组数据类型 (#1611)
+    从此版本开始，原始对象的属性不再限于单个属性，还可以包括原始类型的列表。数组类型可以像其他原始类型一样进行存储、过滤和聚合。
 
-    Auto-schema will automatically recognize lists of `string`/`text` and `number`/`int`. You can also explicitly specify lists in the schema by using the following data types `string[]`, `text[]`, `int[]`, `number[]`. A type that is assigned to be an array, must always stay an array, even if it only contains a single element.
+    Auto-schema将自动识别`string`/`text`和`number`/`int`类型的列表。您还可以通过使用以下数据类型`string[]`、`text[]`、`int[]`、`number[]`在模式中明确指定列表。被指定为数组的类型，即使只包含一个元素，也必须始终保持为数组。
 
-  * ### New Module: `text-spellcheck` - Check and autocorrect misspelled search terms (#1606)
-    Use the new spellchecker module to verify user-provided search queries (in existing `nearText` or `ask` functions) are spelled correctly and even suggest alternative, correct spellings. Spell-checking happens at query time.
+* ### 新模块：`text-spellcheck` - 检查和自动纠正拼写错误的搜索词 (#1606)
+    使用新的拼写检查模块来验证用户提供的搜索查询（在现有的`nearText`或`ask`函数中）是否拼写正确，甚至提供替代的正确拼写建议。拼写检查发生在查询时。
 
-    There are two ways to use this module:
-    1. It provides a new additional property which can be used to check (but not alter) the provided queries:
-    The following query:
-    ```graphql
-    {
-      Get {
-        Post(nearText: {
+有两种使用该模块的方法：
+1. 它提供了一个新的附加属性，用于检查（但不修改）提供的查询：
+以下查询：
+```graphql
+{
+  Get {
+    Post(nearText: {
+```
+
+2. It can be used as a standalone query to check and suggest corrections for a given query:
+The following query:
+```graphql
+{
+  CheckSpell(query: "aple")
+}
+```
+will return:
+```graphql
+{
+  "suggestedQuery": "apple"
+}
+```
+
+2. 它可以作为一个独立的查询来检查并为给定的查询提供纠正建议：
+以下查询：
+```graphql
+{
+  CheckSpell(query: "aple")
+}
+```
+将返回：
+```graphql
+{
+  "suggestedQuery": "apple"
+}
+```
           concepts: "missspelled text"
         }) {
           content
@@ -214,267 +219,257 @@ upgrading.
       "content": "..."
     },
     ```
-    2. It extends existing `text2vec-*` modules with an `autoCorrect` flag, which can be used to automatically correct the query if misspelled.
+    2. 它通过在现有的`text2vec-*`模块中添加`autoCorrect`标志来扩展，如果查询拼写错误，可以自动纠正查询。
 
-  * ### New Module `ner-transformers` - Extract entities from Weaviate using transformers (#1632)
-    Use transformer-based models to extract entities from your existing Weaviate objects on the fly. Entity extraction happens at query time. Note that for maximum performance, transformer-based models should run with GPUs. CPUs can be used, but the throughput will be lower.
+  * ### 新模块 `ner-transformers` - 使用transformers从Weaviate中提取实体 (#1632)
+    使用基于transformers的模型可以在查询时从现有的Weaviate对象中提取实体。请注意，为了达到最佳性能，transformers模型应该在GPU上运行。也可以在CPU上运行，但吞吐量会较低。
 
-    To make use of the module's capabilities, simply extend your query with the following new `_additional` property:
+    要使用该模块的功能，只需将查询扩展为以下新的 `_additional` 属性：
 
     ```graphql
-    {
-      Get {
-        Post {
-          content
-          _additional {
-            tokens(
-              properties: ["content"],    # is required
-              limit: 10,                  # optional, int
-              certainty: 0.8              # optional, float
-            ) {
-              certainty
-              endPosition
-              entity
-              property
-              startPosition
-              word
-            }
-          }
+{
+  Get {
+    Post {
+      content
+      _additional {
+        tokens(
+          properties: ["content"],    # 必填
+          limit: 10,                  # 可选，整数
+          certainty: 0.8              # 可选，浮点数
+        ) {
+          certainty
+          endPosition
+          entity
+          property
+          startPosition
+          word
         }
       }
     }
+  }
+}
+```
+    它将返回类似以下的结果：
 
-    ```
-    It will return results similar to the following:
+```
+"_additional": {
+  "tokens": [
+    {
+      "property": "content",
+      "entity": "PER",
+      "certainty": 0.9894614815711975,
+      "word": "Sarah",
+      "startPosition": 11,
+      "endPosition": 16
+    },
+    {
+      "property": "content",
+      "entity": "LOC",
+      "certainty": 0.7529033422470093,
+      "word": "London",
+      "startPosition": 31,
+          * Bug修复
+  * 聚合`number`数据类型时可能会出现卡顿问题 (#1660)
 
-    ```
-    "_additional": {
-      "tokens": [
-        {
-          "property": "content",
-          "entity": "PER",
-          "certainty": 0.9894614815711975,
-          "word": "Sarah",
-          "startPosition": 11,
-          "endPosition": 16
-        },
-        {
-          "property": "content",
-          "entity": "LOC",
-          "certainty": 0.7529033422470093,
-          "word": "London",
-          "startPosition": 31,
-          "endPosition": 37
-        }
-      ]
-    }
-    ```
-* Bug fixes
-  * Aggregation can get stuck when aggregating `number` datatypes (#1660)
-
-## Changelog for version 1.6.0
-* No breaking changes
-* No new features
- * **Zero Shot Classification (#1603)** This release adds a new classification type `zeroshot` that works with any `vectorizer` or custom vectors. It picks the label objects that have the lowest distance to the source objects. The link is made using cross-references, similar to existing classifications in Weaviate. To start a `zeroshot` classification use `"type": "zeroshot"` in your `POST /v1/classficiations` request and specify the properties you want classified normally using `"classifyProperties": [...]`. As zero shot involves no training data, you cannot set `trainingSetWhere` filters, but can filter both source (`"sourceWhere"`) and label objects (`"targetWhere"`) directly.
-* Bug fixes
+## 版本1.6.0的变更日志
+* 没有破坏性变更
+* 没有新功能
+ * **零-shot分类（#1603）** 此版本添加了一种新的分类类型`zeroshot`，可与任何`vectorizer`或自定义向量一起使用。它选择与源对象之间距离最小的标签对象。链接使用交叉引用进行，类似于Weaviate中的现有分类。要启动零-shot分类，请在您的`POST /v1/classifications`请求中使用`"type": "zeroshot"`，并使用`"classifyProperties": [...]`指定您想要正常分类的属性。由于零-shot不涉及训练数据，因此您无法设置`trainingSetWhere`过滤器，但可以直接过滤源对象（`"sourceWhere"`）和标签对象（`"targetWhere"`）。
+* 修复问题
 
 
-## Changelog for version 1.5.2
+## 版本 1.5.2 的更新日志
 
-* No breaking changes
-* No new features
-* Bug fixes:
-* ### Fix possible data races (`short write`) (#1643)
-  This release fixes various possible data races that could in the worst case lead to an unrecoverable error `"short write"`. The possibility for those races was introduced in `v.1.5.0` and we highly recommend anyone running on the `v1.5.x` timeline to upgrade to `v1.5.2` immediately.
+* 没有破坏性的改动
+* 没有新增功能
+* 修复的问题：
+* ### 修复可能的数据竞争 (`short write`) (#1643)
+  该版本修复了各种可能导致无法恢复的错误 `"short write"` 的数据竞争问题。这些竞争的可能性在 `v1.5.0` 中引入，并且我们强烈建议在 `v1.5.x` 时间线上运行的任何用户立即升级到 `v1.5.2`。
 
-## Changelog for version 1.5.1
+## 版本 1.5.1 的更新日志
 
-* No breaking changes
-* No new features
-* Bug fixes:
-* ### Crashloop after unexpected crash in HNSW commit log (#1635)
-  If Weaviate was killed (e.g. OOMKill) while writing the commit log, it could not be parsed after the next restart anymore, thus ending up in a crashloop. This fix removes this. Note that no data will be lost on such a crash: The partially written commit log has not yet been acknowledged to the user, so no write guarantees have been given yet. It is therefore safe to discard.
+* 没有破坏性的改动
+* 没有新功能
+* Bug修复:
+* ### 在HNSW提交日志意外崩溃后的崩溃循环 (#1635)
+  如果Weaviate在写入提交日志时被终止（例如OOMKill），则在下次重新启动后无法解析它，从而导致崩溃循环。此修复解决了这个问题。请注意，在此类崩溃中不会丢失数据：部分写入的提交日志尚未向用户确认，因此尚未给出任何写入保证。因此，可以安全地丢弃它。
 
-* ### Chained Like operator not working (#1638)
-  Prior to this fix, when chaining `Like` operators in `where` filters where each `valueString` or `valueText` contained a wildcard (`*`), typically only the first operator's results where reflected. This fix makes sure that the chaining (`And` or `Or`) is reflected correctly. This bug did not affect other operators (e.g. `Equal`, `GreaterThan`, etc) and only affected those `Like` queries where a wildcard was used.
+* ### 链式Like运算符不起作用（#1638）
+在此修复之前，在`where`过滤器中链式使用`Like`操作符时，每个`valueString`或`valueText`包含通配符(`*`)的情况下，通常只有第一个操作符的结果会被反映出来。此修复确保了链式操作（And或Or）的正确反映。此错误不会影响其他操作符（例如`Equal`，`GreaterThan`等），只会影响使用通配符的`Like`查询。
 
-* ### Fix potential data race in Auto Schema features (#1636)
-  This fix improves incorrect synchronization on the auto schema feature which in extreme cases could lead to a data race.
+* ### 修复Auto Schema功能中潜在的数据竞争问题 (#1636)
+  此修复改进了自动模式功能中不正确的同步，极端情况下可能导致数据竞争。
 
-## Migration to version 1.5.0
+## 迁移到版本1.5.0
 
-### Migration Notice
-*This release does not contain any API-level breaking changes, however, it changes the entire storage mechanism inside Weaviate. As a result, an in-place update is not possible. When upgrading from previous versions, a new setup needs to be created and all data reimported. Prior backups are not compatible with this version.*
+### 迁移注意事项
+*此版本没有任何API级别的破坏性更改，但是它改变了Weaviate内部的整个存储机制。因此，无法进行原地更新。从之前的版本升级时，需要创建一个新的设置，并重新导入所有数据。先前的备份与此版本不兼容。*
 
-### Changelog
-* No breaking changes
-* New Features:
-  * *LSM-Tree based Storage*. Previous releases of Weaviate used a B+Tree based storage mechanism. This was not fast enough to keep up with the high write speed requirements of a large-scale import. This release completely rewrites the storage layer of Weaviate to use a custom LSM-tree approach. This leads to considerably faster import times, often more than 100% faster than the previous version.
-  * *Auto-Schema Feature*. Import data objects without creating a schema prior to import. The classes will be created automatically, they can still be adjusted manually. Weaviate will guess the property type based on the first time it sees a property. The defaults can be configured using the environment variables outlined in #1539. The feature is on by default, but entirely non-breaking. You can still create an explicit schema at will.
-* Fixes:
-  * *Improve Aggregation Queries*. Reduces the amount of allocations required for some aggregation queries, speeding them up and reduces the amount of timeouts encountered during aggregations.
+### 更新日志
+* 没有破坏性更改
+* 新功能:
+  * 基于LSM-Tree的存储。之前的Weaviate版本使用基于B+Tree的存储机制。这种机制无法满足大规模导入的高写入速度要求。此版本完全重写了Weaviate的存储层，采用了自定义的LSM-Tree方法。这导致导入时间大大加快，通常比之前的版本快100%以上。
+  * *自动模式特性*。在导入之前无需创建模式即可导入数据对象。类将自动创建，仍然可以手动进行调整。Weaviate将根据第一次看到属性时猜测属性类型。默认值可以使用＃1539中概述的环境变量进行配置。该特性默认开启，但完全不会导致破坏。您仍然可以随意创建明确的模式。
+* 修复：
+  * *改进聚合查询*。减少某些聚合查询所需的分配量，加快查询速度，并减少聚合过程中遇到的超时次数。
 
+请访问[此 GitHub 页面](https://github.com/weaviate/weaviate/releases/tag/v1.5.0)查看所有更改内容。
 
-Check [this github page](https://github.com/weaviate/weaviate/releases/tag/v1.5.0) for all the changes.
+## 版本 1.4.0 的更新日志
 
+* 无破坏性变更
+* 新功能：
+  * 图像模块[`img2vec-neural`](/developers/weaviate/modules/retriever-vectorizer-modules/img2vec-neural.md)
+  * 为 `amd64` CPU（Intel、AMD）添加硬件加速
+  * 支持整个 Weaviate 栈的 `arm64` 技术
+  * 设置搜索时的 `ef`
+  * 引入新的数据类型 `blob`
+  * 跳过对类进行向量索引
+* 修复：
+  * 在 HNSW 向量索引中进行各种性能修复
+  * 在矢量化时使属性顺序保持一致
+  * 修复使用自定义向量时的 `PATCH` API 问题
+  * 检测可能导致重复向量的模式设置，并打印警告信息
+  * 修复了转换器模块上缺失的模式验证
 
-## Changelog for version 1.4.0
+请查看[此github页面](https://github.com/weaviate/weaviate/releases/tag/v1.4.0)获取所有更改信息。
 
-* No breaking changes
-* New Features:
-  * Image Module [`img2vec-neural`](/developers/weaviate/modules/retriever-vectorizer-modules/img2vec-neural.md)
-  * Add Hardware acceleration for `amd64` CPUs (Intel, AMD)
-  * Support `arm64` technology for entire Weaviate stack
-  * Set `ef` at search time
-  * Introduce new dataType `blob`
-  * Skip vector-indexing a class
-* Fixes:
-  * Various Performance Fixes around the HNSW Vector Index
-  * Make property order consistent when vectorizing
-  * Fix issues around `PATCH` API when using custom vectors
-  * Detect schema settings that will most likely lead to duplicate vectors and print warning
-  * Fix missing schema validation on transformers module
+## 版本1.3.0的更新日志
 
-Check [this github page](https://github.com/weaviate/weaviate/releases/tag/v1.4.0) for all the changes.
+* 没有破坏性变更
+* 新功能：[问答（Q&A）模块](/developers/weaviate/modules/reader-generator-modules/qna-transformers.md)
+* 新功能：所有基于转换器的模块的新元信息
 
+查看[此 GitHub 页面](https://github.com/weaviate/weaviate/releases/tag/v1.3.0) 获取所有更改信息。
 
-## Changelog for version 1.3.0
+## 版本 1.2.0 的更新日志
 
-* No breaking changes
-* New feature: [Question Answering (Q&A) Module](/developers/weaviate/modules/reader-generator-modules/qna-transformers.md)
-* New feature: New Meta Information for all transformer-based modules
+* 无破坏性更改
+* 新功能：引入[Transformer 模块](/developers/weaviate/modules/reader-generator-modules/qna-transformers.md)
 
-Check [this github page](https://github.com/weaviate/weaviate/releases/tag/v1.3.0) for all the changes.
+查看[此 GitHub 页面](https://github.com/weaviate/weaviate/releases/tag/v1.2.0) 获取所有更改信息。
 
-## Changelog for version 1.2.0
+## 版本 1.1.0 的更新日志
 
-* No breaking changes
-* New feature: Introduction of the [Transformer Module](/developers/weaviate/modules/reader-generator-modules/qna-transformers.md)
+* 无破坏性更改
+* 新功能：GraphQL中的`nearObject`搜索，用于获取最相似的对象。
+* 架构更新：交叉引用批量导入速度改进。
 
-Check [this github page](https://github.com/weaviate/weaviate/releases/tag/v1.2.0) for all the changes.
+请查看[此GitHub页面](https://github.com/weaviate/weaviate/releases/tag/v1.1.0)了解所有更改内容。
 
-## Changelog for version 1.1.0
+## 迁移到版本1.0.0
 
-* No breaking changes
-* New feature: GraphQL `nearObject` search to get most similar object.
-* Architectural  update: Cross-reference batch import speed improvements.
+Weaviate 1.0.0版本于2021年1月12日发布，主要更新内容是模块化。从1.0.0版本开始，Weaviate是模块化的，意味着底层结构依赖于可插拔的向量索引，可插拔的向量化模块，并且具有扩展性，可以添加自定义模块。
 
-Check [this github page](https://github.com/weaviate/weaviate/releases/tag/v1.1.0) for all the changes.
+Weaviate 1.0.0版本与0.23.2版本相比，在数据模式、API和客户端方面有大量的重大变化。以下是所有（重大）变化的概述。
 
-## Migration to version 1.0.0
+对于特定客户端库的更改，请查看特定客户端的更改日志（[Go](/developers/weaviate/client-libraries/go.md#change-logs)，[Python](/developers/weaviate/client-libraries/python.md#change-logs)，[TypeScript/JavaScript](/developers/weaviate/client-libraries/typescript.mdx#changelog)和[CLI](/developers/weaviate/client-libraries/cli.md#change-logs)）。
 
-Weaviate version 1.0.0 was released on 12 January 2021, and consists of the major update of modularization. From version 1.0.0, Weaviate is modular, meaning that the underlying structure relies on a *pluggable* vector index, *pluggable* vectorization modules with possibility to extend with *custom* modules.
+此外，控制台的新版本已发布。请访问控制台文档获取更多信息。
 
-Weaviate release 1.0.0 from 0.23.2 comes with a significant amount of breaking changes in the data schema, API and clients. Here is an overview of all (breaking) changes.
+### 概述
+这里包含大部分整体变化，但并非所有细节。具体细节请参阅["变更"](#changes)。
 
-For client library specific changes, take a look at the change logs of the specific client ([Go](/developers/weaviate/client-libraries/go.md#change-logs), [Python](/developers/weaviate/client-libraries/python.md#change-logs), [TypeScript/JavaScript](/developers/weaviate/client-libraries/typescript.mdx#changelog) and the [CLI](/developers/weaviate/client-libraries/cli.md#change-logs)).
+#### 所有RESTful API的变更
+* 从`/v1/schema/things/{ClassName}`变更为`/v1/schema/{ClassName}`
+* 从`/v1/schema/actions/{ClassName}`变更为`/v1/schema/{ClassName}`
+* 从`/v1/things`变更为`/v1/objects`
+* 从`/v1/actions`变更为`/v1/objects`
+* 从`/v1/batching/things`变更为`/v1/batch/objects`
+* 将`/v1/batching/actions`更改为`/v1/batch/objects`
+* 将`/v1/batching/references`更改为`/v1/batch/references`
+* 附加数据对象的属性被分组在`?include=...`中，并且这些属性的前导下划线被移除
+* 引入了`/v1/modules/`端点。
+* `/v1/meta/`端点现在在`"modules"`中包含了特定模块的信息。
 
-Moreover, a new version of the Console is released. Visit the Console documentation for more information.
+#### 所有GraphQL API的更改
+* 移除了查询层次结构中的Things和Actions层
+* 数据对象的引用属性现在是小写字母（之前是大写字母）
+* 下划线属性，uuid和certainty现在被分组在对象`_additional`中
+* `explore()`筛选器更名为`near<MediaType>`筛选器
+* 在`Get{}`查询中引入了`nearVector(vector:[])`筛选器
+* `Explore (concepts: ["foo"]){}`查询已更改为`Explore (near<MediaType>: ... ) {}`。
 
-### Summary
-This contains most overall changes, but not all details. Those are documented in ["Changes"](#changes).
+#### 所有数据模式更改
+* 删除了Things和Actions
+* 类别和属性配置已更改以支持模块和向量索引类型设置。
 
-#### All RESTful API changes
-* from `/v1/schema/things/{ClassName}` to `/v1/schema/{ClassName}`
-* from `/v1/schema/actions/{ClassName} `to `/v1/schema/{ClassName}`from `/v1/schema/actions/{ClassName} `to `/v1/schema/{ClassName}`
-* from `/v1/things` to `/v1/objects`
-* from `/v1/actions` to `/v1/objects`
-* from `/v1/batching/things` to `/v1/batch/objects`
-* from `/v1/batching/actions` to `/v1/batch/objects`
-* from `/v1/batching/references` to `/v1/batch/references`
-* Additional data object properties are grouped in `?include=...` and the leading underscore of these properties is removed
-* The `/v1/modules/` endpoint is introduced.
-* the `/v1/meta/` endpoint now contains module specific information in `"modules"`
-
-#### All GraphQL API changes
-* Removal of Things and Actions layer in query hierarchy
-* Reference properties of data objects are lowercase (previously uppercased)
-* Underscore properties, uuid and certainty are now grouped in the object `_additional`
-* `explore()` filter is renamed to `near<MediaType>` filter
-* `nearVector(vector:[])` filter is introduced in `Get{}` query
-* `Explore (concepts: ["foo"]){}` query is changed to `Explore (near<MediaType>: ... ) {}`.
-
-#### All data schema changes
-* Removal of Things and Actions
-* Per class and per property configuration is changed to support modules and vector index type settings.
-
-#### All data object changes
-* From `schema` to `properties` in the data object.
+#### 所有数据对象的更改
+* 数据对象中的 `schema` 更改为 `properties`。
 
 #### Contextionary
-* Contextionary is renamed to the module `text2vec-contextionary`
-* `/v1/c11y/concepts` to `/v1/modules/text2vec-contextionary/concepts`
-* `/v1/c11y/extensions` to `/v1/modules/text2vec-contextionary/extensions`
-* `/v1/c11y/corpus` is removed
+* Contextionary 已更名为模块 `text2vec-contextionary`。
+* `/v1/c11y/concepts` 更改为 `/v1/modules/text2vec-contextionary/concepts`。
+* `/v1/c11y/extensions` 更改为 `/v1/modules/text2vec-contextionary/extensions`。
+* `/v1/c11y/corpus` 已移除。
 
-#### Other
-* Removal of `/things` and `/actions` in short and long beacons
-* Classification body is changed to support modularization
-* `DEFAULT_VECTORIZER_MODULE` is a new environment variable
+#### 其他内容
+* 删除了短信标识和长信标中的`/things`和`/actions`
+* 分类主体已更改以支持模块化
+* `DEFAULT_VECTORIZER_MODULE`是一个新的环境变量
 
-### Changes
+### 变更
 
-#### Removal of Things and Actions
-`Things` and `Actions` are removed from the Data Schema. This comes with the following changes in the schema definition and API endpoints:
-1. **Data schema:** The `semantic kind` (`Things` and `Actions`) is removed from the Schema Endpoint. This means the URLs will change:
-  * from `/v1/schema/things/{ClassName}` to `/v1/schema/{ClassName}`
-  * from `/v1/schema/actions/{ClassName} `to `/v1/schema/{ClassName}`
-1. **Data RESTful API endpoint:** The `semantic kind` (`Things` and `Actions`) is removed from the data Endpoint. Instead it will be namespaced as `/objects`. This means the URLs will change:
-  * from `/v1/things` to `/v1/objects`
-  * from `/v1/actions` to `/v1/objects`
-  * from `/v1/batching/things`to `/v1/batch/objects` (see also the [change in batching](#renaming-batching-to-batch))
-  * from `/v1/batching/actions`to `/v1/batch/objects` (see also the [change in batching](#renaming-batching-to-batch))
-1. **GraphQL:** The `Semantic Kind` "level" in the query hierarchy will be removed without replacement (In `Get` and `Aggregate` queries), i.e.
+#### 删除Things和Actions
+从数据模式中删除了`Things`和`Actions`。这会导致模式定义和API端点发生以下变化:
+1. **数据模式：** 在模式终点中删除了“语义类型”（`Things`和`Actions`）。这意味着URL将发生变化：
+  * 从 `/v1/schema/things/{ClassName}` 变为 `/v1/schema/{ClassName}`
+  * 从 `/v1/schema/actions/{ClassName}` 变为 `/v1/schema/{ClassName}`
+2. **数据 RESTful API 终点：** 数据终点中删除了“语义类型”（`Things`和`Actions`）。取而代之，它将作为 `/objects` 进行命名空间处理。这意味着URL将发生变化：
+  * 从 `/v1/things` 到 `/v1/objects`
+  * 从 `/v1/actions` 到 `/v1/objects`
+  * 从 `/v1/batching/things` 到 `/v1/batch/objects`（参见[批处理更名](#renaming-batching-to-batch)）
+  * 从 `/v1/batching/actions` 到 `/v1/batch/objects`（参见[批处理更名](#renaming-batching-to-batch)）
+1. **GraphQL:** 查询层次结构中的 `Semantic Kind` "level" 将被删除，不再替换（在 `Get` 和 `Aggregate` 查询中），即
    ```graphql
    {
      Get {
        Things {
-         ClassName {
-           propName
-         }
-       }
-     }
-   }
-   ```
+  ClassName {
+    propName
+  }
+}
+}
 
-   will become
+将被转换为
 
-   ```graphql
-   {
-     Get {
-       ClassName {
-         propName
-       }
-     }
-   }
-   ```
-1. **Data Beacons:** The `Semantic Kind` will be removed from beacons:
-   * **Short-form Beacon:**
+```graphql
+{
+  Get {
+    ClassName {
+      propName
+    }
+  }
+}
+```
+
+1. **数据信标：**`Semantic Kind`将从信标中删除：
+   * **简短形式信标：**
 
      * `weaviate://localhost/things/4fbacd6e-1153-47b1-8cb5-f787a7f01718`
 
-     to
+     转换为
 
      * `weaviate://localhost/4fbacd6e-1153-47b1-8cb5-f787a7f01718`
 
-   * **Long-form Beacon:**
+   * **长形式信标：**
 
      * `weaviate://localhost/things/ClassName/4fbacd6e-1153-47b1-8cb5-f787a7f01718/propName`
 
-     to
+     转为
 
      * `weaviate://localhost/ClassName/4fbacd6e-1153-47b1-8cb5-f787a7f01718/propName`
 
-#### Renaming /batching/ to /batch/
+#### 将 `/batching/` 重命名为 `/batch/`
 
-* `/v1/batching/things` to `/v1/batch/objects`
-* `/v1/batching/actions` to `/v1/batch/objects`
-* `/v1/batching/references` to `/v1/batch/references`
+* `/v1/batching/things` 变为 `/v1/batch/objects`
+* `/v1/batching/actions` 变为 `/v1/batch/objects`
+* `/v1/batching/references` 变为 `/v1/batch/references`
 
 
-#### From "schema" to "properties" in data object
+#### 在数据对象中将 "schema" 改为 "properties"
 
-The name "schema" on the data object is not intuitive and is replaced by "properties". The change looks like:
+数据对象上的名称"schema"不直观，被替换为"properties"。更改如下：
 
 ```json
 {
@@ -496,13 +491,13 @@ to
 }
 ```
 
-#### Consistent casing in GraphQL properties
+#### GraphQL属性的一致大小写
 
-Previously, reference properties in the schema definitions are always lowercase, yet in graphQL they needed to be uppercased. E.g.: `Article { OfAuthor { … on Author { name } } } }`, even though the property is defined as ofAuthor. New is that the casing in GraphQL reflects exactly the casing in the schema definition, thus the above example would become: `Article { ofAuthor { … on Author { name } } } }`
+以前，在模式定义中引用的属性始终是小写的，但在GraphQL中它们需要大写。例如：`Article { OfAuthor { … on Author { name } } } }`，即使属性被定义为ofAuthor。新的变化是，GraphQL中的大小写完全反映了模式定义中的大小写，因此上面的示例将变为：`Article { ofAuthor { … on Author { name } } } }`
 
-#### Additional data properties in GraphQL and RESTful API
-Since modularization, a module can contribute to the additional properties of a data object (thus are not fixed), which should be retrievable by the GraphQL and/or RESTful API.
-1. **REST**: `additional` properties (formerly named `"underscore"` properties) can be included in RESTful query calls like `?include=...`, e.g. `?include=classification`. The underscores will thus be removed from the names (e.g. `?include=_classification` is deprecated). In the Open API specifications, all additional properties will be grouped in the object `additional`. For example:
+#### GraphQL和RESTful API中的附加数据属性
+自从进行模块化以来，模块可以为数据对象贡献附加属性（因此不是固定的），这些属性应该可以通过GraphQL和/或RESTful API检索到。
+1. **REST**: `additional`属性（以前称为`"underscore"`属性）可以在RESTful查询调用中包含，例如`?include=...`，例如`?include=classification`。下划线将从名称中移除（例如，`?include=_classification`已被弃用）。在Open API规范中，所有附加属性将分组在`additional`对象中。例如：
     ```json
     {
       "class": "Article",
@@ -511,7 +506,7 @@ Since modularization, a module can contribute to the additional properties of a 
     }
     ```
 
-    to
+    转换为
 
     ```json
     {
@@ -522,12 +517,14 @@ Since modularization, a module can contribute to the additional properties of a 
       }
     }
     ```
-2. **GraphQL**: `"underscore"` properties are renamed to `additional` properties in GraphQL queries.
-   1. All former `"underscore"` properties of a data object (e.g. `_certainty`) are now grouped in the `_additional {}` object (e.g. `_additional { certainty } `).
-   2. The `uuid` property is now also placed in the `_additional {}` object and renamed to `id` (e.g. `_additional { id } `).
-   This example covers both changes:
+2. **GraphQL**: GraphQL查询中的`"underscore"`属性被重命名为`additional`属性。
+   1. 数据对象的所有以前的`"underscore"`属性（例如`_certainty`）现在都被分组在`_additional {}`对象中（例如`_additional { certainty }`）。
 
-   From
+```
+   2. 现在将`uuid`属性放置在`_additional {}`对象中，并重命名为`id` （例如 `_additional { id }`）。
+   这个例子涵盖了两个改变：
+
+   从
 
    ```graphql
     {
@@ -544,16 +541,16 @@ Since modularization, a module can contribute to the additional properties of a 
     }
    ```
 
-   to
+   到
 
    ```graphql
    {
      Get {
        Article {
          title
-         _additional {      # leading _ prevents clashes
-           certainty
-           id               # replaces uuid
+         _additional {      # 前导_防止冲突
+           确定性
+           id               # 替代 uuid
            classification
          }
        }
@@ -561,32 +558,36 @@ Since modularization, a module can contribute to the additional properties of a 
    }
    ```
 
-#### Modules RESTful endpoint
-With the modularization of Weaviate, the `v1/modules/` endpoint is introduced.
+#### 模块化 RESTful 端点
+随着 Weaviate 的模块化，引入了 `v1/modules/` 端点。
 
-#### GraphQL semantic search
+#### GraphQL 语义搜索
 
-With the modularization, it becomes possible to vectorize non-text objects. Search is no longer restricted to use the Contextionary's vectorization of text and data objects, but could also be applied to non-text objects or raw vectors. The formerly 'explore' filter in Get queries and 'Explore' queries in GraphQL were tied to text, but the following changes are made to this filter with the new version of Weaviate:
+通过模块化，可以对非文本对象进行向量化。搜索不再限于使用Contextionary对文本和数据对象进行向量化，还可以应用于非文本对象或原始向量。以前在Get查询中的“探索”过滤器和GraphQL中的“探索”查询都与文本相关，但是在Weaviate的新版本中对该过滤器进行了以下更改：
 
-1. The filter `Get ( explore: {} ) {}` is renamed to `Get ( near<MediaType>: {} ) {}`.
-   1. New: `Get ( nearVector: { vector: [.., .., ..] } ) {}` is module independent and will thus always be available.
-   2. `Get ( explore { concepts: ["foo"] } ) {}` will become `Get ( nearText: { concepts: ["foo"] } ) {}` and is only available if the `text2vec-contextionary` module is attached.
+1. 过滤器 `Get ( explore: {} ) {}` 被重命名为 `Get ( near<MediaType>: {} ) {}`。
+   1. 新增: `Get ( nearVector: { vector: [.., .., ..] } ) {}` 是模块独立的，因此始终可用。
+   2. `Get ( explore { concepts: ["foo"] } ) {}` 将变为 `Get ( nearText: { concepts: ["foo"] } ) {}`，仅在附加了 `text2vec-contextionary` 模块时可用。
 
-    From
+    从
 
     ```graphql
       {
         Get {
           Things {
-            Article (explore: { concepts: ["foo"] } ) {
-              title
-            }
-          }
+            1. 将以下GraphQL查询：
+
+    ```graphql
+    {
+      Get {
+        Article (explore: { concepts: ["foo"] } ) {
+          title
         }
       }
+    }
     ```
 
-    to
+    转换为：
 
     ```graphql
     {
@@ -598,9 +599,9 @@ With the modularization, it becomes possible to vectorize non-text objects. Sear
     }
     ```
 
-2. Similarly to the explore sorter that is used in the `Get {}` API, the `Explore {}` API also assumes text. The following change is applied:
+2. 类似于在 `Get {}` API 中使用的 explore 排序器，`Explore {}` API 也假设是文本。进行以下更改：
 
-   From
+   从
 
    ```graphql
     {
@@ -608,6 +609,9 @@ With the modularization, it becomes possible to vectorize non-text objects. Sear
         beacon
       }
     }
+    ```
+
+   转换为
    ```
 
    to
@@ -620,91 +624,95 @@ With the modularization, it becomes possible to vectorize non-text objects. Sear
     }
    ```
 
-#### Data schema configuration
-1. **Per-class configuration**
+#### 数据模式配置
+1. **每个类的配置**
 
-    With modularization, it is possible to configure per class the vectorizer module, module-specific configuration for the overall class, vector index type, and vector index type specific configuration:
-    * The `vectorizer` indicates which module (if any) are responsible for vectorization.
-    * The `moduleConfig` allows configuration per module (by name).
-      * See [here](#text2vec-contextionary) for Contextionary specific property configuration.
-    * The `vectorIndexType` allows the choosing the vector index (defaults to [HNSW](/developers/weaviate/concepts/vector-index.md#hnsw))
-    * The `vectorIndexConfig` is an arbitrary object passed to the index for config (defaults can be found [here](/developers/weaviate/configuration/indexes.md#how-to-configure-hnsw) )
+    通过模块化，可以为每个类配置向量化模块、整体类的模块特定配置、向量索引类型以及向量索引类型特定配置：
+    * `vectorizer` 指示负责向量化的模块（如果有的话）。
 
-    All changes are in this example:
+    * `moduleConfig` 允许按模块（按名称）进行配置。
+      * 有关 Contextionary 特定属性配置，请参阅[此处](#text2vec-contextionary)。
+    * `vectorIndexType` 允许选择向量索引（默认为 [HNSW](/developers/weaviate/concepts/vector-index.md#hnsw)）
+    * `vectorIndexConfig` 是传递给索引的任意对象进行配置（默认配置可以在[这里](/developers/weaviate/configuration/indexes.md#how-to-configure-hnsw)找到）
 
-    ```json
-    {
-      "class": "Article",
-      "vectorizeClassName": true,
+    这个示例中的所有更改如下：
+
+```json
+{
+  "class": "Article",
+  "vectorizeClassName": true,
+  "description": "string",
+  "properties": [ … ]
+}
+```
+
+将变成
+
+```json
+{
+  "class": "Article",
+  "vectorIndexType": "hnsw",        # 默认为hnsw
+  "vectorIndexConfig": {
+    "efConstruction": 100
+  },
+  "moduleConfig": {
+    "text2vec-contextionary": {
+      "vectorizeClassName": true
+    },
+```
+        "encryptor5000000": { "enabled": true }  # 示例
+      },
       "description": "string",
+      "vectorizer": "text2vec-contextionary",  # 默认可配置
       "properties": [ … ]
     }
     ```
 
-    will become
+2. **每个属性的配置**
 
+  通过模块化，可以对每个属性进行特定模块的配置，如果可用的话，并且可以指定一个属性是否应该包含在倒排索引中。
+  * `moduleConfig` 允许按模块（按名称）进行配置。
+   * 请参阅 [此处](#text2vec-contextionary) 以获取Contextionary特定的属性配置。
+* `index` 将变为 `indexInverted`：一个布尔值，指示是否应该在倒排索引中对属性进行索引。
+
+以下是此示例中的所有更改:
+
+```json
+{
+  "dataType": [ "text" ],
+  "description": "string",
+  "cardinality": "string",
+  "vectorizePropertyName": true,
+  "name": "string",
+```
     ```json
-    {
-      "class": "Article",
-      "vectorIndexType": "hnsw",        # defaults to hnsw
-      "vectorIndexConfig": {
-        "efConstruction": 100
-      },
-      "moduleConfig": {
-        "text2vec-contextionary": {
-          "vectorizeClassName": true
-        },
-        "encryptor5000000": { "enabled": true }  # example
-      },
-      "description": "string",
-      "vectorizer": "text2vec-contextionary",  # default is configurable
-      "properties": [ … ]
-    }
-    ```
-
-2. **Per-property configuration**
-
-  With modularization, it is possible to configure per property module-specific configuration per property if available and it can be specified if a property should be included in the inverted index.
-  * The `moduleConfig` allows configuration per module (by name).
-    * See [here](#text2vec-contextionary) for Contextionary specific property configuration.
-  * `index` will become `indexInverted`: a boolean that indicates whether a property should be indexed in the inverted index.
-
-  All changes are in this example:
-
-  ```json
-  {
-    "dataType": [ "text" ],
-    "description": "string",
-    "cardinality": "string",
-    "vectorizePropertyName": true,
-    "name": "string",
-    "keywords": [ … ],
+"keywords": [ … ],
     "index": true
   }
   ```
 
-  will become
+将变为
 
-  ```json
-  {
-    "dataType": [ "text" ],
-    "description": "string",
-    "moduleConfig": {
-      "text2vec-contextionary": {
-        "skip": true,
-        "vectorizePropertyName": true,
-      }
-    },
-    "name": "string",
-    "indexInverted": true
-  }
-  ```
+```json
+{
+  "dataType": [ "text" ],
+  "description": "string",
+  "moduleConfig": {
+    "text2vec-contextionary": {
+      "skip": true,
+      "vectorizePropertyName": true,
+    }
+  },
+  "name": "string",
+  "indexInverted": true
+}
+```
 
-#### RESTful /meta endpoint
+#### RESTful /meta 端点
 
-The `/v1/meta` object now contains module specific information at in the newly introduced namespaced `modules.<moduleName>` property:
+`/v1/meta` 对象现在包含了新引入的命名空间 `modules.<moduleName>` 下的模块特定信息：
 
-From
+来自
 
 ```json
 {
@@ -730,11 +738,11 @@ to
 }
 ```
 
-#### Modular classification
+#### 模块化分类
 
-Some classification types are tied to modules (e.g. the former "contextual" classification is tied to the `text2vec-contextionary` module. We make a distinction between fields which are always present and those which are type dependent. Additionally the API is improved by grouping `settings` and `filters` in separate properties. kNN classification is the only type of classification that is present with Weaviate Core without dependency on modules. The former "contextual" classification is tied to the `text2vec-contextionary` module, see [here](#text2vec-contextionary). An example of how the change looks like in the classification API POST body:
+某些分类类型与模块相关联（例如前面的“上下文”分类与`text2vec-contextionary`模块相关联）。我们区分了始终存在的字段和类型相关的字段。此外，通过在单独的属性中对`settings`和`filters`进行分组，改进了API。kNN分类是唯一一种在Weaviate Core中无需依赖模块即可使用的分类类型。前面的“上下文”分类与`text2vec-contextionary`模块相关联，参见[这里](#text2vec-contextionary)。下面是分类API POST请求体的更改示例：
 
-From
+从
 
 ```json
 {
@@ -750,7 +758,7 @@ From
 
 ```
 
-To
+至于
 
 ```json
 {
@@ -812,13 +820,13 @@ To
 ```
 
 #### text2vec-contextionary
-The Contextionary becomes the first vectorization module of Weaviate, renamed to `text2vec-contextionary` in formal use. This brings the following changes:
-1. **RESTful** endpoint `/v1/c11y` changes to `v1/modules/text2vec-contextionary`:
-   * `/v1/c11y/concepts` to `/v1/modules/text2vec-contextionary/concepts`
-   * `/v1/c11y/extensions` to `/v1/modules/text2vec-contextionary/extensions`
-   * `/v1/c11y/corpus` is removed
-2. **Data schema:** `text2vec-contextionary`-specific module configuration options in the schema definition
-   1. **Per-class**. `"vectorizeClassName"` indicates whether the class name should be taken into the vector calculation of data objects.
+Contextionary成为Weaviate的第一个向量化模块，在正式使用中被重命名为`text2vec-contextionary`。这带来了以下变化：
+1. **RESTful** 端点`/v1/c11y`更改为`v1/modules/text2vec-contextionary`：
+   * `/v1/c11y/concepts`更改为`/v1/modules/text2vec-contextionary/concepts`
+   * `/v1/c11y/extensions`更改为`/v1/modules/text2vec-contextionary/extensions`
+   * `/v1/c11y/corpus`已移除
+2. **数据模式：** 在模式定义中的`text2vec-contextionary`特定模块的配置选项
+   1. **每个类别**。`"vectorizeClassName"`指示是否将类名纳入数据对象的向量计算中。
 
     ```json
     {
@@ -834,7 +842,7 @@ The Contextionary becomes the first vectorization module of Weaviate, renamed to
     }
     ```
 
-   2. **Per-property.** `skip` tells whether to skip the entire property (including value) from the vector position of the data object. `vectorizePropertyName` indicates whether the property name should be taken into the vector calculation of data objects.
+   2. **按属性。** `skip` 指示是否跳过整个属性（包括值）从数据对象的向量位置。`vectorizePropertyName` 指示是否将属性名纳入数据对象的向量计算中。
 
     ```json
     {
@@ -850,9 +858,9 @@ The Contextionary becomes the first vectorization module of Weaviate, renamed to
       "indexInverted": true
     }
     ```
-3. **Contextual classification**. Contextual classification is dependent on the module `text2vec-contextionary`. It can be activated in `/v1/classifications/` the following with the classification name `text2vec-contextionary-contextual`:
+3. **上下文分类**。上下文分类依赖于`text2vec-contextionary`模块。可以在`/v1/classifications/`中通过分类名称`text2vec-contextionary-contextual`来激活：
 
-From
+从
 
 ```json
 {
@@ -870,7 +878,7 @@ From
 }
 ```
 
-To
+至
 
 ```json
 {
@@ -892,15 +900,13 @@ To
 }
 ```
 
-#### Default vectorizer module
-The default vectorizer module can be specified in a new environment variable so that this doesn't have to be specified on every data class in the schema. The environment variable is `DEFAULT_VECTORIZER_MODULE`, which can be set to for example `DEFAULT_VECTORIZER_MODULE="text2vec-contextionary"`.
+#### 默认矢量化模块
+可以在新的环境变量中指定默认的矢量化模块，这样就不需要在模式中的每个数据类中指定。环境变量是`DEFAULT_VECTORIZER_MODULE`，可以设置为例如`DEFAULT_VECTORIZER_MODULE="text2vec-contextionary"`。
 
+### 官方发布说明
+官方发布说明可以在[GitHub](https://github.com/weaviate/weaviate/releases/tag/0.23.0)上找到。
 
-### Official release notes
-Official release notes can be found on [GitHub](https://github.com/weaviate/weaviate/releases/tag/0.23.0).
-
-
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

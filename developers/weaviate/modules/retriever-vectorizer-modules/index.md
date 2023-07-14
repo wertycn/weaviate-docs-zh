@@ -1,23 +1,23 @@
 ---
-title: Retrievers, Vectorizers and Rerankers
-sidebar_position: 0
 image: og/docs/modules/vectorizers-overview.jpg
-# tags: ['modules']
+sidebar_position: 0
+title: Retrievers, Vectorizers and Rerankers
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概览
 
-This section includes reference guides for retriever & vectorizer modules. As their names suggest, `XXX2vec` modules are configured to produce a vector for each object.
+本节包括检索器和向量化器模块的参考指南。正如它们的名称所示，`XXX2vec` 模块被配置为为每个对象生成一个向量。
 
-- `text2vec` converts text data
-- `img2vec` converts image data
-- `multi2vec` converts image or text data (into the same embedding space)
-- `ref2vec` converts cross-reference data (from within Weaviate)
+- `text2vec` 将文本数据转换为向量
+- `img2vec` 将图像数据转换为向量
+- `multi2vec` 将图像或文本数据转换为向量（转换为相同的嵌入空间）
+- `ref2vec` 将 Weaviate 内的交叉引用数据转换为向量
 
-### Vectorization with `text2vec-*` modules
+### 使用 `text2vec-*` 模块进行向量化
 
 import VectorizationBehavior from '/_includes/vectorization.behavior.mdx';
 
@@ -28,8 +28,8 @@ Where Weaviate is configured with a vectorizer, it will only obtain a new vector
 :::
 
 
-## Re-ranking
+## 重新排序
 
-Weaviate includes the following modules for [re-ranking](../../search/rerank.md) the data objects in a result set:
+Weaviate包括以下模块用于对结果集中的数据对象进行[重新排序](../../search/rerank.md)：
 * [reranker-cohere](./reranker-cohere.md)
 * [reranker-transformers](./reranker-transformers.md)

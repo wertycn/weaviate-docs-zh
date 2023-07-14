@@ -1,36 +1,35 @@
 ---
-title: How to import data
-sidebar_position: 3
 image: og/docs/tutorials.jpg
-# tags: ['how to', 'import']
+sidebar_position: 3
+title: How to import data
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-In this tutorial, you will learn how to import data into Weaviate using the batch import method.
+在本教程中，您将学习如何使用批量导入方法将数据导入到Weaviate中。
 
-By the end of this tutorial, you should have a good idea of the steps involved in importing data, and when to use the batch import method.
+通过本教程的学习，您应该对导入数据的步骤有一个清晰的了解，并且知道何时使用批量导入方法。
 
-<!-- :::caution Under construction.
-Migrated from "How to import data" tutorial from Weaviate Docs Classic
-::: -->
+<!-- :::caution 正在施工中。
+从Weaviate Docs Classic的"如何导入数据"教程迁移而来 -->
 
+# 简介
 
-# Introduction
+数据通过RESTful API添加。数据对象的语法如下：
 
-Data is added through the RESTful API. The syntax of a data object is as follows:
-
-```json
+```
 {
-  "class": "<class name>",  // as defined during schema creation
-  "id": "<UUID>",     // optional, must be in UUID format.
+  "class": "<类名>",  // 在模式创建期间定义的类名
+  "id": "<UUID>",     // 可选项，必须是UUID格式
   "properties": {
-    "<property name>": "<property value>", // specified in dataType defined during schema creation
+    "<属性名>": "<属性值>", // 在模式创建期间定义的数据类型中指定
   }
 }
+```
 ```
 
 # Prerequisites

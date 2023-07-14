@@ -1,9 +1,9 @@
 ---
-title: GraphQL - Get{}
-sidebar_position: 1
 image: og/docs/api.jpg
-# tags: ['graphql', 'get{}']
+sidebar_position: 1
+title: GraphQL - Get{}
 ---
+
 import Badges from '/_includes/badges.mdx';
 import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBlock';
 
@@ -13,15 +13,15 @@ import TryEduDemo from '/_includes/try-on-edu-demo.mdx';
 
 <TryEduDemo />
 
-## Get{} syntax and query structure
+## Get{} 语法和查询结构
 
-The `Get{}` function fetches fields described in the schema. For example, if you've created a schema with a class `JeopardyQuestion` which has the properties `question`, `answer` and `points`, you can query it as follows:
+`Get{}` 函数用于获取模式中描述的字段。例如，如果您创建了一个名为 `JeopardyQuestion` 的类，该类具有 `question`、`answer` 和 `points` 属性，您可以按以下方式进行查询:
 
 import GraphQLGetSimple from '/_includes/code/graphql.get.simple.mdx';
 
 <GraphQLGetSimple/>
 
-The above query will result in something like the following:
+上述查询将会得到类似以下的结果：
 
 import GraphQLGetSimpleUnfiltered from '!!raw-loader!/_includes/code/graphql.get.simple.py';
 
@@ -36,11 +36,11 @@ import GraphQLGetSimpleUnfiltered from '!!raw-loader!/_includes/code/graphql.get
 The order of object retrieval is not guaranteed in a `Get` query without any search parameters or filters. Accordingly, such a `Get` query is not suitable for any substantive object retrieval strategy. Consider the [Cursor API](./additional-operators.md#cursor-with-after) for that purpose.
 :::
 
-### groupBy argument
+### groupBy参数
 
-You can use a groupBy argument to retrieve groups of objects from Weaviate. This functionality offers the advantage of maintaining granular search results by searching through detailed or segmented objects (e.g. chunks of documents), while also enabling you to step back and view the broader context of the objects (e.g. documents as a whole).
+您可以使用groupBy参数从Weaviate中检索对象的分组。这个功能的优势在于通过搜索详细或分段的对象（例如文档的块），保持细粒度的搜索结果，同时还可以让您回溯并查看对象的更广泛上下文（例如整个文档）。
 
-The `groupBy{}` argument is structured as follows for the `Get{}` function:
+`groupBy{}`参数在`Get{}`函数中的结构如下：
 
 :::info Single-level grouping only
 As of `1.19`, the `groupBy` `path` is limited to one property or cross-reference. Nested paths are current not supported.
@@ -79,14 +79,14 @@ As of `1.19`, the `groupBy` `path` is limited to one property or cross-reference
 }
 ```
 
-Take a collection of `Passage` objects for example, each object belonging to a `Document`. If searching through `Passage` objects, you can group the results according to any property of the `Passage`, including the cross-reference property that represents the `Document` each `Passage` is associated with.
+以`Passage`对象的集合为例，每个对象都属于一个`Document`。如果在`Passage`对象中进行搜索，可以根据`Passage`的任何属性对结果进行分组，包括表示每个`Passage`关联的`Document`的交叉引用属性。
 
-The `groups` and `objectsPerGroup` limits are customizable. So in this example, you could retrieve the top 100 objects and group them to identify the 2 most relevant `Document` objects, based on the top 2 `Passage` objects from each `Document`.
+`groups`和`objectsPerGroup`的限制是可自定义的。因此在这个例子中，您可以检索出前100个对象并对它们进行分组，以识别出最相关的2个`Document`对象，基于每个`Document`中的前2个`Passage`对象。
 
-More concretely, a query such as below:
+更具体地说，可以使用以下查询语句：
 
 <details>
-  <summary>Example Get query with groupBy</summary>
+  <summary>带有groupBy的示例Get查询</summary>
 
 ```graphql
 {
@@ -133,10 +133,10 @@ More concretely, a query such as below:
 
 </details>
 
-Will result in the following response:
+将导致以下响应：
 
 <details>
-  <summary>Corresponding response</summary>
+  <summary>对应的响应</summary>
 
 ```json
 {
@@ -217,27 +217,27 @@ Will result in the following response:
 
 </details>
 
-### Consistency levels
+### 一致性级别
 
 :::info Available from `v1.19` onwards
 :::
 
-Where replication is configured, the `Get{}` function can be configured to return results with different levels of consistency. This is useful when you want to retrieve the most up-to-date data, or when you want to retrieve data as fast as possible.
+在配置了复制的情况下，`Get{}`函数可以配置为以不同的一致性级别返回结果。当您想要检索最新数据或尽快检索数据时，这将非常有用。
 
-Read more about consistency levels [here](../../concepts/replication-architecture/consistency.md).
+在[这里](../../concepts/replication-architecture/consistency.md)更多了解一致性级别。
 
 import GraphQLGetConsistency from '/_includes/code/graphql.get.consistency.mdx';
 
 <GraphQLGetConsistency/>
 
-### Multi-tenancy
+### 多租户
 
 :::info Available from `v1.20` onwards
 :::
 
-Where multi-tenancy is configured, the `Get{}` function can be configured to return results from a specific tenant.
+当配置了多租户时，可以配置 `Get{}` 函数以返回特定租户的结果。
 
-You can do so by specifying the `tenant` parameter in the GraphQL query as shown below, or using the equivalent client function.
+您可以通过在GraphQL查询中指定 `tenant` 参数来实现，如下所示，或者使用等效的客户端函数。
 
 ```graphql
 {
@@ -256,9 +256,9 @@ You can do so by specifying the `tenant` parameter in the GraphQL query as shown
 For more information on using multi-tenancy, see the [Multi-tenancy operations guide](../../manage-data/multi-tenancy.md).
 :::
 
-## Query beacon references
+## 查询信标引用
 
-If you've set a beacon reference (cross-reference) in the schema, you can query it as follows:
+如果您在模式中设置了信标引用（交叉引用），可以按如下方式查询它：
 
 import GraphQLGetBeacon from '/_includes/code/graphql.get.beacon.mdx';
 
@@ -267,7 +267,7 @@ import GraphQLGetBeacon from '/_includes/code/graphql.get.beacon.mdx';
 import GraphQLGetBeaconUnfiltered from '!!raw-loader!/_includes/code/graphql.get.beacon.py';
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 <FilteredTextBlock
   text={GraphQLGetBeaconUnfiltered}
@@ -278,38 +278,36 @@ import GraphQLGetBeaconUnfiltered from '!!raw-loader!/_includes/code/graphql.get
 
 </details>
 
-## Additional properties
+## 附加属性
 
-For every Get{} request you can get additional information about the returned data object(s) by using additional properties. You can recognize these properties because they are in the object `_additional{}`. Additional properties can help you interpret query results and can for example be used for projection and visualization of the retrieved data. An overview of all additional properties and how to use them is documented [here](./additional-properties.md).
+对于每个Get{}请求，您可以使用附加属性获取有关返回的数据对象的其他信息。您可以通过对象`_additional{}`中的这些属性来识别它们。附加属性可以帮助您解释查询结果，并且可以用于检索数据的投影和可视化。有关所有附加属性及其使用方法的概述，请参阅[此处](./additional-properties.md)的文档。
 
-## Vector Search Operators
+## 向量搜索运算符
 
-To combine `Get { }` with a vector search argument, here is an overview of the supported arguments and links to their detailed documentation:
+要将`Get { }`与向量搜索参数结合起来，以下是支持的参数概述以及其详细文档的链接：
 
-| Argument | Description | Required modules (at least one of) | Learn more |
+| 参数 | 描述 | 必需模块（至少一个） | 了解更多 |
 | --- | --- | --- | --- |
-| `nearObject` | Find the nearest neighbors of an object referenced by its id | *none - works out of the box* | [Learn more](./vector-search-parameters.md#nearobject) |
-| `nearVector` | Find the nearest neighbors to any vector | *none - works out of the box* | [Learn more](./vector-search-parameters.md#nearvector) |
-| `nearText` | Vectorize a text query and perform a vector search based on it | `text2vec-transformers`, `text2vec-contextionary`, `text2vec-openai`, `multi2vec-clip`, `text2vec-huggingface`, `text2vec-cohere` | [Transformers](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers.md#how-to-use), [Contextionary](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md#how-to-use), [OpenAI](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-openai.md#how-to-use), [CLIP](/developers/weaviate/modules/retriever-vectorizer-modules/multi2vec-clip.md#how-to-use), [Hugging Face](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-huggingface.md#how-to-use), [Cohere](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-cohere.md#how-to-use) |
-| `nearImage` | Vectorize an image and perform a vector search based on it | `multi2vec-clip`, `img2vec-neural` | [CLIP](/developers/weaviate/modules/retriever-vectorizer-modules/multi2vec-clip.md#neartext), [Img2Vec](/developers/weaviate/modules/retriever-vectorizer-modules/img2vec-neural.md#nearimage-search) |
-| `hybrid` | Combine dense and sparse vectors to deliver best of both search methods |   *none - works out of the box* | [Learn more](../graphql/vector-search-parameters.md#hybrid) |
-| `bm25`   | Keyword search with BM25F ranking  | *none - works out of the box* | [Learn more](../graphql/vector-search-parameters.md#bm25) |
+| `nearObject` | 查找与其id引用的对象最接近的邻居 | *无 - 可直接使用* | [了解更多](./vector-search-parameters.md#nearobject) |
+| `nearVector` | 查找到任意向量的最近邻 | *无需配置 - 直接可用* | [了解更多](./vector-search-parameters.md#nearvector) |
+| `nearText` | 对文本查询进行向量化，并基于此进行向量搜索 | `text2vec-transformers`, `text2vec-contextionary`, `text2vec-openai`, `multi2vec-clip`, `text2vec-huggingface`, `text2vec-cohere` | [Transformers](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers.md#how-to-use), [Contextionary](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md#how-to-use), [OpenAI](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-openai.md#how-to-use), [CLIP](/developers/weaviate/modules/retriever-vectorizer-modules/multi2vec-clip.md#how-to-use), [Hugging Face](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-huggingface.md#how-to-use), [Cohere](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-cohere.md#how-to-use) |
+| `nearImage` | 对图像进行向量化，并基于向量进行相似图像搜索 | `multi2vec-clip`, `img2vec-neural` | [CLIP](/developers/weaviate/modules/retriever-vectorizer-modules/multi2vec-clip.md#neartext), [Img2Vec](/developers/weaviate/modules/retriever-vectorizer-modules/img2vec-neural.md#nearimage-search) |
+| `hybrid` | 结合密集向量和稀疏向量，以提供两种搜索方法的最佳结果 | *无需额外操作 - 可立即使用* | [了解更多](../graphql/vector-search-parameters.md#hybrid) |
+| `bm25`   | 使用BM25F排名的关键词搜索  | *无 - 开箱即用* | [了解更多](../graphql/vector-search-parameters.md#bm25) |
 
-## Filters
+## 筛选器
 
-`Get{}` functions can be extended with search filters (both semantic filters and traditional filters). Because the filters work on multiple core functions (like `Aggregate{}`) there is a [specific documentation page dedicated to filters](filters.md).
+`Get{}` 函数可以通过搜索筛选器进行扩展（包括语义筛选器和传统筛选器）。由于筛选器适用于多个核心函数（如 `Aggregate{}`），因此有一个[专门的文档页面专门介绍筛选器](filters.md)。
 
-### Sorting
+### 排序
 
-*Note: Support for sorting was added in `v1.13.0`.*
+*注意：排序功能在 `v1.13.0` 版本中添加。*
 
-You can sort results by any primitive property, typically a `text`, `string`,
-`number`, or `int` property. When a query has a natural order (e.g. because of a
-`near<Media>` vector search), adding a sort operator will override the order.
+您可以根据任何基本属性对结果进行排序，通常是 `text`、`string`、`number` 或 `int` 属性。当查询具有自然顺序时（例如，因为存在 `near<Media>` 的向量搜索），添加排序操作符将覆盖该顺序。
 
-See [filters – sorting](./additional-operators.md#sorting) for more information.
+有关更多信息，请参阅 [过滤器 - 排序](./additional-operators.md#sorting)。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

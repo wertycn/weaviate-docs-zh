@@ -1,79 +1,79 @@
 ---
-title: Weaviate console - an introduction
-sidebar_position: 90
 image: og/docs/quickstart-tutorial.jpg
-# tags: ['Weaviate console']
+sidebar_position: 90
+title: Weaviate console - an introduction
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-Here you can learn how to use the Weaviate console.
+在这里，您可以学习如何使用Weaviate控制台。
 
-The Weaviate console allows you to connect to Weaviate instances that are running on the Weaviate Cloud Services (our SaaS solution), on your own cluster, on your local machine, or all the public demo datasets. Note that the console never collects any data from your Weaviate instance; you can safely connect every instance, also over VPN.
+Weaviate控制台允许您连接到在Weaviate云服务上运行的Weaviate实例（我们的SaaS解决方案），您自己的集群，您的本地计算机或所有公共演示数据集。请注意，控制台永远不会从您的Weaviate实例中收集任何数据；您可以安全地连接每个实例，甚至通过VPN连接。
 
 :::tip
 The console is available on: [console.weaviate.cloud](https://console.weaviate.cloud).
 :::
 
-## Login page
+## 登录页面
 
-When opening the [Weaviate Console](https://console.weaviate.cloud), you'll see two options:
+打开[Weaviate控制台](https://console.weaviate.cloud)后，您将看到两个选项：
 
-1. ["Sign in with the Weaviate Cloud Services"](#weaviate-cloud-services)
-2. ["Self-hosted Weaviate"](#connect-to-a-self-hosted-weaviate)
+1. ["使用Weaviate云服务登录"](#weaviate-cloud-services)
+2. ["自托管的Weaviate"](#connect-to-a-self-hosted-weaviate)
 
-## Weaviate Cloud Services
+## Weaviate云服务
 
-Weaviate Cloud Services allow you to create Weaviate instances as SaaS instances on our infrastructure. There is no difference between locally run Weaviate instances or Weaviate SaaS instances other than that the latter ones are managed by us.
+Weaviate云服务允许您在我们的基础设施上创建Weaviate实例作为SaaS实例。除了后者由我们管理之外，本地运行的Weaviate实例和Weaviate SaaS实例之间没有区别。
 
 import SandBoxExpiry from '/_includes/sandbox.expiry.mdx';
 
 <SandBoxExpiry/>
 
-## Connect to a self-hosted Weaviate
+## 连接到自托管的Weaviate实例
 
-You can connect to any Weaviate instance as long as your computer has access to it (yes, this also includes over a VPN). The GraphiQL editor runs locally, and we don't forward any result or query to our servers.
+只要您的计算机可以访问，您可以连接到任何Weaviate实例（是的，包括通过VPN）。GraphiQL编辑器在本地运行，我们不会将任何结果或查询转发到我们的服务器。
 
-When you're connected, you can use the [GraphiQL](#graphiql) interface to interact with your Weaviate instance.
+连接成功后，您可以使用[GraphiQL](#graphiql)界面与您的Weaviate实例进行交互。
 
 ## GraphiQL
 
-[GraphiQL](https://github.com/graphql/graphiql) is a graphical interface that allows you to write GraphQL queries interactively, with autocompletion and inline documentation. Curious? Try out the console [right now](https://link.weaviate.io/3ThS9hG) with the news publication dataset.
+[GraphiQL](https://github.com/graphql/graphiql) 是一个图形化界面，允许您交互式地编写GraphQL查询，并提供自动完成和内联文档。感兴趣吗？使用新闻发布数据集，立即尝试控制台 [此链接](https://link.weaviate.io/3ThS9hG)。
 
-## Try out the console
+## 尝试控制台
 
-1. Go to: [this link](https://link.weaviate.io/3ThS9hG)
-2. Start querying :)
+1. 前往：[此链接](https://link.weaviate.io/3ThS9hG)
+2. 开始查询 :)
 
-## Try out the console with your own instance
+## 使用自己的实例尝试控制台
 
-1. Go to: [https://console.weaviate.cloud](https://console.weaviate.cloud)
-2. In the Self-hosted Weaviate section, provide the endpoint of you instance. If you run Weaviate locally this will be `http://localhost:8080`.
-3. Click "connect"
+1. 前往：[https://console.weaviate.cloud](https://console.weaviate.cloud)
+2. 在自托管的Weaviate部分，提供您实例的端点。如果您在本地运行Weaviate，则为`http://localhost:8080`。
+3. 点击"connect"
 
 :::note
 The console might ask to downgrade to HTTP. This is done to avoid [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) errors.
 :::
 
-## Recap
+## 概述
 
-* You can use the Weaviate Console to connect to any Weaviate instance.
-* You can use the Weaviate Console to connect to the Weaviate Cloud Services to create managed Weaviate instances.
-* Because Weaviate uses GraphQL, you can easily query it with the console's GraphiQL integration.
+* 您可以使用Weaviate控制台连接到任何Weaviate实例。
+* 您可以使用Weaviate控制台连接到Weaviate云服务，创建托管的Weaviate实例。
+* 由于Weaviate使用GraphQL，您可以通过控制台的GraphiQL集成轻松查询它。
 
-## What next?
+## 下一步是什么？
 
-- [References: Installation](../installation/index.md)
-- [References: Configuration](../configuration/index.md)
-- [References: API](../api/index.md)
-- [Concepts](../concepts/index.md)
-- [Roadmap](../roadmap/index.md)
+- [参考：安装](../installation/index.md)
+- [参考：配置](../configuration/index.md)
+- [参考：API](../api/index.md)
+- [概念](../concepts/index.md)
+- [路线图](../roadmap/index.md)
 
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

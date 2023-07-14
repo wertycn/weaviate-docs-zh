@@ -1,8 +1,7 @@
 ---
-title: Backups
-sidebar_position: 12
 image: og/docs/configuration.jpg
-# tags: ['configuration', 'backups']
+sidebar_position: 12
+title: Backups
 ---
 
 import Tabs from '@theme/Tabs';
@@ -19,143 +18,141 @@ import CurlCode from '!!raw-loader!/_includes/code/howto/configure.backups.sh';
 - [References: REST API: Backups](../api/rest/backups.md)
 :::
 
-## Introduction
+## 简介
 
-Weaviate's Backup feature is designed to feel very easy to use and work natively with cloud technology. Most notably, it allows:
+Weaviate的备份功能旨在提供非常简单易用的体验，并与云技术进行原生集成。主要特点包括：
 
-* Seamless integration with widely-used cloud blob storage, such as AWS S3, GCS or Azure
-* Backup and Restore between different storage providers
-* Single-command backup and restore from the REST API
-* Choice of backing up an entire instance, or selected classes only
-* Zero downtime & minimal impact for your users when backups are running
-* Easy Migration to new environments
+* 与广泛使用的云对象存储（如AWS S3、GCS或Azure）无缝集成
+* 在不同存储提供商之间进行备份和恢复
+* 通过REST API进行单命令备份和恢复
+* 可选择备份整个实例或仅选择的类
+* 在备份运行时对用户几乎没有影响，实现零停机时间
+* 简易迁移至新环境
 
 :::note
 _The backup functionality was introduced in Weaviate `v1.15`, but for single-node instances only. Support for multi-node backups was introduced in `v1.16`_.
 :::
 
 
-## Configuration
+## 配置
 
-In order to perform backups, a backup provider module must be activated. Multiple backup providers can be active at the same time. Currently `backup-s3`, `backup-gcs`, `backup-azure`, and `backup-filesystem` modules are available for S3, GCS, Azure or filesystem backups respectively.
+为了执行备份操作，必须激活备份提供程序模块。可以同时激活多个备份提供程序。目前可用的备份提供程序模块有 `backup-s3`、`backup-gcs`、`backup-azure` 和 `backup-filesystem`，分别用于 S3、GCS、Azure 或文件系统备份。
 
-As it is built on Weaviate's [module system](/developers/weaviate/configuration/modules.md), additional providers can be added in the future.
+由于它是建立在Weaviate的[模块系统](/developers/weaviate/configuration/modules.md)之上的，未来还可以添加其他提供程序。
 
-All service-discovery and authentication-related configuration is set using
-environment variables.
+所有与服务发现和身份验证相关的配置都使用环境变量设置。
 
-### S3 (AWS or S3-compatible)
+### S3（AWS或兼容S3）
 
-Use the `backup-s3` module to enable backing up to and restoring from any S3-compatible blob storage. This includes AWS S3, and MinIO.
+使用`backup-s3`模块可以启用备份到任何兼容S3的Blob存储，并从中进行恢复。这包括AWS S3和MinIO。
 
-To enable the module, add its name to the `ENABLE_MODULES` environment variable. Modules are comma-separated. To enable the module along with the `text2vec-transformers` module for example, set:
+要启用该模块，请将其名称添加到`ENABLE_MODULES`环境变量中。模块之间用逗号分隔。例如，要同时启用该模块和`text2vec-transformers`模块，可以设置如下：
 
 ```
 ENABLE_MODULES=backup-s3,text2vec-transformers
 ```
 
-#### S3 Configuration (vendor-agnostic)
-In addition to enabling the module, you need to configure it using environment variables. This configuration applies to any S3-compatible backend.
+#### S3配置（与供应商无关）
+除了启用模块之外，您还需要使用环境变量对其进行配置。此配置适用于任何兼容S3的后端。
 
-| Environment variable | Required | Description |
+| 环境变量 | 是否必需 | 描述 |
 | --- | --- | --- |
-| `BACKUP_S3_BUCKET` | yes | The name of the S3 bucket for all backups. |
-| `BACKUP_S3_PATH` | no | The root path inside your bucket that all your backups will be copied into and retrieved from. <br/><br/>Optional, defaults to `""` which means that the backups will be stored in the bucket root instead of a sub-folder. |
-| `BACKUP_S3_ENDPOINT` | no | The S3 endpoint to be used. <br/><br/>Optional, defaults to `"s3.amazonaws.com"`. |
-| `BACKUP_S3_USE_SSL` | no | Whether the connection should be secured with SSL/TLS. <br/><br/>Optional, defaults to `"true"`. |
+| `BACKUP_S3_BUCKET` | 是 | 所有备份的S3存储桶名称。 |
+| `BACKUP_S3_PATH` | 否 | 存储备份的根路径，所有备份将被复制到该路径并从该路径检索。<br/><br/>可选项，默认为`""`，表示备份将存储在桶的根目录而不是子文件夹中。 |
+| `BACKUP_S3_ENDPOINT` | 否 | 要使用的 S3 端点。<br/><br/>可选项，默认为`"s3.amazonaws.com"`。 |
+| `BACKUP_S3_USE_SSL` | 否 | 连接是否应使用 SSL/TLS 进行安全保护。<br/><br/>可选项，默认为`"true"`。 |
 
-#### S3 Configuration (AWS-specific)
+#### S3配置（特定于AWS）
 
-In addition to the vendor-agnostic configuration from above, you can set AWS-specific configuration for authentication. You can choose between access-key or ARN-based authentication:
+除了上面的供应商无关配置外，您还可以设置特定于AWS的身份验证配置。您可以选择使用访问密钥或基于ARN的身份验证：
 
-#### Option 1: With IAM and ARN roles
+#### 选项1：使用IAM和ARN角色
 
-The backup module will first try to authenticate itself using AWS IAM. If the authentication fails then it will try to authenticate with `Option 2`.
+备份模块将首先尝试使用AWS IAM进行身份验证。如果身份验证失败，则将尝试使用“选项2”进行身份验证。
 
-#### Option 2: With access key and secret access key
+#### 选项2：使用访问密钥和秘密访问密钥
 
-| Environment variable | Description |
+| 环境变量 | 描述 |
 | --- | --- |
-| `AWS_ACCESS_KEY_ID` | The id of the AWS access key for the desired account. |
-| `AWS_SECRET_ACCESS_KEY` | The secret AWS access key for the desired account. |
-| `AWS_REGION` | The AWS Region. If not provided, the module will try to parse `AWS_DEFAULT_REGION`. |
+| `AWS_ACCESS_KEY_ID` | 所需帐户的AWS访问密钥ID。 |
+| `AWS_SECRET_ACCESS_KEY` | 所需帐户的AWS访问密钥。 |
+| `AWS_REGION` | AWS区域。如果未提供，模块将尝试解析`AWS_DEFAULT_REGION`。 |
 
+### GCS（Google Cloud Storage）
 
-### GCS (Google Cloud Storage)
+使用`backup-gcs`模块可以启用对任何Google Cloud Storage存储桶的备份和恢复功能。
 
-Use the `backup-gcs` module to enable backing up to and restoring from any Google Cloud Storage bucket.
-
-To enable the module, add its name to the `ENABLE_MODULES` environment variable. Modules are comma-separated. To enable the module along with the `text2vec-transformers` module for example, set:
+要启用该模块，请将其名称添加到`ENABLE_MODULES`环境变量中。模块之间用逗号分隔。例如，要同时启用该模块和`text2vec-transformers`模块，请设置为：
 
 ```
 ENABLE_MODULES=backup-gcs,text2vec-transformers
 ```
 
-In addition to enabling the module, you need to configure it using environment variables. There are bucket-related variables, as well as credential-related variables.
+除了启用该模块外，您还需要使用环境变量进行配置。有一些与存储桶相关的变量，以及与凭证相关的变量。
 
-#### GCS bucket-related variables
+#### GCS存储桶相关变量
 
-| Environment variable | Required | Description |
+| 环境变量 | 是否必需 | 描述 |
 | --- | --- | --- |
-| `BACKUP_GCS_BUCKET` | yes | The name of the GCS bucket for all backups. |
-| `BACKUP_GCS_USE_AUTH` | no | Whether or not credentials will be used for authentication. Defaults to `true`. A case for `false` would be for use with a local GCS emulator. |
-| `BACKUP_GCS_PATH` | no | The root path inside your bucket that all your backups will be copied into and retrieved from. <br/><br/>Optional, defaults to `""` which means that the backups will be stored in the bucket root instead of a sub-folder. |
+| `BACKUP_GCS_BUCKET` | 是 | 所有备份文件的GCS存储桶名称。 |
+| `BACKUP_GCS_USE_AUTH` | no | 是否使用凭据进行身份验证。默认为`true`。如果使用本地GCS模拟器，则为`false`。 |
+| `BACKUP_GCS_PATH` | no | 存放备份文件的根路径。可选，默认为`""`，表示备份文件将存储在桶的根目录而不是子文件夹中。 |
 
-#### Google Application Default Credentials
+#### Google应用程序默认凭据
 
-The `backup-gcs` module follows the Google [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials) best-practices. This means that credentials can be discovered through the environment, through a local Google Cloud CLI setup, or through an attached service account.
+`backup-gcs`模块遵循Google的[应用程序默认凭据](https://cloud.google.com/docs/authentication/application-default-credentials)最佳实践。这意味着可以通过环境变量、本地Google Cloud CLI设置或附加的服务帐号发现凭据。
 
-This makes it easy to use the same module in different setups. For example, you can use the environment-based approach in production, and the CLI-based approach on your local machine. This way you can easily pull a backup that was created in a remote environment to your local system. This can be helpful in debugging an issue, for example.
+这使得在不同的设置中使用相同的模块变得非常容易。例如，您可以在生产环境中使用基于环境的方法，在本地机器上使用基于CLI的方法。这样，您就可以轻松地将在远程环境中创建的备份拉到您的本地系统中。这在调试问题时非常有用，例如。
 
-#### Environment-based Configuration
+#### 基于环境的配置
 
-| Environment variable | Example value | Description |
+| 环境变量 | 示例值 | 描述 |
 | --- | --- | --- |
-| `GOOGLE_APPLICATION_CREDENTIALS` | `/your/google/credentials.json` | The path to the secret GCP service account or workload identity file. |
-| `GCP_PROJECT` | `my-gcp-project` | Optional. If you use a service account with `GOOGLE_APPLICATION_CREDENTIALS` the service account will already contain a Google project. You can use this variable to explicitly set a project if you are using user credentials which may have access to more than one project. |
+| `GOOGLE_APPLICATION_CREDENTIALS` | `/your/google/credentials.json` | 指向 GCP 服务账号或工作负载身份文件的路径。 |
+| `GCP_PROJECT` | `my-gcp-project` | 可选。如果您使用带有 `GOOGLE_APPLICATION_CREDENTIALS` 的服务账号，该服务账号将已经包含一个 Google 项目。您可以使用此变量来显式设置一个项目，如果您使用的是用户凭证，可能可以访问多个项目。 |
 
-### Azure Storage
+### Azure 存储
 
-Use the `backup-azure` module to enable backing up to and restoring from any Microsoft Azure Storage container.
+使用 `backup-azure` 模块可以启用备份到任何 Microsoft Azure 存储容器以及从中恢复的功能。
 
-To enable the module, add its name to the `ENABLE_MODULES` environment variable. Modules are comma-separated. To enable the module along with the `text2vec-transformers` module for example, set:
+要启用该模块，请将其名称添加到 `ENABLE_MODULES` 环境变量中。多个模块之间用逗号分隔。例如，要同时启用该模块和 `text2vec-transformers` 模块，请设置：
 
 ```
 ENABLE_MODULES=backup-azure,text2vec-transformers
 ```
 
-In addition to enabling the module, you need to configure it using environment variables. There are container-related variables, as well as credential-related variables.
+除了启用模块外，您还需要使用环境变量进行配置。这里有与容器相关的变量以及与凭据相关的变量。
 
-#### Azure container-related variables
+#### Azure容器相关的变量
 
-| Environment variable | Required | Description |
+| 环境变量 | 是否必需 | 描述 |
 | --- | --- | --- |
-| `BACKUP_AZURE_CONTAINER` | yes | The name of the Azure container for all backups. |
-| `BACKUP_AZURE_PATH` | no | The root path inside your container that all your backups will be copied into and retrieved from. <br/><br/>Optional, defaults to `""` which means that the backups will be stored in the container root instead of a sub-folder. |
+| `BACKUP_AZURE_CONTAINER` | 是 | 所有备份的Azure容器的名称。 |
+| `BACKUP_AZURE_PATH` | no | 将所有备份复制到和检索到的容器内的根路径。<br/><br/>可选，默认为 `""`，意味着备份将存储在容器的根目录而不是子文件夹中。 |
 
-#### Azure Credentials
+#### Azure 凭据
 
-There are two different ways to authenticate against Azure with `backup-azure`. You can use either:
+使用 `backup-azure` 对 Azure 进行身份验证有两种不同的方式。您可以使用以下任一方式：
 
-1. An Azure Storage connection string, or
-1. An Azure Storage account name and key.
+1. Azure 存储连接字符串，或
+2. Azure 存储帐户名称和密钥。
 
-Both options can be implemented using environment variables as follows:
+两种选项都可以使用环境变量来实现，具体如下：
 
-| Environment variable | Required | Description |
+| 环境变量 | 必需 | 描述 |
 | --- | --- | --- |
-| `AZURE_STORAGE_CONNECTION_STRING` | yes (*see note) | A string that includes the authorization information required ([Azure documentation](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string)). <br/><br/> This variable is checked and used first before `AZURE_STORAGE_ACCOUNT`. |
-| `AZURE_STORAGE_ACCOUNT` | yes (*see note) | The name of your Azure Storage account. |
-| `AZURE_STORAGE_KEY` | no | An access key for your Azure Storage account. <br/><br/>For anonymous access, specify `""`. |
+| `AZURE_STORAGE_CONNECTION_STRING` | 是 (*请参考注释) | 包含所需授权信息的字符串（[Azure文档](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string)）。<br/><br/> 在使用`AZURE_STORAGE_ACCOUNT`之前，首先检查并使用此变量。 |
+| `AZURE_STORAGE_ACCOUNT` | 是（*请参阅注释） | 您的Azure存储帐户的名称。 |
+| `AZURE_STORAGE_KEY` | 否 | Azure存储帐户的访问密钥。 <br/><br/>对于匿名访问，请指定 `""`。 |
 
-If both of `AZURE_STORAGE_CONNECTION_STRING` and `AZURE_STORAGE_ACCOUNT` are provided, Weaviate will use `AZURE_STORAGE_CONNECTION_STRING` to authenticate.
+如果同时提供了 `AZURE_STORAGE_CONNECTION_STRING` 和 `AZURE_STORAGE_ACCOUNT`，Weaviate将使用 `AZURE_STORAGE_CONNECTION_STRING` 进行身份验证。
 
 :::note At least one credential option is required
 At least one of `AZURE_STORAGE_CONNECTION_STRING` or `AZURE_STORAGE_ACCOUNT` must be present.
 :::
 
 
-### Filesystem
+### 文件系统
 
 :::caution `backup-filesystem` - limitations
 `backup-filesystem` is only compatible with single-node backups. Use `backup-gcs` or `backup-s3` if support for multi-node backups is needed.
@@ -163,54 +160,53 @@ At least one of `AZURE_STORAGE_CONNECTION_STRING` or `AZURE_STORAGE_ACCOUNT` mus
 The filesystem provider is not intended for production use, as its availability is directly tied to the node on which it operates.
 :::
 
-Instead of backing up to a remote backend, you can also back up to the local filesystem. This may be helpful during development, for example to be able to quickly exchange setups, or to save a state from accidental future changes.
+您可以选择将备份保存到本地文件系统，而不是远程后端。这在开发过程中可能会很有帮助，例如可以快速交换设置或保存将来意外更改的状态。
 
-To allow backups to the local filesystem, add `backup-filesystem` to the `ENABLE_MODULES` environment variable. Modules are comma-separated. To enable the module along with the `text2vec-transformers` module for example, set:
+要允许将备份保存到本地文件系统，请将`backup-filesystem`添加到`ENABLE_MODULES`环境变量中。模块之间用逗号分隔。例如，要同时启用`text2vec-transformers`模块和该模块，设置如下：
 
 ```
 ENABLE_MODULES=backup-filesystem,text2vec-transformers
 ```
 
-In addition to enabling the module, you need to configure it using environment variables:
+除了启用模块外，您还需要使用环境变量进行配置：
 
-| Environment variable | Required | Description |
+| 环境变量 | 是否必需 | 描述 |
 | --- | --- | --- |
-| `BACKUP_FILESYSTEM_PATH` | yes | The root path that all your backups will be copied into and retrieved from |
+| `BACKUP_FILESYSTEM_PATH` | 是 | 所有备份将被复制到和检索的根路径 |
 
-### Other Backup Backends
+### 其他备份后端
 
-Weaviate uses its [module system](/developers/weaviate/configuration/modules.md) to decouple the backup orchestration from the remote backup storage backends. It is easy to add new providers and use them with the existing backup API. If you are missing your desired backup module, you can open a feature request or contribute it yourself. For either option, join our Slack community to have a quick chat with us on how to get started.
-
+Weaviate使用其[模块系统](/developers/weaviate/configuration/modules.md)来将备份编排与远程备份存储后端解耦。可以轻松添加新的提供者并将它们与现有的备份API一起使用。如果您缺少所需的备份模块，可以提出功能请求或自己进行贡献。无论选择哪个选项，都可以加入我们的Slack社区，与我们进行快速聊天，了解如何开始。
 
 ## API
 
-### Create Backup
+### 创建备份
 
-Once the modules are enabled and the configuration is provided, you can start a backup on any running instance with a single HTTP request.
+一旦模块已启用并提供了配置信息，您可以通过一个单独的HTTP请求在任何正在运行的实例上启动备份。
 
-#### Method and URL
+#### 方法和URL
 
 ```js
 POST /v1/backups/{backend}
 ```
 
-#### Parameters
+#### 参数
 
-##### URL Parameters
+##### URL 参数
 
-| Name | Type | Required | Description |
+| 名称 | 类型 | 是否必需 | 描述 |
 | ---- | ---- | ---- | ---- |
-| `backend` | string | yes | The name of the backup provider module without the `backup-` prefix, for example `s3`, `gcs`, or `filesystem`. |
+| `backend` | 字符串 | 是 | 备份提供程序模块的名称，不包括 `backup-` 前缀，例如 `s3`、`gcs` 或 `filesystem`。 |
 
-##### Request Body
+##### 请求体
 
-The request takes a JSON object with the following properties:
+请求使用一个带有以下属性的 JSON 对象：
 
-| Name | Type | Required | Description |
+| 名称 | 类型 | 是否必需 | 描述 |
 | ---- | ---- | ---- | ---- |
-| `id` | string (lowercase letters, numbers, underscore, minus) | yes | The id of the backup. This string must be provided on all future requests, such as status checking or restoration. |
-| `include` | list of strings | no | An optional list of class names to be included in the backup. If not set, all classes are included. |
-| `exclude` | list of strings | no | An optional list of class names to be excluded from the backup. If not set, no classes are excluded. |
+| `id` | string (小写字母、数字、下划线、减号) | 是 | 备份的唯一标识符。此字符串必须在后续请求（例如状态检查或还原）中提供。 |
+| `include` | 字符串列表 | 否 | 要包含在备份中的可选类名列表。如果未设置，则包含所有类。 |
+| `exclude` | 字符串列表 | 否 | 要从备份中排除的可选类名列表。如果未设置，则不排除任何类。 |
 
 :::note
 You cannot set `include` and `exclude` at the same time. Set none or exactly one of those.
@@ -241,22 +237,22 @@ You cannot set `include` and `exclude` at the same time. Set none or exactly one
       startMarker="// START CreateBackup"
       endMarker="// END CreateBackup"
       language="go"
-    />
+  />
   </TabItem>
 
-  <TabItem value="java" label="Java">
-    <FilteredTextBlock
-      text={JavaCode}
-      startMarker="// START CreateBackup"
-      endMarker="// END CreateBackup"
-      language="java"
-    />
-  </TabItem>
+<TabItem value="java" label="Java">
+  <FilteredTextBlock
+    text={JavaCode}
+    startMarker="// START CreateBackup"
+    endMarker="// END CreateBackup"
+    language="java"
+  />
+</TabItem>
 
-  <TabItem value="curl" label="curl">
-    <FilteredTextBlock
-      text={CurlCode}
-      startMarker="# START CreateBackup"
+<TabItem value="curl" label="curl">
+  <FilteredTextBlock
+    text={CurlCode}
+    startMarker="# START CreateBackup"
       endMarker="# END CreateBackup"
       language="bash"
     />
@@ -264,29 +260,29 @@ You cannot set `include` and `exclude` at the same time. Set none or exactly one
 </Tabs>
 
 
-While you are waiting for a backup to complete, [Weaviate stays fully usable](#read--write-requests-while-a-backup-is-running).
+在等待备份完成期间，[Weaviate仍然完全可用](#read--write-requests-while-a-backup-is-running)。
 
 
-#### Asynchronous Status Checking
+#### 异步状态检查
 
-All client implementations have a "wait for completion" option which will poll the backup status in the background and only return once the backup has completed (successfully or unsuccessfully).
+所有客户端实现都有一个“等待完成”选项，它会在后台轮询备份状态，并在备份完成（成功或失败）后才返回。
 
-If you set the "wait for completion" option to false, you can also check the status yourself using the Backup Creation Status API.
+如果将“等待完成”选项设置为false，您还可以使用备份创建状态API自行检查状态。
 
 ```js
 GET /v1/backups/{backend}/{backup_id}
 ```
 
-#### Parameters
+#### 参数
 
-##### URL Parameters
+##### URL 参数
 
-| Name | Type | Required | Description |
+| 名称 | 类型 | 是否必需 | 描述 |
 | ---- | ---- | ---- | ---- |
-| `backend` | string | yes | The name of the backup provider module without the `backup-` prefix, for example `s3`, `gcs`, or `filesystem`. |
-| `backup_id` | string | yes | The user-provided backup identifier that was used when sending the request to create the backup. |
+| `backend` | 字符串 | 是 | 备份提供程序模块的名称，不包括 `backup-` 前缀，例如 `s3`、`gcs` 或 `filesystem`。 |
+| `backup_id` | 字符串 | 是 | 在发送创建备份请求时用户提供的备份标识符。 |
 
-The response contains a `"status"` field. If the status is `SUCCESS`, the backup is complete. If the status is `FAILED`, an additional error is provided.
+响应中包含一个`"status"`字段。如果状态为`SUCCESS`，则备份已完成。如果状态为`FAILED`，则会提供附加的错误信息。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -336,37 +332,37 @@ The response contains a `"status"` field. If the status is `SUCCESS`, the backup
 </Tabs>
 
 
-### Restore Backup
-You can restore any backup to any machine as long as the name and number of nodes between source and target are identical. The backup does not need to be created on the same instance. Once a backup backend is configured, you can restore a backup with a single HTTP request.
+### 恢复备份
+只要源和目标之间的名称和节点数量相同，您可以将任何备份还原到任何机器上。备份不需要在同一实例上创建。一旦配置了备份后端，您可以通过一个HTTP请求还原备份。
 
-Note that a restore fails if any of the classes already exist on this instance.
+请注意，如果此实例上已存在任何类，则还原操作将失败。
 
-#### Method and URL
+#### 方法和URL
 
 ```js
 POST /v1/backups/{backend}/{backup_id}/restore
 ```
 
-#### Parameters
+#### 参数
 
-##### URL Parameters
+##### URL 参数
 
-| Name | Type | Required | Description |
+| 名称 | 类型 | 是否必需 | 描述 |
 | ---- | ---- | ---- | ---- |
-| `backend` | string | yes | The name of the backup provider module without the `backup-` prefix, for example `s3`, `gcs`, or `filesystem`. |
-| `backup_id` | string | yes | The user-provided backup identifier that was used when sending the request to create the backup. |
+| `backend` | 字符串 | 是 | 备份提供程序模块的名称，不包括 `backup-` 前缀，例如 `s3`、`gcs` 或 `filesystem`。 |
+| `backup_id` | 字符串 | 是 | 在发送创建备份请求时用户提供的备份标识符。 |
 
-##### Request Body
-The request takes a json object with the following properties:
+##### 请求体
+请求接受一个包含以下属性的 JSON 对象：
 
-| Name | Type | Required | Description |
+| 名称 | 类型 | 必填 | 描述 |
 | ---- | ---- | ---- | ---- |
-| `include` | list of strings | no | An optional list of class names to be included in the backup. If not set, all classes are included. |
-| `exclude` | list of strings | no | An optional list of class names to be excluded from the backup. If not set, no classes are excluded. |
+| `include` | 字符串列表 | 否 | 可选的类名列表，用于指定要包含在备份中的类。如果未设置，则包含所有类。 |
+| `exclude` | 字符串列表 | 否 | 可选的类名列表，用于指定要从备份中排除的类。如果未设置，则不排除任何类。 |
 
-*Note 1: You cannot set `include` and `exclude` at the same time. Set none or exactly one of those.*
+*注意 1：不能同时设置 `include` 和 `exclude`。请选择不设置或只设置其中一个。*
 
-*Note 2: `include` and `exclude` are relative to the classes contained in the backup. The restore process does not know which classes existed on the source machine if they were not part of the backup.*
+*注意2：`include`和`exclude`是相对于备份中包含的类的。如果它们不是备份的一部分，恢复过程无法知道源机器上存在哪些类。*
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -416,26 +412,26 @@ The request takes a json object with the following properties:
 </Tabs>
 
 
-#### Asynchronous Status Checking
+#### 异步状态检查
 
-All client implementations have a "wait for completion" option which will poll the restore status in the background and only return once the restore has completed (successfully or unsuccessfully).
+所有客户端实现都有一个"等待完成"的选项，它会在后台轮询恢复状态，并且只有在恢复完成（成功或失败）后才会返回。
 
-If you set the "wait for completion" option to false, you can also check the status yourself using the Backup Restore Status API.
+如果将"等待完成"选项设置为false，您还可以使用备份恢复状态API自行检查状态。
 
 ```js
 GET /v1/backups/{backend}/{backup_id}/restore
 ```
 
-#### Parameters
+#### 参数
 
-##### URL Parameters
+##### URL 参数
 
-| Name | Type | Required | Description |
+| 名称 | 类型 | 必填 | 描述 |
 | ---- | ---- | ---- | ---- |
-| `backend` | string | yes | The name of the backup provider module without the `backup-` prefix, for example `s3`, `gcs`, or `filesystem`. |
-| `backup_id` | string | yes | The user-provided backup identifier that was used when sending the requests to create and restore the backup. |
+| `backend` | 字符串 | 是 | 备份提供程序模块的名称，不包括 `backup-` 前缀，例如 `s3`、`gcs` 或 `filesystem`。 |
+| `backup_id` | 字符串 | 是 | 用户提供的备份标识符，在发送创建和还原备份的请求时使用。 |
 
-The response contains a `"status"` field. If the status is `SUCCESS`, the restore is complete. If the status is `FAILED`, an additional error is provided.
+响应中包含一个`"status"`字段。如果状态为`SUCCESS`，则表示恢复完成。如果状态为`FAILED`，则会提供额外的错误信息。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -485,43 +481,43 @@ The response contains a `"status"` field. If the status is `SUCCESS`, the restor
 </Tabs>
 
 
-## Technical Considerations
+## 技术考虑
 
-### Read & Write requests while a backup is running
+### 在备份运行期间的读写请求
 
-The backup process is designed to be minimally invasive to a running setup. Even on very large setups, where terabytes of data need to be copied, Weaviate stays fully usable during backup. It even accepts write requests while a backup process is running. This sections explains how backups work under the hood and why Weaviate can safely accept writes while a backup is copied.
+备份过程旨在对正在运行的设置进行最小干扰。即使在需要复制数千兆字节的数据的非常大型设置中，Weaviate在备份过程中仍然完全可用。它甚至可以在备份过程运行时接受写入请求。本节将解释备份的工作原理以及为什么Weaviate可以在复制备份时安全地接受写入操作。
 
-Weaviate uses a custom [LSM Store](../concepts/storage.md#object-and-inverted-index-store) for it's object store and inverted index. LSM stores are a hybrid of immutable disk segments and an in-memory structure called a memtable that accepts all writes (including updates and deletes). Most of the time, files on disk are immutable, there are only three situations where files are changed:
+Weaviate使用一个自定义的[LSM存储](../concepts/storage.md#object-and-inverted-index-store)作为其对象存储和倒排索引。LSM存储是不可变磁盘段和接受所有写入（包括更新和删除）的内存结构memtable的混合体。大部分时间，磁盘上的文件是不可变的，只有三种情况下文件会发生变化：
 
-1. Anytime a memtable is flushed. This creates a new segment. Existing segments are not changed.
-2. Any write into the memtable is also written into a Write-Ahead-Log (WAL). The WAL is only needed for disaster-recovery. Once a segment has been orderly flushed, the WAL can be discarded.
-3. There is an async background process called Compaction that optimizes existing segments. It can merge two small segments into a single larger segment and remove redundant data as part of the process.
+1. 每当一个memtable被刷新时，会创建一个新的段。现有的段不会被更改。
+2. 任何写入内存表的操作也会被写入预写式日志（WAL）。WAL仅用于灾难恢复。一旦一个段被有序地刷新，WAL可以被丢弃。
+3. 有一个异步的后台进程叫做Compaction，它优化现有的段。它可以将两个小的段合并成一个较大的段，并在此过程中删除冗余数据。
 
-Weaviate's Backup implementation makes use of the above properties in the following ways:
+Weaviate的备份实现使用上述属性的方式如下：
 
-1. Weaviate first flushes all active memtables to disk. This process takes in the 10s or 100s of milliseconds. Any pending write requests simply waits for a new memtable to be created without any failing requests or substantial delays.
-2. Now that the memtables are flushed, there is a guarantee: All data that should be part of the backup is present in the existing disk segments. Any data that will be imported after the backup request ends up in new disk segments. The backup references a list of immutable files.
-3. To prevent a compaction process from changing the files on disk while they are being copied, compactions are temporarily paused until all files have been copied. They are automatically resumed right after.
+1. Weaviate首先将所有活动的memtable刷新到磁盘上。这个过程需要10到100毫秒的时间。任何待处理的写请求只需等待新的memtable创建完成，而不会有请求失败或者延迟。
+2. 现在，内存表已经被刷新，有一个保证：所有应该包含在备份中的数据都存在于现有的磁盘段中。任何在备份请求结束后导入的数据都会保存在新的磁盘段中。备份引用了一个不可变文件列表。
+3. 为了防止在复制过程中紧凑操作改变磁盘上的文件，紧缩操作会在所有文件都被复制之前暂时暂停，然后会在复制完成后自动恢复。
 
-This way the backup process can guarantee that the files that are transferred to the remote backend are immutable (and thus safe to copy) even with new writes coming in. Even if it takes minutes or hours to backup a very large setup, Weaviate stays fully usable without any user impact while the backup process is running.
+通过这种方式，备份过程可以确保传输到远程后端的文件是不可变的（因此可以安全复制），即使有新的写入操作。即使备份一个非常大的设置需要几分钟或几小时，Weaviate在备份过程运行时仍然完全可用，而且不会对用户产生任何影响。
 
-It is not just safe - but even recommended - to create backups on live production instances while they are serving user requests.
+在生产实例正常提供用户请求的同时，甚至建议在生产环境中创建备份。
 
-### Async nature of the Backup API
+### 备份 API 的异步特性
 
-The backup API is built in a way that no long-running network requests are required. The request to create a new backup returns immediately. It does some basic validation, then returns to the user. The backup is now in status `STARTED`. To get the status of a running backup you can poll the [status endpoint](#asynchronous-status-checking). This makes the backup itself resilient to network or client failures.
+备份 API 的设计方式避免了长时间的网络请求。创建新备份的请求会立即返回。它会进行一些基本的验证，然后返回给用户。备份现在处于 `STARTED` 状态。要获取正在运行的备份的状态，您可以轮询 [状态端点](#异步状态检查)。这使得备份本身对网络或客户端故障具有弹性。
 
-If you would like your application to wait for the background backup process to complete, you can use the "wait for completion" feature that is present in all language clients. The clients will poll the status endpoint in the background and block until the status is either `SUCCESS` or `FAILED`. This makes it easy to write simple synchronous backup scripts, even with the async nature of the API.
+如果您希望应用程序等待后台备份过程完成，您可以使用所有语言客户端中存在的“等待完成”功能。客户端将在后台轮询状态终点，直到状态为`SUCCESS`或`FAILED`时阻塞。这使得即使在API的异步特性下，编写简单的同步备份脚本也变得很容易。
 
-## Other Use cases
+## 其他用例
 
-### Migrating to another environment
+### 迁移到另一个环境
 
-The flexibility around backup providers opens up new use cases. Besides using the backup & restore feature for disaster recovery, you can also use it for duplicating environments or migrating between clusters.
+备份提供商的灵活性为新的用例打开了可能。除了将备份和恢复功能用于灾难恢复外，您还可以将其用于复制环境或在集群之间进行迁移。
 
-For example, consider the following situation: You would like to do a load test on production data. If you would do the load test in production it might affect users. An easy way to get meaningful results without affecting uses it to duplicate your entire environment. Once the new production-like "loadtest" environment is up, create a backup from your production environment and restore it into your "loadtest" environment. This even works if the production environment is running on a completely different cloud provider than the new environment.
+例如，考虑以下情况：您希望对生产数据进行负载测试。如果在生产环境中进行负载测试，可能会影响用户。一种简单的方法是复制整个环境，以获得有意义的结果而不影响用户。一旦新的类似生产的“负载测试”环境建立起来，从生产环境中创建一个备份，并将其恢复到“负载测试”环境中。即使生产环境运行在与新环境完全不同的云服务提供商上，这种方法也适用。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

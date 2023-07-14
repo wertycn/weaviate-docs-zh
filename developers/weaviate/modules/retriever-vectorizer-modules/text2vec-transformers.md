@@ -1,20 +1,20 @@
 ---
-title: text2vec-transformers
-sidebar_position: 3
 image: og/docs/modules/text2vec-transformers.jpg
-# tags: ['text2vec', 'text2vec-transformers']
+sidebar_position: 3
+title: text2vec-transformers
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Introduction
+## 简介
 
-The `text2vec-transformers` module allows you to run your own inference container with a pre-trained language transformer model as a Weaviate vectorization module. Note that this is in contrast to an API-based module such as [`text2vec-openai`](./text2vec-openai.md), [`text2vec-cohere`](./text2vec-cohere.md) and [`text2vec-huggingface`](./text2vec-huggingface.md) which use an external API to vectorize your data.
+`text2vec-transformers` 模块允许您使用预训练的语言转换模型作为 Weaviate 矢量化模块，运行自己的推理容器。请注意，这与基于 API 的模块（如 [`text2vec-openai`](./text2vec-openai.md)、[`text2vec-cohere`](./text2vec-cohere.md) 和 [`text2vec-huggingface`](./text2vec-huggingface.md)）不同，后者使用外部 API 对数据进行矢量化。
 
-With the `text2vec-transformers` module, you can use one of any number of pretrained NLP models specific to your use case. This means models like `BERT`, `DilstBERT`, `RoBERTa`, `DilstilROBERTa`, etc. can be used out-of-the box with Weaviate.
+使用`text2vec-transformers`模块，您可以根据您的用例使用任意数量的预训练NLP模型。这意味着像`BERT`，`DilstBERT`，`RoBERTa`，`DilstilROBERTa`等模型可以直接在Weaviate中使用。
 
-The models are encapsulated in Docker containers. This allows for efficient scaling and resource planning. To choose your specific model, select the correct Docker container. There is a selection of pre-built Docker images available, but you can also build your own with a simple two-line Dockerfile. This separate-container microservice setup allows you to very easily host (and scale) the model independently on GPU-enabled hardware while keeping Weaviate on cheap CPU-only hardware, as  Weaviate is CPU-optimized.
+模型被封装在Docker容器中。这样可以实现高效的扩展和资源规划。要选择特定的模型，请选择正确的Docker容器。有一系列预构建的Docker镜像可供选择，但您也可以使用一个简单的两行Dockerfile构建自己的镜像。这种独立容器的微服务设置使您能够非常容易地在支持GPU的硬件上独立地托管（和扩展）模型，同时将Weaviate部署在廉价的仅CPU硬件上，因为Weaviate经过了CPU优化。
 
 :::tip Significant GPU/CPU speed differences
 Transformer architecture models run *much* faster with GPUs, even for inference (10x+ speeds typically). 
@@ -26,26 +26,26 @@ If this is the case, we recommend:
 - The [`text2vec-contextionary`](./text2vec-contextionary.md) module if you prefer a local inference container.
 :::
 
-## How to enable
+## 如何启用
 
-### Weaviate Cloud Services
+### Weaviate云服务
 
-The `text2vec-transformers` module is not available on the WCS.
+`text2vec-transformers`模块在WCS上不可用。
 
-### Weaviate open source
+### Weaviate开源版
 
-You have three options to select your desired model:
+您有三个选项来选择您想要的模型：
 
-1. **Use [any of our pre-built transformers model containers](#pre-built-images).** The models selected in [this list](#pre-built-images) have proven to work well with semantic search in the past. These model containers are pre-built by us, and packed in a container. (If you think we should support another model out-of-the-box [please open an issue or pull request here](https://github.com/weaviate/weaviate/issues)).
-2. **Use any model from Hugging Face Model Hub.** [Click here to learn how](#option-2-use-any-publicly-available-hugging-face-model). The `text2vec-transformers` module supports any PyTorch or Tensorflow transformer model.
-3. **Use any private or local PyTorch or Tensorflow transformer model.** [Click here to learn how](#option-3-custom-build-with-a-private-or-local-model). If you have your own transformer model in a registry or on a local disk, you can use this with Weaviate.
+1. **使用[我们预先构建的任意transformers模型容器](#pre-built-images)。** 在[这个列表](#pre-built-images)中选择的模型在过去的语义搜索中表现良好。这些模型容器是由我们预先构建，并打包在一个容器中。（如果您认为我们应该支持另一个模型，请在这里打开一个问题或pull请求](https://github.com/weaviate/weaviate/issues)）。
+2. **使用Hugging Face Model Hub中的任何模型**。[点击这里了解详情](#option-2-use-any-publicly-available-hugging-face-model)。`text2vec-transformers` 模块支持任何PyTorch或Tensorflow transformer模型。
+3. **使用私有或本地的PyTorch或Tensorflow transformer模型**。[点击这里了解详情](#option-3-custom-build-with-a-private-or-local-model)。如果您拥有自己的transformer模型，可以在注册表或本地磁盘上使用它与Weaviate。
 
-### Option 1: Use a pre-built transformer model container
+### 选项1：使用预构建的Transformer模型容器
 
-#### Example Docker-compose file
-Note: you can also use the [Weaviate configuration tool](/developers/weaviate/installation/docker-compose.md#configurator).
+#### 示例Docker-compose文件
+注意：您也可以使用[Weaviate配置工具](/developers/weaviate/installation/docker-compose.md#configurator)。
 
-You can find an example Docker-compose file below, which will spin up Weaviate with the transformers module. In this example, we have selected the `sentence-transformers/multi-qa-MiniLM-L6-cos-v1` which works great for [asymmetric semantic search](https://sbert.net/examples/applications/semantic-search/README.html#symmetric-vs-asymmetric-semantic-search). See below for how to select an alternative model.
+您可以在下面找到一个示例的Docker-compose文件，它将启动带有transformers模块的Weaviate。在这个示例中，我们选择了 `sentence-transformers/multi-qa-MiniLM-L6-cos-v1` 这个模型，它非常适合[非对称语义搜索](https://sbert.net/examples/applications/semantic-search/README.html#symmetric-vs-asymmetric-semantic-search)。请参阅下面的内容，了解如何选择其他模型。
 
 ```yaml
 version: '3.4'
@@ -73,18 +73,18 @@ services:
 The `text2vec-transformer` module will benefit greatly from GPU usage. Make sure to enable CUDA if you have a compatible GPU available (`ENABLE_CUDA=1`).
 :::
 
-### Alternative: configure your custom setup
+### 另一种选择：配置您的自定义设置
 
-#### Step 1: Enable the `text2vec-transformers` module
-Make sure you set the `ENABLE_MODULES=text2vec-transformers` environment variable. Additionally make this module the default vectorizer, so you don't have to specify it on each schema class: `DEFAULT_VECTORIZER_MODULE=text2vec-transformers`
+#### 步骤 1：启用`text2vec-transformers`模块
+确保设置`ENABLE_MODULES=text2vec-transformers`环境变量。另外，将此模块设置为默认的向量化器，这样您就不需要在每个模式类上指定它：`DEFAULT_VECTORIZER_MODULE=text2vec-transformers`
 
 :::info Important
 This setting is now a requirement, if you plan on using any module. So, when using the `text2vec-contextionary` module, you need to have `ENABLE_MODULES=text2vec-contextionary` set. All our configuration-generators / Helm charts will be updated as part of the Weaviate `v1.2.0` support.
 :::
 
-#### Step 2: Run your favorite model
+#### 步骤2：运行您喜欢的模型
 
-Choose [any of our pre-built transformers models](#pre-built-images) (for building your own model container, see below) and spin it up - for example using:
+选择[我们预构建的任何transformers模型](#pre-built-images)（如果要构建自己的模型容器，请参见下文），然后启动它 - 例如使用：
 
 ```
 docker run -itp "8000:8080" semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
@@ -94,127 +94,109 @@ docker run -itp "8000:8080" semitechnologies/transformers-inference:sentence-tra
 Use a CUDA-enabled machine for optimal performance. Alternatively, include this container in the same `docker-compose.yml` as Weaviate.
 :::
 
-#### Step 3: Tell Weaviate where to find the inference
+#### 步骤 3: 告诉 Weaviate 在哪里找到推理结果
 
-Set the Weaviate environment variable `TRANSFORMERS_INFERENCE_API` to identify where your inference container is running, for example if Weaviate is running outside of Docker use `TRANSFORMERS_INFERENCE_API="http://localhost:8000"`. Alternatively if Weaviate is part of the same Docker network, e.g. because they are part of the same `docker-compose.yml` file, you can use Docker networking/DNS, such as `TRANSFORMERS_INFERENCE_API=http://t2v-transformers:8080`.
+将Weaviate环境变量 `TRANSFORMERS_INFERENCE_API` 设置为识别推理容器运行位置的值，例如，如果Weaviate在Docker之外运行，请使用 `TRANSFORMERS_INFERENCE_API="http://localhost:8000"`。或者，如果Weaviate和推理容器在同一Docker网络中，例如它们在同一个 `docker-compose.yml` 文件中，您可以使用Docker网络/ DNS，例如 `TRANSFORMERS_INFERENCE_API=http://t2v-transformers:8080`。
 
-You can now use Weaviate normally and all vectorization during import and search time will be done with the selected transformers model.
+您现在可以正常使用Weaviate，导入和搜索时的所有向量化都将使用所选的transformers模型进行。
 
-### Pre-built images
+### 预构建的镜像
 
-You can download a selection of pre-built images directly from Dockerhub. We
-have chosen publicly available models that in our opinion are well suited for
-semantic search.
+您可以直接从Dockerhub下载一些预构建的镜像。我们选择了一些公开可用的模型，这些模型在我们看来非常适合语义搜索。
 
-The pre-built models include:
+预构建的模型包括：
 
-|Model Name|Image Name|
+|模型名称|镜像名称|
 |---|---|
-|`distilbert-base-uncased` ([Info](https://huggingface.co/distilbert-base-uncased))|`semitechnologies/transformers-inference:distilbert-base-uncased`|
-|`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` ([Info](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2))|`semitechnologies/transformers-inference:sentence-transformers-paraphrase-multilingual-MiniLM-L12-v2`|
-|`sentence-transformers/multi-qa-MiniLM-L6-cos-v1` ([Info](https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1))|`semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1`|
-|`sentence-transformers/multi-qa-mpnet-base-cos-v1` ([Info](https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-cos-v1))|`semitechnologies/transformers-inference:sentence-transformers-multi-qa-mpnet-base-cos-v1`|
-|`sentence-transformers/all-mpnet-base-v2` ([Info](https://huggingface.co/sentence-transformers/all-mpnet-base-v2))|`semitechnologies/transformers-inference:sentence-transformers-all-mpnet-base-v2`|
-|`sentence-transformers/all-MiniLM-L12-v2` ([Info](https://huggingface.co/sentence-transformers/all-MiniLM-L12-v2))|`semitechnologies/transformers-inference:sentence-transformers-all-MiniLM-L12-v2`|
-|`sentence-transformers/paraphrase-multilingual-mpnet-base-v2` ([Info](https://huggingface.co/sentence-transformers/paraphrase-multilingual-mpnet-base-v2))|`semitechnologies/transformers-inference:sentence-transformers-paraphrase-multilingual-mpnet-base-v2`|
-|`sentence-transformers/all-MiniLM-L6-v2` ([Info](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2))|`semitechnologies/transformers-inference:sentence-transformers-all-MiniLM-L6-v2`|
-|`sentence-transformers/multi-qa-distilbert-cos-v1` ([Info](https://huggingface.co/sentence-transformers/multi-qa-distilbert-cos-v1))|`semitechnologies/transformers-inference:sentence-transformers-multi-qa-distilbert-cos-v1`|
-|`sentence-transformers/gtr-t5-base` ([Info](https://huggingface.co/sentence-transformers/gtr-t5-base))|`semitechnologies/transformers-inference:sentence-transformers-gtr-t5-base`|
-|`sentence-transformers/gtr-t5-large` ([Info](https://huggingface.co/sentence-transformers/gtr-t5-large))|`semitechnologies/transformers-inference:sentence-transformers-gtr-t5-large`|
-|`google/flan-t5-base` ([Info](https://huggingface.co/google/flan-t5-base))|`semitechnologies/transformers-inference:sentence-transformers-gtr-t5-base`|
-|`google/flan-t5-large` ([Info](https://huggingface.co/google/flan-t5-large))|`semitechnologies/transformers-inference:sentence-transformers-gtr-t5-large`|
-|DPR Models|
-|`facebook/dpr-ctx_encoder-single-nq-base` ([Info](https://huggingface.co/facebook/dpr-ctx_encoder-single-nq-base))|`semitechnologies/transformers-inference:facebook-dpr-ctx_encoder-single-nq-base`|
-|`facebook/dpr-question_encoder-single-nq-base` ([Info](https://huggingface.co/facebook/dpr-question_encoder-single-nq-base))|`semitechnologies/transformers-inference:facebook-dpr-question_encoder-single-nq-base`|
-|`vblagoje/dpr-ctx_encoder-single-lfqa-wiki` ([Info](https://huggingface.co/vblagoje/dpr-ctx_encoder-single-lfqa-wiki))|`semitechnologies/transformers-inference:vblagoje-dpr-ctx_encoder-single-lfqa-wiki`|
-|`vblagoje/dpr-question_encoder-single-lfqa-wiki` ([Info](https://huggingface.co/vblagoje/dpr-question_encoder-single-lfqa-wiki))|`semitechnologies/transformers-inference:vblagoje-dpr-question_encoder-single-lfqa-wiki`|
-|Bar-Ilan University NLP Lab Models|
-|`biu-nlp/abstract-sim-sentence` ([Info](https://huggingface.co/biu-nlp/abstract-sim-sentence))|`semitechnologies/transformers-inference:biu-nlp-abstract-sim-sentence`|
-|`biu-nlp/abstract-sim-query` ([Info](https://huggingface.co/biu-nlp/abstract-sim-query))|`semitechnologies/transformers-inference:biu-nlp-abstract-sim-query`|
+|`distilbert-base-uncased`（[信息](https://huggingface.co/distilbert-base-uncased)）|`semitechnologies/transformers-inference:distilbert-base-uncased`|
+|`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`（[信息](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2)）|`semitechnologies/transformers-inference:sentence-transformers-paraphrase-multilingual-MiniLM-L12-v2`|
+|`sentence-transformers/multi-qa-MiniLM-L6-cos-v1` ([信息](https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1))|`semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1`|
+|`sentence-transformers/multi-qa-mpnet-base-cos-v1` ([信息](https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-cos-v1))|`semitechnologies/transformers-inference:sentence-transformers-multi-qa-mpnet-base-cos-v1`|
+|`sentence-transformers/all-mpnet-base-v2` ([信息](https://huggingface.co/sentence-transformers/all-mpnet-base-v2))|`semitechnologies/transformers-inference:sentence-transformers-all-mpnet-base-v2`|
+|`sentence-transformers/all-MiniLM-L12-v2` ([信息](https://huggingface.co/sentence-transformers/all-MiniLM-L12-v2))|`semitechnologies/transformers-inference:sentence-transformers-all-MiniLM-L12-v2`|
+|`sentence-transformers/paraphrase-multilingual-mpnet-base-v2`（[信息](https://huggingface.co/sentence-transformers/paraphrase-multilingual-mpnet-base-v2)）|`semitechnologies/transformers-inference:sentence-transformers-paraphrase-multilingual-mpnet-base-v2`|
+|`sentence-transformers/all-MiniLM-L6-v2`（[信息](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)）|`semitechnologies/transformers-inference:sentence-transformers-all-MiniLM-L6-v2`|
+|`sentence-transformers/multi-qa-distilbert-cos-v1`（[详情](https://huggingface.co/sentence-transformers/multi-qa-distilbert-cos-v1)）|`semitechnologies/transformers-inference:sentence-transformers-multi-qa-distilbert-cos-v1`|
+|`sentence-transformers/gtr-t5-base`（[详情](https://huggingface.co/sentence-transformers/gtr-t5-base)）|`semitechnologies/transformers-inference:sentence-transformers-gtr-t5-base`|
+|`sentence-transformers/gtr-t5-large` ([信息](https://huggingface.co/sentence-transformers/gtr-t5-large))|`semitechnologies/transformers-inference:sentence-transformers-gtr-t5-large`|
+|`google/flan-t5-base` ([信息](https://huggingface.co/google/flan-t5-base))|`semitechnologies/transformers-inference:sentence-transformers-gtr-t5-base`|
+|`google/flan-t5-large` ([信息](https://huggingface.co/google/flan-t5-large))|`semitechnologies/transformers-inference:sentence-transformers-gtr-t5-large`|
+|DPR 模型|
+|`facebook/dpr-ctx_encoder-single-nq-base` ([详情](https://huggingface.co/facebook/dpr-ctx_encoder-single-nq-base))|`semitechnologies/transformers-inference:facebook-dpr-ctx_encoder-single-nq-base`|
+|`facebook/dpr-question_encoder-single-nq-base` ([详情](https://huggingface.co/facebook/dpr-question_encoder-single-nq-base))|`semitechnologies/transformers-inference:facebook-dpr-question_encoder-single-nq-base`|
+|`vblagoje/dpr-ctx_encoder-single-lfqa-wiki` ([信息](https://huggingface.co/vblagoje/dpr-ctx_encoder-single-lfqa-wiki))|`semitechnologies/transformers-inference:vblagoje-dpr-ctx_encoder-single-lfqa-wiki`|
+|`vblagoje/dpr-question_encoder-single-lfqa-wiki` ([信息](https://huggingface.co/vblagoje/dpr-question_encoder-single-lfqa-wiki))|`semitechnologies/transformers-inference:vblagoje-dpr-question_encoder-single-lfqa-wiki`|
+|Bar-Ilan大学NLP实验室模型|
+|`biu-nlp/abstract-sim-sentence` ([信息](https://huggingface.co/biu-nlp/abstract-sim-sentence))|`semitechnologies/transformers-inference:biu-nlp-abstract-sim-sentence`|
+|`biu-nlp/abstract-sim-query` ([信息](https://huggingface.co/biu-nlp/abstract-sim-query))|`semitechnologies/transformers-inference:biu-nlp-abstract-sim-query`|
 
-The above image names always point to the latest version of the inference
-container including the model. You can also make that explicit by appending
-`-latest` to the image name. Additionally, you can pin the version to one of
-the existing git tags of this repository. E.g. to pin `distilbert-base-uncased`
-to version `1.0.0`, you can use
-`semitechnologies/transformers-inference:distilbert-base-uncased-1.0.0`.
+上述图像名称始终指向包含模型的推理容器的最新版本。您还可以通过追加来明确指定
+`-latest` 添加到镜像名称中。此外，您还可以将版本固定为此存储库的现有git标签之一。例如，要将 `distilbert-base-uncased` 固定到版本 `1.0.0`，您可以使用 `semitechnologies/transformers-inference:distilbert-base-uncased-1.0.0`。
 
-Your favorite model is not included? [Open an issue](https://github.com/weaviate/weaviate/issues) to include it or build
-a custom image as outlined below.
+您最喜欢的模型没有包含在内？[提交一个问题](https://github.com/weaviate/weaviate/issues) 来包含它或按照下面的说明构建一个自定义镜像。
 
-### Option 2: Use any publicly available Hugging Face model
+### 选项2：使用任何公开可用的Hugging Face模型
 
-You can build a Docker image which supports any model from the [Hugging Face model hub](https://huggingface.co/models) with a two-line Dockerfile. In the following example, we are going to build a custom image for the [`distilroberta-base` model](https://huggingface.co/distilroberta-base).
+你可以使用一个两行的Dockerfile来构建支持[Hugging Face模型库](https://huggingface.co/models)中的任何模型的Docker镜像。在下面的示例中，我们将为[`distilroberta-base`模型](https://huggingface.co/distilroberta-base)构建一个自定义的镜像。
 
-#### Step 1: Create a `Dockerfile`
-Create a new `Dockerfile`. We will name it `distilroberta.Dockerfile`. Add the following lines to it:
+#### 步骤1：创建`Dockerfile`
+创建一个新的`Dockerfile`，我们将其命名为`distilroberta.Dockerfile`。将以下内容添加到其中：
 ```
 FROM semitechnologies/transformers-inference:custom
 RUN MODEL_NAME=distilroberta-base ./download.py
 ```
 
-#### Step 2: Build and tag your Dockerfile.
-We will tag our Dockerfile as `distilroberta-inference`:
+#### 步骤2：构建和标记您的Dockerfile。
+我们将把我们的Dockerfile标记为`distilroberta-inference`：
 ```
 docker build -f distilroberta.Dockerfile -t distilroberta-inference .
 ```
 
-#### Step 3: That's it!
-You can now push your image to your favorite registry or reference it locally in your Weaviate `docker-compose.yaml` using the Docker tag `distilroberta-inference`.
+#### 步骤 3: 完成！
+现在，您可以将图像推送到您喜欢的注册表，或者在您的 Weaviate `docker-compose.yaml` 中使用 Docker 标签 `distilroberta-inference` 在本地引用它。
 
+### 选项 3: 使用私有或本地模型进行自定义构建
 
-### Option 3: Custom build with a private or local model
+您可以构建一个支持与 Hugging Face 的 `AutoModel` 和 `AutoTokenzier` 兼容的任何模型的 Docker 镜像。
 
-You can build a Docker image which supports any model which is compatible with
-Hugging Face's `AutoModel` and `AutoTokenzier`.
+在下面的示例中，我们将为一个非公开的模型构建一个自定义镜像。
+我们在本地存储的模型位于`./my-model`目录中。
 
-In the following example, we are going to build a custom image for a non-public
-model which we have locally stored at `./my-model`.
-
-Create a new `Dockerfile` (you do not need to clone this repository, any folder
-on your machine is fine), we will name it `my-model.Dockerfile`. Add the
-following lines to it:
+创建一个新的`Dockerfile`（您不需要克隆此存储库，任何文件夹都可以），我们将其命名为`my-model.Dockerfile`。将以下内容添加到文件中：
 
 ```
 FROM semitechnologies/transformers-inference:custom
 COPY ./my-model /app/models/model
 ```
 
-The above will make sure that your model end ups in the image at
-`/app/models/model`. This path is important, so that the application can find the
-model.
+以上步骤将确保您的模型最终出现在图像中的`/app/models/model`路径中。这个路径非常重要，以便应用程序可以找到模型。
 
-Now you just need to build and tag your Dockerfile, we will tag it as
-`my-model-inference`:
+现在，您只需要构建和标记您的Dockerfile，我们将将其标记为`my-model-inference`：
 
 ```
 $ docker build -f my-model.Dockerfile -t my-model-inference .
 ```
 
-That's it! You can now push your image to your favorite registry or reference
-it locally in your Weaviate `docker-compose.yaml` using the Docker tag
-`my-model-inference`.
+完成了！现在您可以将图像推送到您喜爱的注册表中，或者在Weaviate的`docker-compose.yaml`中使用Docker标签`my-model-inference`在本地引用它。
 
-To debug and test if your inference container is working correctly, you can send queries to the vectorizer module's inference container directly, so you can see exactly what vectors it would produce for which input. To do so, you need to expose the inference container in your docker-compose by adding:
+要调试和测试推理容器是否正常工作，您可以直接向矢量化模块的推理容器发送查询，以便查看它将为哪些输入产生的向量。为此，您需要在docker-compose中公开推理容器，只需添加：
 
 ```yaml
 ports:
   - "9090:8080"
 ```
 
-to your `text2vec-transformers`.
-
-Then you can send REST requests to it directly, e.g.:
+使用`text2vec-transformers`库后，您可以直接向其发送REST请求，例如：
 ```shell
 curl localhost:9090/vectors -H 'Content-Type: application/json' -d '{"text": "foo bar"}
 ```
-and it will print the created vector directly.
+并且它将直接打印创建的向量。
 
-## How to configure
+## 如何配置
 
-In your Weaviate schema, you must define how you want this module to vectorize your data. If you are new to Weaviate schemas, you might want to check out the [tutorial on the Weaviate schema](/developers/weaviate/tutorials/schema.md) first.
+在您的Weaviate模式中，您必须定义希望该模块如何将您的数据进行向量化。如果您对Weaviate模式不熟悉，您可能首先想查看[Weaviate模式教程](/developers/weaviate/tutorials/schema.md)。
 
-For example:
+例如：
 
 ```json
 {
@@ -249,25 +231,25 @@ For example:
 }
 ```
 
-## How to use
+## 如何使用
 
-* New GraphQL vector search parameters made available by this module can be found [here](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext).
+* 此模块提供的新的GraphQL向量搜索参数可以在[这里](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext)找到。
 
-### Example
+### 示例
 
 import CodeNearText from '/_includes/code/graphql.filters.nearText.mdx';
 
 <CodeNearText />
 
-## Additional information
+## 附加信息
 
-### Transformers-specific module configuration (on classes and properties)
+### 针对Transformers的模块配置（应用于类和属性）
 
-You can use the same module-configuration on your classes and properties which you already know from the `text2vec-contextionary` module. This includes `vectorizeClassName`, `vectorizePropertyName` and `skip`.
+您可以在类和属性上使用与`text2vec-contextionary`模块相同的模块配置，这包括`vectorizeClassName`、`vectorizePropertyName`和`skip`。
 
-In addition you can use a class-level module config to select the pooling strategy with `poolingStrategy`. Allowed values are `masked_mean` or `cls`. They refer to different techniques to obtain a sentence-vector from individual word vectors as outlined in the [Sentence-BERT paper](https://arxiv.org/abs/1908.10084).
+此外，您可以使用类级别的模块配置来选择池化策略，使用 `poolingStrategy`。允许的值为 `masked_mean` 或 `cls`。它们是根据[Sentence-BERT论文](https://arxiv.org/abs/1908.10084)中概述的从单词向量获取句向量的不同技术。
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

@@ -1,26 +1,26 @@
 ---
-title: ref2vec-centroid
-sidebar_position: 7
 image: og/docs/modules/ref2vec-centroid.jpg
-# tags: ['ref2vec', 'ref2vec-centroid', 'centroid']
+sidebar_position: 7
+title: ref2vec-centroid
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Introduction
+## 简介
 
-The `ref2Vec-centroid` module is used to calculate object vectors based on the centroid of referenced vectors. The idea is that this centroid vector would be calculated from the vectors of an object's references, enabling associations between clusters of objects. This is useful in applications such as making suggestions based on the aggregation of a user's actions or preferences.
+`ref2Vec-centroid` 模块用于基于引用向量的质心计算对象向量。其思想是通过计算对象引用的向量的质心向量，从而实现对象簇之间的关联。这在根据用户的行为或偏好的聚合来进行推荐等应用中非常有用。
 
-## How to enable
+## 如何启用
 
-### Weaviate Cloud Services
+### Weaviate云服务
 
-This module is enabled by default on the WCS.
+该模块在WCS上默认启用。
 
-### Weaviate open source
+### Weaviate开源版
 
-Which modules to use in a Weaviate instance can be specified in the docker-compose configuration file. Ref2Vec-centroid can be added like this:
+可以在docker-compose配置文件中指定在Weaviate实例中使用哪些模块。可以像这样添加Ref2Vec-centroid：
 
 ```yaml
 ---
@@ -47,22 +47,22 @@ services:html
 ...
 ```
 
-## How to configure
+## 配置方法
 
-In your Weaviate schema, you must define how you want this module to vectorize your data. If you are new to Weaviate schemas, you might want to check out the [tutorial on the Weaviate schema](/developers/weaviate/tutorials/schema.md) first.
+在您的Weaviate模式中，您必须定义您希望该模块如何对您的数据进行向量化。如果您对Weaviate模式还不熟悉，您可能需要先查看[Weaviate模式教程](/developers/weaviate/tutorials/schema.md)。
 
-For example, here is an `Article` class which is configured to use ref2vec-centroid. Doing so requires only a class-level `moduleConfig`, containing two fields:
+例如，这是一个配置为使用ref2vec-centroid的`Article`类。只需在类级别添加一个`moduleConfig`字段，其中包含两个字段：
 
-1. `referenceProperties`: a list of the class' reference properties which should be used during the calculation of the centroid.
-2. `method`: the method by which the centroid is calculated. Currently only `mean` is supported.
+1. `referenceProperties`：类的引用属性列表，用于计算质心。
+2. `method`：计算质心的方法。目前只支持`mean`。
 
-The `Article` class specifies its `hasParagraphs` property as the only reference property to be used in the calculation of an `Article` object's vector.
+`Article`类将其`hasParagraphs`属性指定为仅在计算`Article`对象的向量时使用的唯一引用属性。
 
-It is important to note that unlike the other vectorizer modules (e.g. text2vec/multi2vec/image2vec), ref2vec-centroid does not generate embeddings based on the contents of an object. Rather, the point of this module is to calculate an object's vector based on vectors of its *references*.
+需要注意的是，与其他的矢量化模块（例如text2vec/multi2vec/image2vec）不同，ref2vec-centroid不是根据对象的内容生成嵌入向量。相反，该模块的目的是根据其*引用*的向量来计算对象的向量。
 
-In this case, the `Paragraph` class is configured to generate vectors using the text2vec-contextionary module. Thus, the vector representation of the `Article` class is an average of text2vec-contextionary vectors sourced from referenced `Paragraph` instances.
+在这种情况下，`Paragraph`类被配置为使用text2vec-contextionary模块生成向量。因此，`Article`类的向量表示是从引用的`Paragraph`实例中获取的text2vec-contextionary向量的平均值。
 
-Although this example uses text2vec-contextionary to generate vectors for the `Paragraph` class, ref2vec-centroid's behavior remains identical for user-provided vectors. In such a case, ref2vec-centroid's output will still be calculated as an average of the reference vectors; the only difference being the provenance of the reference vectors.
+尽管此示例使用text2vec-contextionary为`Paragraph`类生成向量，但对于用户提供的向量，ref2vec-centroid的行为保持不变。在这种情况下，ref2vec-centroid的输出仍将被计算为参考向量的平均值；唯一的区别是参考向量的来源。
 
 ```json
 {
@@ -119,46 +119,46 @@ Although this example uses text2vec-contextionary to generate vectors for the `P
 }
 ```
 
-## How to use
+## 如何使用
 
-Now that the `Article` class is properly configured to use the ref2vec-centroid module, we can begin to create some objects. If there are not yet any `Paragraph` objects to reference, or if we simply don't want to reference a `Paragraph` object yet, any newly created `Article` object will have its vector set to `nil`.
+现在`Article`类已经正确配置为使用ref2vec-centroid模块，我们可以开始创建一些对象了。如果还没有任何`Paragraph`对象可供引用，或者我们暂时不想引用`Paragraph`对象，那么新创建的`Article`对象的向量将被设置为`nil`。
 
-Once we are ready to reference one or more existing `Paragraph` objects (with non-nil vectors), our `Article` object will automatically be assigned a centroid vector, calculated using the vectors from all the `Paragraph` objects which are referenced by our `Article` object.
+一旦我们准备好引用一个或多个现有的`Paragraph`对象（具有非空向量），我们的`Article`对象将自动分配一个质心向量，该向量是使用所有被`Article`对象引用的`Paragraph`对象的向量计算得出的。
 
-### Updating the centroid
+### 更新质心
 
-An object whose class is configured to use ref2vec-centroid will have its vector calculated (or recalculated) as a result of these events:
-- Creating the object with references already assigned as properties
-  - Object `POST`: create a single new object with references
-  - Batch object `POST`: create multiple objects at once, each with references
-- Updating an existing object's list of references. Note that this can happen several ways:
-  - Object `PUT`: update all of the object's properties with a new set of references. This totally replaces the object's existing reference list with the newly provided one
-  - Object `PATCH`: update an existing object by adding any newly provided reference(s) to the object's existing reference list
-  - Reference `POST`: create a new reference to an existing object
-  - Reference `PUT`: update all of the object's references
-- Deleting references from the object. Note that this can happen several ways:
-  - Object `PUT`: update all of the object's properties, removing all references
-  - Reference `DELETE`: delete an existing reference from the object's list of references
+一个被配置为使用ref2vec-centroid的类的对象，在以下事件发生时，它的向量将被计算（或重新计算）：
+- 使用已分配为属性的引用创建对象
+  - 对象 `POST`：创建一个带有引用的新对象
+  - 批量对象 `POST`：一次性创建多个对象，每个对象都带有引用
+- 更新现有对象的引用列表。请注意，这可以通过多种方式进行：
+  - 对象 `PUT`：使用新的引用集更新对象的所有属性。这将完全替换对象的现有引用列表为新提供的引用列表
+  - `PATCH`对象：通过将任何新提供的引用添加到对象的现有引用列表中来更新现有对象
+  - 引用`POST`：创建对现有对象的新引用
+  - 引用`PUT`：更新对象的所有引用
+- 从对象中删除引用。请注意，这可以通过多种方式实现：
+  - 对象`PUT`：更新对象的所有属性，删除所有引用
+  - 引用 `DELETE`: 从对象的引用列表中删除现有引用
 
-**Note:** Adding references in batches is not currently supported. This is because the batch reference feature is specifically built to avoid the cost of updating the vector index. If this is an important use case for you that you'd like to see in production, please feel free to open up a [feature request](https://github.com/weaviate/weaviate/issues/new) on GitHub.
+**注意:** 目前不支持批量添加引用。这是因为批量引用功能是专门为了避免更新向量索引的成本而构建的。如果这是您重要的用例，并且希望在生产环境中看到该功能，请随时在GitHub上提交一个 [功能请求](https://github.com/weaviate/weaviate/issues/new)。
 
-### Making queries
+### 进行查询操作
 
-This module can be used with the existing [nearVector](/developers/weaviate/api/graphql/vector-search-parameters.md#nearvector) and [`nearObject`](/developers/weaviate/api/graphql/vector-search-parameters.md#nearobject) filters. It does not add any additional GraphQL extensions like `nearText`.
+此模块可与现有的[nearVector](/developers/weaviate/api/graphql/vector-search-parameters.md#nearvector)和[`nearObject`](/developers/weaviate/api/graphql/vector-search-parameters.md#nearobject)筛选器一起使用。它不添加任何额外的GraphQL扩展，如`nearText`。
 
-## Additional information
+## 附加信息
 
 :::caution
 It is important to note that updating a _referenced_ object will not automatically trigger an update to the _referencing_ object's vector.
 :::
 
-In other words, using our `Article`/`Paragraph` example:
+换句话说，使用我们的`Article`/`Paragraph`示例：
 
-Let's say an `Article` object, `"On the Philosophy of Modern Ant Colonies"`, references three `Paragraph` objects: `"intro"`, `"body"`, and `"conclusion"`. Over time, `"body"` may be updated as more research has been conducted on the dynamic between worker ants and soldier ants. In this case, the existing vector for the article will not be updated with a new vector based on the refactored `"body"`.
+假设一个`Article`对象，名称为`"关于现代蚁群哲学"`, 引用了三个`Paragraph`对象: `"引言"`, `"正文"`, 和`"结论"`. 随着时间的推移，`"正文"`可能会根据对工蚁和战士蚁之间动态关系的更多研究进行更新。在这种情况下，文章的现有向量将不会根据重构后的`"正文"`生成新的向量。
 
-If we want `"On the Philosophy of Modern Ant Colonies"`'s centroid vector to be recalculated, we would need to otherwise trigger an update. For example, we could either remove the reference to `"body"` and add it back, or simply `PUT` the `Article` object with an identical object.
+如果我们想要重新计算“现代蚂蚁群的哲学”的质心向量，我们需要触发更新操作。例如，我们可以删除对“body”的引用然后再添加回去，或者只需使用相同的对象进行`PUT`操作来更新`Article`对象。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

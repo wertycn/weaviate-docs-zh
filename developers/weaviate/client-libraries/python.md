@@ -1,9 +1,9 @@
 ---
-title: Python
-sidebar_position: 1
 image: og/docs/client-libraries.jpg
-# tags: ['python', 'client library']
+sidebar_position: 1
+title: Python
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -12,15 +12,15 @@ import Badges from '/_includes/badges.mdx';
 The current Python client version is `v||site.python_client_version||`
 :::
 
-## Installation and setup
+## 安装和设置
 
-The Python library is available on [PyPI.org](https://pypi.org/project/weaviate-client/). The package can be easily installed using [pip](https://pypi.org/project/pip/). The client is developed and tested for Python 3.7 and higher.
+Python库可在[PyPI.org](https://pypi.org/project/weaviate-client/)上获得。可以使用[pip](https://pypi.org/project/pip/)轻松安装该包。该客户端适用于Python 3.7及更高版本的开发和测试。
 
 ```bash
 $ pip install weaviate-client
 ```
 
-Now you can use the client in your Python scripts as follows:
+现在您可以在Python脚本中按照以下方式使用客户端：
 
 ```python
 import weaviate
@@ -30,7 +30,7 @@ client = weaviate.Client("https://some-endpoint.weaviate.network")  # Replace th
 client.schema.get()  # Get the schema to test connection
 ```
 
-Or, with additional arguments such as those below:
+或者，可以使用以下附加参数：
 
 ```python
 import weaviate
@@ -49,19 +49,19 @@ client = weaviate.Client(
 client.schema.get()  # Get the schema to test connection
 ```
 
-## Authentication
+## 身份验证
 
 import ClientAuthIntro from '/developers/weaviate/client-libraries/_components/client.auth.introduction.mdx'
 
 <ClientAuthIntro clientName="Python"/>
 
-### WCS authentication
+### WCS身份验证
 
 import ClientAuthWCS from '/developers/weaviate/client-libraries/_components/client.auth.wcs.mdx'
 
 <ClientAuthWCS />
 
-### API key authentication
+### API密钥身份验证
 
 :::info Available in Weaviate Python client versions `3.14.0` and higher.
 :::
@@ -82,13 +82,13 @@ client = weaviate.Client(
 )
 ```
 
-### OIDC authentication
+### OIDC认证
 
 import ClientAuthOIDCIntro from '/developers/weaviate/client-libraries/_components/client.auth.oidc.introduction.mdx'
 
 <ClientAuthOIDCIntro />
 
-#### <i class="fa-solid fa-key"></i> Resource Owner Password Flow
+#### <i class="fa-solid fa-key"></i> 资源所有者密码流程
 
 import ClientAuthFlowResourceOwnerPassword from '/developers/weaviate/client-libraries/_components/client.auth.flow.resource.owner.password.mdx'
 
@@ -107,7 +107,7 @@ resource_owner_config = weaviate.AuthClientPassword(
 client = weaviate.Client("http://localhost:8080", auth_client_secret=resource_owner_config)
 ```
 
-#### <i class="fa-solid fa-key"></i> Client Credentials flow
+#### <i class="fa-solid fa-key"></i> 客户端凭证流程
 
 import ClientAuthFlowClientCredentials from '/developers/weaviate/client-libraries/_components/client.auth.flow.client.credentials.mdx'
 
@@ -125,7 +125,7 @@ client_credentials_config = weaviate.AuthClientCredentials(
 client = weaviate.Client("https://localhost:8080", auth_client_secret=client_credentials_config)
 ```
 
-#### <i class="fa-solid fa-key"></i> Refresh Token flow
+#### <i class="fa-solid fa-key"></i> 刷新令牌流程
 
 import ClientAuthBearerToken from '/developers/weaviate/client-libraries/_components/client.auth.bearer.token.mdx'
 
@@ -144,9 +144,9 @@ bearer_config = weaviate.AuthBearerToken(
 client = weaviate.Client("https://localhost:8080", auth_client_secret=bearer_config)
 ```
 
-## Custom headers
+## 自定义头部
 
-You can pass custom headers to the client, which are added at initialization:
+您可以在初始化时向客户端传递自定义头部，这些头部将被添加进去：
 
 ```python
 client = weaviate.Client(
@@ -155,19 +155,19 @@ client = weaviate.Client(
 )
 ```
 
-## Neural Search Frameworks
+## 神经搜索框架
 
-There is a variety of neural search frameworks that use Weaviate under the hood to store, search through, and retrieve vectors.
+有许多神经搜索框架使用Weaviate作为底层存储、搜索和检索向量的工具。
 
-- deepset's [haystack](https://www.deepset.ai/weaviate-vector-search-engine-integration)
-- Jina's [DocArray](https://docarray.jina.ai/advanced/document-store/weaviate/)
+- deepset的[haystack](https://www.deepset.ai/weaviate-vector-search-engine-integration)
+- Jina的[DocArray](https://docarray.jina.ai/advanced/document-store/weaviate/)
 
-# References documentation
+# 参考文档
 
-On this Weaviate documentation website, you will find how to use the Python client for all [RESTful endpoints](../api/rest/index.md) and [GraphQL functions](../api/graphql/index.md). For each reference, a code block is included with an example of how to use the function with the Python (and other) clients. The Python client, however, has additional functionalities, which are covered in the full client documentation on [weaviate-python-client.readthedocs.io](https://weaviate-python-client.readthedocs.io/en/stable/). Some of these additional functions are highlighted here below.
+在这个Weaviate文档网站上，您将找到如何使用Python客户端来使用所有的[RESTful端点](../api/rest/index.md)和[GraphQL函数](../api/graphql/index.md)的方法。对于每个参考，都包含了一个代码块，其中包含了如何使用Python（和其他）客户端来使用该函数的示例。然而，Python客户端还具有其他功能，在[weaviate-python-client.readthedocs.io](https://weaviate-python-client.readthedocs.io/en/stable/)的完整客户端文档中进行了介绍。以下是其中一些额外的功能。
 
-### Example: client.schema.create(schema)
-Instead of adding classes one by one using the RESTful `v1/schema` endpoint, you can upload a full schema in JSON format at once using the Python client. Use the function `client.schema.create(schema)` as follows:
+### 示例：client.schema.create(schema)
+您可以使用Python客户端一次性以JSON格式上传完整的模式，而不是逐个添加类别使用RESTful的`v1/schema`端点。请按照以下方式使用函数`client.schema.create(schema)`：
 
 ```python
 import weaviate
@@ -252,32 +252,32 @@ schema = {
 client.schema.create(schema)
 ```
 
-#### Example: Blog Post on How to get started with Weaviate and the Python client
+#### 示例：如何开始使用Weaviate和Python客户端的博客文章
 
-A full example of how to use the Python client for Weaviate can be found in [this article on Towards Data Science](https://towardsdatascience.com/quickstart-with-weaviate-python-client-e85d14f19e4f).
+关于如何使用Weaviate的Python客户端的完整示例可以在[Towards Data Science](https://towardsdatascience.com/quickstart-with-weaviate-python-client-e85d14f19e4f)的文章中找到。
 
-## Batching
+## 批处理
 
-Batching is a way of importing/creating `objects` and `references` in bulk using a single API request to the Weaviate server. With Python this can be done using 3 different methods:
+批处理是使用单个API请求批量导入/创建`objects`和`references`到Weaviate服务器的一种方法。在Python中，可以使用3种不同的方法来实现：
 
-1. ***Auto-batching***
-2. ***Dynamic-batching***
-3. ***Manual-batching***
+1. ***自动批处理***
+2. ***动态批处理***
+3. ***手动批处理***
 
-### Multi-threading batch import
+### 多线程批量导入
 
 :::info Available in Weaviate Python client versions `3.9.0` and higher.
 :::
 
-Multi-threading Batch import works with both `Auto-batching` and `Dynamic-batching`.
+多线程批量导入适用于“自动批处理”和“动态批处理”。
 
-To use it, set the number of workers (threads) using the `.configure(...)` (same as `.__call__(...)`) by setting the argument `num_workers` in the batch configuration. See also [Batch configuration](#batch-configuration) below.
+要使用它，可以通过在批处理配置中设置参数`num_workers`来设置工作线程（线程）的数量，使用`.configure(...)`（与`. __call__(...)`相同）。详见下文的[批处理配置](#batch-configuration)。
 
 :::warning
 Multithreading is disabled by default (num_workers=1). Use with care to not overload your Weaviate instance.
 :::
 
-**Example**
+**示例**
 
 ```python
 client.batch(  # or client.batch.configure(
@@ -287,9 +287,9 @@ client.batch(  # or client.batch.configure(
 )
 ```
 
-### Auto-batching
+### 自动分批处理
 
-This method allows the Python client to handle all the `object` and `reference` import/creation. This means that you do NOT have to explicitly import/create objects and cross-references. All you need to do is add everything you want imported/created to the `Batch`, and the `Batch` is going to take care of creating the objects and cross-references among them. To enable auto-batching we need to configure `batch_size` to be a positive integer (by default `None`) (see [Batch configuration](#batch-configuration) below for more information). The `Batch` is going to import/create objects, then create cross-references, if the number of objects + number of references == `batch_size`. See example below:
+该方法允许Python客户端处理所有的`object`和`reference`的导入/创建。这意味着您不需要显式地导入/创建对象和交叉引用。您只需要将您想要导入/创建的所有内容添加到`Batch`中，`Batch`将负责创建对象和它们之间的交叉引用。为了启用自动批处理，我们需要将`batch_size`配置为一个正整数（默认为`None`）（有关更多信息，请参阅下面的[批处理配置](#批处理配置)）。如果对象的数量+引用的数量等于`batch_size`，`Batch`将导入/创建对象，然后创建交叉引用。请参考以下示例：
 
 ```python
 import weaviate
@@ -403,9 +403,9 @@ with client.batch as batch:
 # done, everything is imported/created
 ```
 
-### Dynamic-batching
+### 动态批处理
 
-This method allows the Python client to handle all object and cross-reference import/creations in a dynamic manner. This means that the user does NOT have to explicitly import/create objects and cross-reference (same as with [Auto-batching](#auto-batching). To enable dynamic-batching we need to configure `batch_size` to be a positive integer (by default `None`) AND set `dynamic` to `True` (by default `False`) (see [Batch-configuration](#batch-configuration) below for more information). For this method the `Batch` is going to compute the `recommended_num_objects` and `recommended_num_references` after the first `Batch` creation, where the `batch_size` is used for `recommended_num_objects` and `recommended_num_references` as the initial value. The `Batch` is going to import/create objects then references, if current number of objects reached `recommended_num_objects` OR current number of reference reached `recommended_num_references`. See example below:
+该方法允许Python客户端以动态方式处理所有对象和交叉引用的导入/创建。这意味着用户不需要显式地导入/创建对象和交叉引用（与[自动批处理](#auto-batching)相同）。要启用动态批处理，我们需要将`batch_size`配置为正整数（默认为`None`），并将`dynamic`设置为`True`（默认为`False）（有关更多信息，请参见下面的[批处理配置](#batch-configuration)）。对于该方法，`Batch`在第一次创建`Batch`之后将计算`recommended_num_objects`和`recommended_num_references`，其中`batch_size`用作`recommended_num_objects`和`recommended_num_references`的初始值。当当前对象数达到`recommended_num_objects`或当前引用数达到`recommended_num_references`时，`Batch`将导入/创建对象，然后导入/创建引用。请参见下面的示例：
 
 
 ```python
@@ -520,9 +520,9 @@ with client.batch as batch:
 # done, everything is imported/created
 ```
 
-### Manual-batching
+### 手动分批
 
-This method gives the user total control over the `Batch`, meaning the `Batch` is NOT going to perform any import/creation implicitly but will leave it to the user's discretion. See example below:
+此方法允许用户完全控制`Batch`，意味着`Batch`不会隐式执行任何导入/创建操作，而是由用户自行决定。请参见下面的示例：
 
 
 ```python
@@ -645,18 +645,18 @@ with client.batch as batch:
 # done, everything is imported/created
 ```
 
-### Batch configuration
-The `Batch` object can be configured using the `batch.configure()` method or the `batch()` (i.e. call batch object, `__call__`) method. They are the same function. In the examples above we saw that we can configure the `batch_size` and `dynamic` parameters. Here are more available parameters:
+### 批处理配置
+`Batch`对象可以使用`batch.configure()`方法或`batch()`方法进行配置。它们是相同的函数。在上面的示例中，我们看到可以配置`batch_size`和`dynamic`参数。这里还有更多可用的参数：
 
-- `batch_size` - (`int` or `None`: default `None`): If it is `int` then auto-/dynamic-batching is enabled. For Auto-batching, if number of objects + number of references == `batch_size` then the `Batch` is going to import/create current objects then references (see [Auto-batching](#auto-batching) for more info). For Dynamic-batching it is used as the initial value for `recommended_num_objects` and `recommended_num_references` (see [Dynamic batching](#dynamic-batching) for more info). A value of `None` means it is Manual-batching—no automatic object/reference import/creation.
-- `dynamic` - (`bool`, default: `False`): Enables/disables Dynamic-batching. Does not have any effect if `batch_size` is `None`.
-- `creation_time` - (`int` or `float`, default: `10`): It is the interval of time in which the batch import/create should be done. It used to compute `recommended_num_objects` and `recommended_num_references`, consequently has an impact for Dynamic-batching.
-- `callback` (Optional[Callable[[dict], None]], default `weaviate.util.check_batch_result`): It is a callback function on the results of the `batch.create_objects()` and `batch.create_references()`. It is used for error handling for Auto-/Dynamic-batching. Has no effect if `batch_size` is `None`.
-- `timeout_retries` - (`int`, default `3`): Number of attempts to import/create a batch before resulting in `TimeoutError`.
-- `connection_error_retries` - (`int`, default `3`): Number of attempts to import/create a batch before resulting in `ConnectionError`. **NOTE:** Available in `weaviate-client>=3.9.0`.
-- `num_workers` - (`int`, default `1`): The maximal number of concurrent threads to run batch import. Only used for non-MANUAL batching. i.e. is used only with AUTO or DYNAMIC batching. ***Use with care to not overload your Weaviate instance.*** **NOTE:** Available in `weaviate-client>=3.9.0`.
+- `batch_size` - (`int` 或 `None`：默认为 `None`）：如果是 `int`，则启用自动批处理。对于自动批处理，如果对象数量 + 引用数量等于 `batch_size`，则批次将导入/创建当前对象和引用（有关更多信息，请参见 [自动批处理](#auto-batching)）。对于动态批处理，它用作 `recommended_num_objects` 和 `recommended_num_references` 的初始值（有关更多信息，请参见 [动态批处理](#dynamic-batching)）。`None` 表示手动批处理-没有自动对象/引用的导入/创建。
+- `dynamic` - (`bool`，默认值：`False`）：启用/禁用动态批处理。如果`batch_size`为`None`，则没有任何效果。
+- `creation_time` - (`int` 或 `float`，默认值：`10`）：这是批量导入/创建应完成的时间间隔。它用于计算`recommended_num_objects`和`recommended_num_references`，因此对动态批处理有影响。
+- `callback`（Optional[Callable[[dict], None]]，默认为`weaviate.util.check_batch_result`）：它是`batch.create_objects()`和`batch.create_references()`的结果的回调函数。它用于处理自动/动态批处理的错误。如果`batch_size`为`None`，则没有效果。
+- `timeout_retries` - (`int`，默认为`3`）：在导入/创建批处理之前尝试的次数，如果超时，则导致`TimeoutError`。
+- `connection_error_retries` - (`int`, 默认值 `3`): 在导入/创建批次失败出现`ConnectionError`之前的尝试次数。**注意：**仅在 `weaviate-client>=3.9.0` 版本中可用。
+- `num_workers` - (`int`, 默认值 `1`): 并发运行批量导入的最大线程数。仅在非MANUAL批处理中使用，即仅与AUTO或DYNAMIC批处理一起使用。***请谨慎使用，以免超负荷你的 Weaviate 实例。*** **注意：**仅在 `weaviate-client>=3.9.0` 版本中可用。
 
-NOTE: You have to specify all the configurations that you want at each call of this method, otherwise some setting are going to be replaced by default values.
+注意：您必须在每次调用该方法时指定您想要的所有配置，否则某些设置将被默认值替换。
 ```python
 client.batch(
   batch_size=100,
@@ -669,20 +669,20 @@ client.batch(
 )
 ```
 
-### Tips &amp; Tricks
+### 技巧与诀窍
 
-* There is no limit to how many objects/references one could add to a batch before committing/creating it. However a too large batch can lead to a TimeOut error, which means that Weaviate could not process and create all the objects from the batch in the specified time (the timeout configuration can be set like [this](https://weaviate-python-client.readthedocs.io/en/latest/weaviate.html#weaviate.Client) or [this](https://weaviate-python-client.readthedocs.io/en/latest/weaviate.html#weaviate.Client.timeout_config)). Note that setting a timeout configuration higher that 60s would require some changes to the docker-compose.yml/helm chart file.
-* The `batch` class in the Python Client can be used in three ways:
-    * Case 1: Everything should be done by the user, i.e. the user should add the objects/object-references and create them whenever the user wants. To create one of the data type use these methods of this class: `create_objects`, `create_references` and `flush`. This case has the Batch instance's batch_size set to None (see docs for the `configure` or `__call__` method). Can be used in a context manager, see below.
-    * Case 2: Batch auto-creates when full. This can be achieved by setting the Batch instance's batch_size set to a positive integer (see docs for the `configure` or `__call__` method). The batch_size in this case corresponds to the sum of added objects and references. This case does not require the user to create the batch/s, but it can be done. Also to create non-full batches (last batches) that do not meet the requirement to be auto-created use the `flush` method. Can be used in a context manager, see below.
-    * Case 3: Similar to Case II but uses dynamic batching, i.e. auto-creates either objects or references when one of them reached the `recommended_num_objects` or `recommended_num_references` respectively. See docs for the `configure` or `__call__` method for how to enable it.
-    * **Context-manager support**: Can be use with the with statement. When it exists the context-manager it calls the flush method for you. Can be combined with `configure` or `__call__` method, in order to set it to the desired Case.
+* 在提交/创建之前，可以向批量中添加任意多个对象/引用，没有限制。然而，过大的批量可能会导致超时错误，这意味着Weaviate无法在指定的时间内处理和创建批量中的所有对象（超时配置可以像[这样](https://weaviate-python-client.readthedocs.io/en/latest/weaviate.html#weaviate.Client)或[这样](https://weaviate-python-client.readthedocs.io/en/latest/weaviate.html#weaviate.Client.timeout_config)进行设置）。请注意，将超时配置设置为大于60秒将需要对docker-compose.yml/helm chart文件进行一些更改。
+* Python客户端中的`batch`类可以以三种方式使用：
+    * 情况1：一切由用户完成，即用户应添加对象/对象引用并在用户想要时创建它们。要创建其中一种数据类型，请使用此类的这些方法：`create_objects`、`create_references`和`flush`。此情况下，Batch实例的batch_size设置为None（请参阅`configure`或`__call__`方法的文档）。可以在上下文管理器中使用，见下文。
+    * 情况2：当批次满时自动创建。可以通过将Batch实例的batch_size设置为正整数来实现（请参阅configure或__call__方法的文档）。在这种情况下，batch_size对应于已添加的对象和引用的总和。这种情况下不需要用户创建批次，但也可以创建。另外，要创建不满足自动创建要求的非满批次（最后的批次），可以使用flush方法。可以在上下文管理器中使用，见下文。
+    * 案例3：与案例II类似，但使用动态批处理，即当其中一个达到`recommended_num_objects`或`recommended_num_references`时，自动创建对象或引用。有关如何启用它的详细信息，请参阅`configure`或`__call__`方法的文档。
+    * **上下文管理器支持**：可以与with语句一起使用。当退出上下文管理器时，会自动调用flush方法。可以与`configure`或`__call__`方法结合使用，以设置为所需的Case。
 
-### Error Handling
+### 错误处理
 
-Creating objects in `Batch` is faster then creating each object/reference individually but it comes at the cost of skipping some validation steps. Skipping some validation steps at object/reference level can result in some objects that failed to create or some references that could not be added. In this case the `Batch` does not fail but individual objects/references might and we can make sure that everything was imported/created without errors by checking the returned value of the `batch.create_objects()` and `batch.create_references()`. Here are examples how to catch and handle errors on individual `Batch` objects/references.
+在`Batch`中创建对象比逐个创建每个对象/引用要更快，但这样做会跳过一些验证步骤。跳过对象/引用级别的某些验证步骤可能会导致一些无法创建的对象或无法添加的引用。在这种情况下，`Batch`不会失败，但是个别的对象/引用可能会失败，我们可以通过检查`batch.create_objects()`和`batch.create_references()`的返回值来确保所有内容都已经成功导入/创建且没有错误。以下是如何捕获和处理个别`Batch`对象/引用错误的示例。
 
-Lets define a function that checks for such errors and prints them:
+让我们定义一个函数来检查并打印这些错误：
 ```python
 def check_batch_result(results: dict):
   """
@@ -701,7 +701,7 @@ def check_batch_result(results: dict):
           print(result["result"])
 ```
 
-Now we can use this function to print the error messages at item (object/reference) level. Lets look how we can do it using Auto-/Dynamic-batching where we never implicitly call the `create` methods:
+现在我们可以使用这个函数在项（对象/引用）级别打印错误消息。让我们看看如何在自动批处理和动态批处理中实现，其中我们从不显式地调用`create`方法：
 
 ```python
 client.batch(
@@ -716,7 +716,7 @@ client.batch(
 # done, easy as that
 ```
 
-For Manual-batching we can call the function on the returned value:
+对于手动分批处理，我们可以在返回值上调用该函数：
 ```python
 # on objects
 result = client.batch.create_object()
@@ -727,11 +727,11 @@ result = client.batch.create_references()
 check_batch_result(result)
 ```
 
-## Design
+## 设计
 
-### GraphQL query builder pattern
+### GraphQL查询构建器模式
 
-For complex GraphQL queries (e.g. with filters), the client uses a builder pattern to form the queries. An example is the following query with multiple filters:
+对于复杂的GraphQL查询（例如带有过滤器的查询），客户端使用构建器模式来构建查询。以下是一个带有多个过滤器的查询示例：
 
 ```python
 import weaviate
@@ -766,13 +766,13 @@ query_result = client.query\
 print(query_result)
 ```
 
-Note that you need to use the `.do()` method to execute the query.
+请注意，您需要使用`.do()`方法来执行查询。
 
-## Change logs
+## 更新日志
 
-Check the [change logs on GitHub](https://github.com/weaviate/weaviate-python-client/releases) or [readthedocs](https://weaviate-python-client.readthedocs.io/en/stable/changelog.html) for updates on the latest Python client changes.
+请查看[Github上的更新日志](https://github.com/weaviate/weaviate-python-client/releases)或者[readthedocs](https://weaviate-python-client.readthedocs.io/en/stable/changelog.html)以获取最新的Python客户端变更信息。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

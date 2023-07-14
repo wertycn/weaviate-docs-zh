@@ -1,133 +1,72 @@
 ---
-title: How to write great bug reports
-sidebar_position: 99
 image: og/docs/more-resources.jpg
-# tags: ['how to', 'reporting a bug', 'bugfix', 'reproducing example']
+sidebar_position: 99
+title: How to write great bug reports
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Write great bug reports!
+## 编写优秀的错误报告！
 
-This page outlines what an ideal bug report would look like. We know that it is
-not always possible to write a perfect bug report, and we don't want to
-discourage you from reporting a bug just because you might not be able to
-provide all the info needed to make the report great. At the same time we want
-to provide you with the information to make the lives of our engineers a bit
-easier. Sometimes we also need to prioritize and decide about which bug ticket
-to pick up first. If a bug report is well-prepared, it has a greater chance of
-being picked up first.
+本页面概述了一个理想的错误报告应该是什么样子。我们知道，编写一个完美的错误报告并不总是可能的，我们不希望因为您可能无法提供所有所需的信息而阻止您报告错误。同时，我们希望为您提供信息，以便让我们的工程师们的工作更加轻松。
+更容易。有时候我们还需要优先考虑和决定先处理哪个错误票。如果一个错误报告准备得很好，它被先处理的机会更大。
 
-### What makes a great bug report stand out?
+### 什么能让一个优秀的错误报告脱颖而出？
 
-Here are some points that make a bug report great:
+以下是使一个错误报告优秀的几个要点：
 
-- **Providing Context**
-  When you have been working on a specific use-case or fighting against a
-  specific bug for ages there is probably a lot of context in your or your
-  teams' head(s). Sometimes this context gets lost when handing over a bug
-  report to one of our engineers. Since they have probably been working on
-  something completely different before, it may be difficult for them to
-  understand all your goals and assumptions that are like second-nature to you.
-  A great bug reports sets that context and makes sure that any engineer -
-  whether an inside our outside contributor - can get started on this ticket
-  easily.
+- **提供上下文**
+  当您在处理特定的用例或长时间与特定的错误作斗争时，可能会有很多上下文在您的或您
+  团队的负责人。当将错误报告交给我们的工程师时，有时候这个上下文会丢失。由于他们可能之前一直在处理完全不同的事情，对于你来说是理所当然的目标和假设可能对他们来说很难理解。一个优秀的错误报告应该提供这个上下文，并确保任何工程师 - 无论是内部还是外部的贡献者 - 都能轻松开始处理这个问题。
 
-- **Right level of information**
-  Depending on the kind of bug, there is a different need for information.
-  Let's consider two different possible bugs: For the first one an image when
-  using the `img2vec` module was not vectorized correctly and your results are
-  off because of it. For the second one, consider a scenario where you a
-  performing a lookup by id and it is much slower than you think it should be.
-  Those are both valid bugs, but we need different kind of information for
-  each. For example, for the image-vectorization bug we need to know a lot of
-  the details about the `img2vec` module: What versions were used? Which
-  inference container was running? Was there a GPU involved? What file format
-  did the image have? But looking at the performance bug, we probably need more
-  info regarding your hardware. How was the machine sized? What kind of disks
-  were used? What were the vitals (CPU usage, Memory usage, Disk pressure)
-  during the slow query, etc.? We do not expect you to know all the internals
-  of Weaviate, but we ask you to think about what details may be helpful in
-  reproducing the bug and which are most likely superfluous.
+- **适量的信息**
+  根据不同类型的错误，对于信息的需求也有所不同。
+让我们考虑两种不同的可能错误：第一种是在使用`img2vec`模块时，图像没有正确进行矢量化，导致结果不准确。第二种是当您通过ID进行查找时，速度比您预期的要慢得多。
+这两个都是有效的错误，但是我们需要不同类型的信息。
+  例如，对于图像矢量化错误，我们需要了解有关`img2vec`模块的许多细节：使用了哪些版本？运行了哪个推理容器？是否涉及GPU？图像的文件格式是什么？但是，对于性能错误，我们可能需要更多关于您的硬件的信息。机器的规格如何？使用了什么类型的磁盘？关键指标（CPU使用率、内存使用率、磁盘压力）是什么？
+  在慢查询期间，是否有任何错误信息？我们并不期望您了解Weaviate的所有内部细节，但我们要求您考虑哪些细节可能有助于重现错误，哪些细节可能是多余的。
 
-- **Quick to reproduce**
-  Every bug is important and we are happy about every single report. However,
-  we must still prioritize. A bug report that is easier for us to reproduce is
-  a bug report we might prefer. A great bug report contains a reproducing
-  example that makes no assumptions about prior state and reproduces be bug in
-  its entirety. Below are some examples for a great reproducing example in a
-  bug report.
+- **快速重现**
+  每个错误都很重要，我们非常高兴收到每一个报告。然而，我们仍然需要进行优先排序。对于我们来说更容易重现的错误报告可能更受欢迎。一个很好的错误报告应包含一个可以重现错误的步骤。
+  不对先前状态做任何假设并完整地重现错误的示例。以下是在错误报告中创建一个很好的重现示例的一些示例。
 
+- **缩小到特定区域**
+  Weaviate不仅仅是Weaviate服务器，它是一个完整的生态系统，通常包含Weaviate服务器、特定语言的Weaviate客户端和任意数量的可选模块。这些模块可能带有自己的推理功能。
+  如果容器使用了机器学习模型，那么在提交错误报告时，尽可能缩小问题出错的范围是非常重要的。下面是一些有用的提示，可以帮助您找出错误发生的位置。
 
-- **Narrowed down to a particular area**
-  Weaviate is more than just the Weaviate server, it's an entire ecosystem that
-  often contains the Weaviate Server, a language-specific Weaviate client and
-  any number of optional modules. Those modules may bring their own inference
-  containers if they make use of a Machine-Learning model. A great bug report
-  tries to narrow down where the problem goes wrong. There are some helpful
-  tips below to see how you can find out where the bug occurs.
+既然我们已经确定了一个出色的错误报告需要包含哪些内容，让我们来看看一些具体的方面，看看我们如何编写更好的报告。
 
-Now that we have established *what* makes a great bug report, let's look at
-some of the individual areas and see *how* we can write better reports.
+## 哪些是应该提供的最基本信息和上下文？
 
-## What is the minimal information and context that should always be provided?
+- 确保所有使用的版本都已明确列出。这至少包括Weaviate服务器和客户端的版本。
+- 是否有可能是最近的版本引入了该错误？在这种情况下，请指定最后一个没有出现该问题的版本。
+- 是否涉及到一个对重现错误至关重要的模块？如果是，请指定该模块。如果该模块使用了不同的模型，请也指定。
+  如果您认为与错误相关，可以指定模型名称。
 
-- Make sure that all the versions used are explicitly listed. This includes at
-  the minimum the version of the Weaviate server and the client.
-- Is there a chance that the bug was introduced in a recent version? In this
-  case please specify the last version that did not have the specified issue.
-- Is there module involved that is vital to reproducing the bug? If so, please
-  specify the module. If the module makes use of different models, please also
-  specify the model name if you believe it to be relevant to the bug.
+## 如何提供一个好的复现示例？
 
-## How do I provide a good reproducing example?
+- 一个好的复现示例对状态不做任何假设。这意味着示例始终从一个空的Weaviate实例开始，并导入任何需要重现错误的对象。请不要假设我们的工程师可以根据提供的读取/搜索查询预测应该导入哪种类型的对象。
+- 任何需要重现错误的内容都是重现示例的一部分。我们的工程师应该能够复制/粘贴这个示例，并立即看到有问题。
+- 重现示例以代码的形式表示。这可以是 Weaviate 的语言客户端之一，也可以是一系列 `curl` 命令。
+- 重现示例告诉我们您期望发生什么。在某些情况下，实际行为与期望行为不同可能不明显。
+  请告诉我们您希望发生的情况是什么。这可以是代码、代码注释或伴随示例的文本形式。
 
-- A great reproducing example makes zero assumptions about state. This means
-  that the example always starts with an empty Weaviate instance and imports
-  any object that is required to reproduce the bug. Please do not assume that
-  our engineers can predict what kind of objects should be imported based on
-  only providing a read/search query.
-- Anything that is required to reproduce the error is part of the reproducing
-  example. Our engineers should be able to copy/paste the example and
-  immediately see that something is wrong.
-- The reproducing example is expressed as code. This could be one of Weaviate's
-  language clients or a series of `curl` commands.
-- The reproducing example tells us what you expected to happen. In some cases
-  it might not be obvious why the actual behavior is not the desired behavior.
-  Please let us know what you expected to happen instead. This can be either in
-  the form of code, a code comment, or text accompanying your example?
+## 我如何知道问题发生在Weaviate中还是客户端中或其他地方？
 
-## How do I know if a problem occurs within Weaviate or one of the clients or somewhere different?
+- 如果您怀疑问题实际上并未发生在Weaviate服务器中，而可能发生在其中一个客户端中，您可以尝试使用不同的语言客户端或不使用任何语言客户端发送类似的请求来进行验证。
+  如果您可以通过使用纯HTTP发送请求（例如通过`curl`，Postman等）仍然能够重现错误，那么可以确定错误发生在Weaviate服务器端，这种情况是最好的，因为它完全排除了客户端问题。
+- 如果您从语言客户端看到堆栈跟踪，您可以猜测错误发生的位置。如果堆栈跟踪包含网络请求、非2xx HTTP状态码或包含错误消息的内容
+  关于分片和索引的信息，有很大的可能性是发生了Weaviate服务器内部的错误。然而，如果您看到的是非常特定于客户端语言的内容，那么可能表明错误发生在客户端。
 
-- If you have a suspicion that a problem doesn't actually occur in the Weaviate
-  server, but possibly in one of the clients, you can verify sending a similar
-  request using a different language client or no language client. The latter
-  case is the best as it rules out client problems altogether. If you can
-  still reproduce the error by sending a request using pure HTTP (e.g. via
-  `curl`, Postman, etc.), you can be sure that the error occurs on the Weaviate
-  server-side.
-- If you see a stack trace from your language-client you can make an educated
-  guess about where the error occurred. If the stack trace contains a network
-  request, a non-2xx HTTP status code or an error message containing
-  information about shards and indices, there is a good chance the bug occurred
-  inside the Weaviate server. If you see something that is very specific to the
-  client's language however, it may be an indication that the error occurred in
-  the client.
-- If you are using any other tools from the Weaviate eco-system, for example
-  the `weaviate-helm` repository to run on Kubernetes, there is also a chance
-  that something goes wrong there. If you think that the bug might be specific
-  to the runtime and its manifests, it might make sense to also try the setup
-  on a different runtime. Please indicate what you have already tried.
+- 如果您正在使用Weaviate生态系统中的其他工具，例如在Kubernetes上运行的`weaviate-helm`存储库，那么也有可能出现问题。如果您认为这个错误可能是特定的
+  对于运行时和其清单的设置，如果尝试在不同的运行时上进行安装也是有意义的。请说明您已经尝试过的内容。
 
-## What if it's not feasible to provide the information mentioned above?
+## 如果提供上述信息不可行怎么办？
 
-Don't worry about it. We know that sometimes bugs are tricky and not so easy to
-reproduce. If it is simply not feasible to write a perfect bug report, please
-still write the bug report. We are very happy when we see that you made an
-effort to write a good report.
+不用担心。我们知道有时候错误很棘手，不容易复现。如果无法编写完美的错误报告，仍然请提交错误报告。我们非常高兴看到您做出了努力编写一个良好的报告。
 
-## Thank you
+## 感谢您
 
-A bug report is a contribution to Weaviate. We are really thankful for you
-taking the time to report the issue and helping us improve Weaviate. Thank you!
+Bug报告是对Weaviate的贡献。非常感谢您花时间报告问题并帮助我们改进Weaviate。谢谢！

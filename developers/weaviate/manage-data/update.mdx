@@ -1,8 +1,7 @@
 ---
-title: Update objects
-sidebar_position: 30
 image: og/docs/howto.jpg
-# tags: ['how-to', 'CRUD', 'update']
+sidebar_position: 30
+title: Update objects
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,30 +10,30 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PythonCode from '!!raw-loader!/_includes/code/howto/manage-data.update.py';
 import TSCode from '!!raw-loader!/_includes/code/howto/manage-data.update.ts';
 
-## Overview
+## 概述
 
-This page will show you how to update objects in Weaviate, either in their entirety, or specific properties.
+本页面将向您展示如何在Weaviate中更新对象，无论是整体更新还是特定属性的更新。
 
 :::info See also
 - [References: REST - /v1/objects](../api/rest/objects.md#update-a-data-object)
 :::
 
 
-## Requirements
+## 需求
 
-To update an object, you'll need:
-1. Its [id](../api/graphql/additional-properties.md#id)
-2. The name of its class
-3. The properties to update, in particular the entire object
+要更新一个对象，您需要：
+1. 它的 [id](../api/graphql/additional-properties.md#id)
+2. 它的类名
+3. 要更新的属性，特别是整个对象的属性
 
 :::tip Multi-tenancy
 For classes where [multi-tenancy](../concepts/data.md#multi-tenancy) is enabled, you will also need to specify the tenant name when updating objects. See [Manage data: multi-tenancy operations](./multi-tenancy.md) for details on how.
 :::
 
 
-## Update object properties
+## 更新对象属性
 
-To update the values of a list of properties in an object, [make a `PATCH` request to the `/v1/objects` REST API endpoint](../api/rest/objects.md#update-a-data-object), or use the client code below. If a vectorizer is set and any `text` properties are updated, Weaviate will recalculate the vector embedding (unless all updated `text` properties are [skip](../configuration/schema-configuration.md#property-level-module-settings)ed).
+要更新对象中一组属性的值，请向 `/v1/objects` REST API 端点发起 `PATCH` 请求，或使用下面的客户端代码。如果设置了矢量化器并且更新了任何 `text` 属性，Weaviate 将重新计算矢量嵌入（除非所有更新的 `text` 属性都被[跳过](../configuration/schema-configuration.md#property-level-module-settings)）。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -56,9 +55,9 @@ To update the values of a list of properties in an object, [make a `PATCH` reque
   </TabItem>
 </Tabs>
 
-### Specify the vector
+### 指定向量
 
-If you want to update an object's vector embedding, you can specify the vector property:
+如果您想更新对象的向量嵌入，可以指定向量属性：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -72,15 +71,15 @@ If you want to update an object's vector embedding, you can specify the vector p
 
   <TabItem value="js" label="TypeScript">
 
-  >  Coming soon (vote for the [feature request](https://github.com/weaviate/typescript-client/issues/64))
+  > 即将推出（请投票支持[功能请求](https://github.com/weaviate/typescript-client/issues/64)）
 
   </TabItem>
 </Tabs>
 
 
-## Update (replace) an entire object
+## 更新（替换）整个对象
 
-To replace an object in its entirety, [make a `PUT` request to the `/v1/objects` REST API endpoint](../api/rest/objects.md#update-a-data-object), or use the client code below. If a vectorizer is set and any `text` property is replaced with a different value, Weaviate will recalculate the vector embedding (unless all updated `text` properties are [skip](../configuration/schema-configuration.md#property-level-module-settings)ed).
+要完全替换一个对象，可以通过向`/v1/objects` REST API端点发起`PUT`请求，或者使用下面的客户端代码。如果设置了向量化器并且将任何`text`属性替换为不同的值，Weaviate将重新计算向量嵌入（除非所有更新的`text`属性都被[跳过](../configuration/schema-configuration.md#property-level-module-settings)）。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -103,18 +102,17 @@ To replace an object in its entirety, [make a `PUT` request to the `/v1/objects`
 </Tabs>
 
 
-## Add a new property
+## 添加一个新属性
 
-Weaviate does not support adding an extra property to an object if the property isn't listed in the schema class definition. You can update the values of existing class properties as seen above, or you can [add the property to the class first](../configuration/schema-configuration.md/#add-a-property), then [update](#update-object-properties) it for the desired object(s).
+Weaviate不支持在对象中添加额外的属性，如果该属性在模式类定义中没有列出。您可以像上面所示更新现有类属性的值，或者您可以[先将属性添加到类中](../configuration/schema-configuration.md/#add-a-property)，然后再为所需的对象进行[更新](#update-object-properties)。
 
+## 删除属性
 
-## Delete a property
+Weaviate目前不支持删除或更新模式中的属性，但您可以[为此功能请求投票](https://github.com/weaviate/weaviate/issues/2848)。
 
-Weaviate does not yet support deleting or updating properties in the schema, but you can [vote for this feature request](https://github.com/weaviate/weaviate/issues/2848).
+要"删除"文本属性，您可以将其[更新](#update-object-properties)为空字符串。
 
-To "delete" a text property, you could [update](#update-object-properties) it to an empty string.
-
-To delete properties from a specific object, you can replace the object with a copy that has those properties deleted:
+要从特定对象中删除属性，您可以用删除了这些属性的副本替换该对象：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -137,7 +135,7 @@ To delete properties from a specific object, you can replace the object with a c
 </Tabs>
 
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

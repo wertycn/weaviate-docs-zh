@@ -1,20 +1,20 @@
 ---
-title: Concepts
-sidebar_position: 0
 image: og/docs/concepts.jpg
-# tags: ['getting started']
+sidebar_position: 0
+title: Concepts
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-<!-- :::caution Migrated From:
-- `Core knowledge`
-  - `Data objects` from `Core knowledge/Basics`
-  - `Modules`: Combines theoretical explanations from `Configuration/Modules` + `Modules/Index`
-- `Architecture`
-- `Vector indexing` from `Vector Index (ANN) Plugins:Index` + `HNSW`
-  - Note: Configuration options from `HNSW` are now in `References: Configuration/Vector index#How to configure HNSW`
+<!-- :::caution 迁移自：
+- `核心知识`
+  - `数据对象`，来自`核心知识/基础知识`
+  - `模块`：结合了`配置/模块`和`模块/索引`的理论解释
+- `架构`
+- `向量索引`，来自`向量索引 (ANN) 插件:索引`和`HNSW`
+  - 注意：`HNSW`的配置选项现在在`参考资料: 配置/向量索引#如何配置HNSW`中
 ::: -->
 
 ## Overview
@@ -22,7 +22,7 @@ import Badges from '/_includes/badges.mdx';
 The **Concepts** section explains various aspects related to Weaviate and its architecture to help you get the most out of it. You can read these sections in any order.
 
 :::info
-If you are after a practical guide, try the [quickstart tutorial](/developers/weaviate/quickstart/index.md).
+如果您需要实际的指南，请尝试[快速入门教程](/developers/weaviate/quickstart/index.md)。
 :::
 
 ## Core concepts

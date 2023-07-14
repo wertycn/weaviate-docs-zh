@@ -1,9 +1,9 @@
 ---
-title: Architectural roadmap
-sidebar_position: 2
 image: og/docs/roadmap.jpg
-# tags: ['architecture', 'roadmap']
+sidebar_position: 2
+title: Architectural roadmap
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -20,31 +20,31 @@ import Badges from '/_includes/badges.mdx';
 }
 </style> -->
 
-# Introduction
+# 简介
 
-Scalability is one of Weaviate's core features. The following roadmap aims to give you an understanding of where we are taking Weaviate from a scalability and implementation perspective.
+可扩展性是Weaviate的核心特性之一。以下路线图旨在从可扩展性和实现的角度，让您了解我们将如何发展Weaviate。
 
-# Video: introduction to the Weaviate architecture
+# 视频：Weaviate架构介绍
 
 <iframe width="100%" height="375" src="https://www.youtube.com/embed/6hdEJdHWXRE" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-# Complete Roadmap
+# 完整路线图
 
 <!-- <table class="roadmap-table">
   <tr>
     <td rowspan="3" class="roadmap-table-img" style="background-image: url('/img/roadmap-1.svg');"></td>
     <td>
-      <b>HNSW Performance Boosts</b>
+      <b>HNSW性能提升</b>
     </td>
   </tr>
   <tr>
     <td>
-      <i>status: done in <a href="https://github.com/weaviate/weaviate/releases/tag/v1.4.0">v1.4.0</a></i>
+      <i>状态：在 <a href="https://github.com/weaviate/weaviate/releases/tag/v1.4.0">v1.4.0</a> 版本中完成</i>
     </td>
   </tr>
   <tr>
     <td>
-      Hardware-acceleration and efficiency improvements reduce the time it takes to perform a vector search or index into the vector index by up to 50%.
+      通过硬件加速和效率改进，将向量搜索或向向量索引进行索引的时间缩短了最多50%。
     </td>
   </tr>
 </table>
@@ -53,18 +53,18 @@ Scalability is one of Weaviate's core features. The following roadmap aims to gi
   <tr>
     <td rowspan="3" class="roadmap-table-img" style="background-image: url('/img/roadmap-2.svg');"></td>
     <td>
-      <b>LSM Tree Migration</b>
+      <b>LSM Tree 迁移</b>
     </td>
   </tr>
   <tr>
     <td>
-      <i>status: done in <a href="https://github.com/weaviate/weaviate/releases/tag/v1.5.0">v1.5.0</a></i>
+      <i>状态：在 <a href="https://github.com/weaviate/weaviate/releases/tag/v1.5.0">v1.5.0</a> 版本中完成</i>
     </td>
   </tr>
   <tr>
     <td>
 
-    The way that objects and the inverted index are stored within Weaviate are migrated from a <a href="https://en.wikipedia.org/wiki/B%2B_tree">B+Tree</a>-based approach to an <a href="https://en.wikipedia.org/wiki/Log-structured_merge-tree">LSM-Tree</a> approach. This can speed up import times up to 50%. Also addresses import times degrading over time.
+    Weaviate中对象和倒排索引的存储方式从基于B+树的方法迁移到了基于LSM树的方法。这可以将导入时间加快高达50%。还解决了导入时间随时间推移而下降的问题。
 
     </td>
   </tr>
@@ -74,18 +74,18 @@ Scalability is one of Weaviate's core features. The following roadmap aims to gi
   <tr>
     <td rowspan="3" class="roadmap-table-img" style="background-image: url('/img/roadmap-3.svg');"></td>
     <td>
-      <b>Multi-shard indices</b>
+      <b>多分片索引</b>
     </td>
   </tr>
   <tr>
     <td>
-      <i>status: done, to be released with next milestone</i>
+      <i>状态: 已完成，将在下一个里程碑发布</i>
 
     </td>
   </tr>
   <tr>
     <td>
-      A monolithic index (one index per class) can be broken up into smaller independent shards. This allows utilizing resources on large (single) machines better and allows for tweaking storage settings for specific large-scale cases.
+      一个单体索引（每个类别一个索引）可以分成更小的独立分片。这样可以更好地利用大型（单一）机器上的资源，并可以针对特定的大规模情况调整存储设置。
     </td>
   </tr>
 </table>
@@ -94,17 +94,17 @@ Scalability is one of Weaviate's core features. The following roadmap aims to gi
   <tr>
     <td rowspan="3" class="roadmap-table-img" style="background-image: url('/img/roadmap-4.svg');"></td>
     <td>
-      <b>Horizontal Scalability without replication</b>
+      <b>无需复制的横向可扩展性</b>
     </td>
   </tr>
   <tr>
     <td>
-      <i>status: done, released in v1.8.0</i>
+      <i>状态：已完成，发布于v1.8.0</i>
     </td>
   </tr>
   <tr>
     <td>
-      An index, comprised of many shards, can be distributed among multiple nodes. A search will touch multiple shards on multiple nodes and combine the results. Major benefit: If a use case does not fit on a single node, you can use *n* nodes to achieve *n* times the use case size. At this point every node in the cluster is still a potential single point of failure.
+      一个由多个分片组成的索引可以分布在多个节点之间。搜索将会触及多个节点上的多个分片，并合并结果。主要优点：如果某个使用场景不能适应单个节点，您可以使用*n*个节点来实现*n*倍的使用场景大小。在这一点上，集群中的每个节点仍然是一个潜在的单点故障。
     </td>
   </tr>
 </table>
@@ -113,17 +113,17 @@ Scalability is one of Weaviate's core features. The following roadmap aims to gi
   <tr>
     <td rowspan="3" class="roadmap-table-img" style="background-image: url('/img/roadmap-5.svg');"></td>
     <td>
-      <b>Replication shards distributed across nodes</b>
+      <b>在节点上分布的复制分片</b>
     </td>
   </tr>
   <tr>
     <td>
-      <i>status: in progress (<a href="https://github.com/weaviate/weaviate/milestone/21">follow on GitHub</a>)</i>
+      <i>状态：进行中（<a href="https://github.com/weaviate/weaviate/milestone/21">在GitHub上查看</a>）</i>
     </td>
   </tr>
   <tr>
     <td>
-      A node can contain shards which are already present on other nodes as well. This means if a node goes down, another node can take up the load without the loss of availability or data. Note that the design plans for a leaderless replication, so there is no distinction between primary and secondary shards. Removes all single point of failures.
+      一个节点可以包含已经存在于其他节点上的分片。这意味着如果一个节点宕机，另一个节点可以接管负载，而不会丢失可用性或数据。请注意，设计计划是无领导复制，因此没有主分片和次分片的区别。消除了所有单点故障。
     </td>
   </tr>
 </table>
@@ -132,34 +132,29 @@ Scalability is one of Weaviate's core features. The following roadmap aims to gi
   <tr>
     <td rowspan="3" class="roadmap-table-img" style="background-image: url('/img/roadmap-6.svg');"></td>
     <td>
-      <b>Dynamic scaling</b>
+      <b>动态扩展</b>
     </td>
   </tr>
   <tr>
     <td>
-      <i>pending</i>
+      <i>待定</i>
     </td>
   </tr>
   <tr>
     <td>
-      Instead of starting out with a cluster with *n* nodes, the cluster size can be increased or shrunk at runtime. Weaviate automatically distributes the existing shards accordingly.
+      与其一开始就使用*n*个节点的集群，集群的大小可以在运行时增加或缩小。Weaviate会自动相应地分布现有的分片。
     </td>
   </tr>
 </table>
 
-# Download the Roadmap
+# 下载路线图
 
-<a href="/img/timeline_Weaviate_architecture_isometric.jpg" rel="Weaviate vector database Architecture Roadmap" target="_blank">
-  You can download the complete roadmap (as an image) here too
+<a href="/img/timeline_Weaviate_architecture_isometric.jpg" rel="Weaviate矢量数据库架构路线图" target="_blank">
+  您也可以在这里下载完整的路线图（作为图像）
 </a> -->
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 
 <DocsMoreResources />
-
-
-
-
-

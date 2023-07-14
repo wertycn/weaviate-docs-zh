@@ -1,9 +1,9 @@
 ---
-title: Schema
-sidebar_position: 2
 image: og/docs/configuration.jpg
-# tags: ['Data types']
+sidebar_position: 2
+title: Schema
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 :::info Related pages
@@ -13,44 +13,44 @@ import Badges from '/_includes/badges.mdx';
 - [Concepts: Data Structure](../concepts/data.md)
 :::
 
-## Introduction
+## 简介
 
-This page includes details related to the schema, such as parameters and available configurations.
+本页面包含与模式相关的详细信息，例如参数和可用配置。
 
-## Schema creation
+## 模式创建
 
-### Auto-schema
+### 自动模式
 
 :::info Available in Weaviate versions `1.5.0` and higher
 :::
 
-If you don't create a schema manually before adding data, a schema will be generated automatically. This feature is on by default, but can be disabled (e.g. in `docker-compose.yml`) by setting `AUTOSCHEMA_ENABLED: 'false'`.
+如果在添加数据之前没有手动创建模式，则会自动生成模式。此功能默认启用，但可以通过设置`AUTOSCHEMA_ENABLED: 'false'`（例如在`docker-compose.yml`中）来禁用。
 
-It has the following characteristics:
+它具有以下特点：
 
-* If an object being added contains a property that does not exist in the schema, a corresponding property will be added prior to import.
-* If an object being added contains a property that conflicts with an existing schema type, an error is thrown. (e.g. trying to import text into a field that exists in the schema as `int`).
-* When an object is imported to a new class, the class is created including all properties.
-* The auto-schema also automatically recognizes array datatypes, such as `int[]`, `text[]`, `number[]`, `boolean[]` and `date[]`.
+- 如果要添加的对象包含模式中不存在的属性，则在导入之前将添加相应的属性。
+* 如果要添加的对象包含与现有模式类型冲突的属性，将会抛出错误。（例如，尝试将文本导入到模式中已存在的`int`字段）。
+* 当将对象导入到新类时，将创建包括所有属性的类。
+* 自动模式还会自动识别数组数据类型，例如`int[]`、`text[]`、`number[]`、`boolean[]`和`date[]`。
 
-### Datatypes
+### 数据类型
 
-Additional configurations are available to help the auto-schema infer properties to suit your needs.
+可通过其他配置来帮助自动模式推断属性以满足您的需求。
 
-* `AUTOSCHEMA_DEFAULT_NUMBER=number` - create `number` columns for any numerical values (as opposed to `int`, etc).
-* `AUTOSCHEMA_DEFAULT_DATE=date` - create `date` columns for any date-like values.
+* `AUTOSCHEMA_DEFAULT_NUMBER=number` - 为任何数值创建`number`列（与`int`等相对）。
+* `AUTOSCHEMA_DEFAULT_DATE=date` - 为任何类似日期的值创建`date`列。
 
-The following are not allowed:
-* Any map type is forbidden, unless it clearly matches one of the two supported types `phoneNumber` or `geoCoordinates`.
-* Any array type is forbidden, unless it is clearly a reference-type. In this case, Weaviate needs to resolve the beacon and see what the class of the resolved beacon is, since it needs the ClassName to be able to alter the schema.
+以下内容是不允许的：
+* 除非明确与支持的两种类型 `phoneNumber` 或 `geoCoordinates` 匹配，否则不允许使用任何映射类型。
+* 除非明确是引用类型，否则禁止使用任何数组类型。在这种情况下，Weaviate需要解析beacon并查看解析后的beacon的类名，因为它需要ClassName来修改模式。
 
-### Class
+### 类
 
-A class describes a data object, such as in the form of a noun (e.g., *Person*, *Product*, *Timezone*) or a verb (e.g., *Move*, *Buy*, *Eat*).
+类描述了一个数据对象，可以是以名词形式（如*Person*、*Product*、*Timezone*）或动词形式（如*Move*、*Buy*、*Eat*）表达。
 
-Classes are always written with a **capital letter** first. This helps in distinguishing classes from primitive data types when used in properties. For example, `dataType: ["text"]` means that a property is a text, whereas `dataType: ["Text"]` means that a property is a cross-reference type to a class named `Text`.
+类名始终以大写字母开头。这有助于在属性中将类与原始数据类型区分开来。例如，`dataType: ["text"]` 表示属性是一个文本，而 `dataType: ["Text"]` 表示属性是一个指向名为 `Text` 的类的交叉引用类型。
 
-After the first letter, classes may use any GraphQL-compatible characters. The current (as of `v1.10.0+`) class name validation regex is `/^[A-Z][_0-9A-Za-z]*$/`.
+在第一个字母之后，类名可以使用任何与GraphQL兼容的字符。当前（截至 `v1.10.0+`）的类名验证正则表达式为 `/^[A-Z][_0-9A-Za-z]*$/`。
 
 :::info Capitalization
 Class and property names are treated equally no matter how the first letter is cased, eg "Article" == "article".
@@ -58,13 +58,13 @@ Class and property names are treated equally no matter how the first letter is c
 Generally, however, Weaviate follows GraphQL conventions where classes start with a capital letter and properties start with a lowercase letter.
 :::
 
-### Properties
+### 属性
 
-Every class has properties. Properties define what kind of data values you will add to an object in Weaviate. In the schema, you define at least the name of the property and its [dataType](../config-refs/datatypes.md). Property names allow `/[_A-Za-z][_0-9A-Za-z]*/` in the name.
+每个类都有属性。属性定义了您将在Weaviate对象中添加的数据值的类型。在模式中，您至少定义属性的名称和其[dataType](../config-refs/datatypes.md)。属性名称允许在名称中使用`/[_A-Za-z][_0-9A-Za-z]*/`。
 
-## Class object
+## 类对象
 
-An example of a complete class object including properties:
+包含属性的完整类对象示例：
 
 ```json
 {
@@ -111,21 +111,21 @@ An example of a complete class object including properties:
 }
 ```
 
-### vectorizer
+### 向量化器
 
-The vectorizer (`"vectorizer": "..."`) can be specified per class in the schema object. Check the [modules page](/developers/weaviate/modules/index.md) for available vectorizer modules.
+向量化器 (`"vectorizer": "..."`) 可以在架构对象中针对每个类进行指定。请查看[模块页面](/developers/weaviate/modules/index.md)以获取可用的向量化器模块。
 
-#### Weaviate without a vectorizer
+#### 没有向量化器的 Weaviate
 
-You can use Weaviate without a vectorizer by setting `"vectorizer": "none"`. This may be useful in case you wish to upload your own vectors from a custom model ([see how here](../api/rest/objects.md#with-a-custom-vector)), or wish to create a class without any vectors.
+您可以通过设置 `"vectorizer": "none"` 来在不使用向量化器的情况下使用 Weaviate。这可能在您希望从自定义模型上传自己的向量（[在此处查看如何上传](../api/rest/objects.md#with-a-custom-vector)），或者希望创建一个没有任何向量的类时非常有用。
 
 ### vectorIndexType
 
-The vectorIndexType defaults to [`hnsw`](/developers/weaviate/concepts/vector-index.md#hnsw) since this is the only available vector indexing algorithm implemented at the moment.
+vectorIndexType 默认为 [`hnsw`](/developers/weaviate/concepts/vector-index.md#hnsw)，因为这是目前唯一可用的向量索引算法。
 
 ### vectorIndexConfig
 
-Check the [`hnsw` page](/developers/weaviate/configuration/indexes.md#how-to-configure-hnsw) for `hnsw` parameters that you can configure. This includes setting the distance metric to be used with Weaviate.
+请查看[`hnsw`页面](/developers/weaviate/configuration/indexes.md#how-to-configure-hnsw)，了解您可以配置的`hnsw`参数。其中包括设置与Weaviate一起使用的距离度量。
 
 ### shardingConfig
 
@@ -133,7 +133,7 @@ Check the [`hnsw` page](/developers/weaviate/configuration/indexes.md#how-to-con
 Introduced in v1.8.0.
 :::
 
-The `"shardingConfig"` controls how a class should be [sharded and distributed across multiple nodes](/developers/weaviate/concepts/cluster.md). All values are optional and default to the following settings:
+`"shardingConfig"`控制一个类应该如何在多个节点上进行[分片和分布](/developers/weaviate/concepts/cluster.md)。所有的值都是可选的，默认设置如下：
 
 ```json
   "shardingConfig": {
@@ -148,50 +148,34 @@ The `"shardingConfig"` controls how a class should be [sharded and distributed a
   }
 ```
 
-The meaning of the individual fields in detail:
+各个字段的详细含义如下：
 
-* `"desiredCount"`: *integer, immutable, optional*, defaults to the number of nodes in the
-  cluster. This value controls how many shards should be created for this class
-  index. The typical setting is that a class should be distributed across all
-  the nodes in the cluster, but you can explicitly set this value to a lower
-  value. If the `"desiredCount"` is larger than the amount of physical nodes in the cluster, then some nodes
-  will contain multiple shards.
+* `"desiredCount"`：*整数，不可变，可选*，默认值为集群中的节点数。该值控制应为该类索引创建多少个分片。通常的设置是将一个类分布在集群中的所有节点上，但您也可以将此值明确设置为较低的值。如果`"desiredCount"`大于集群中的物理节点数量，则一些节点
+  将包含多个分片。
 
-* `"actualCount"`: *integer, read-only*. Typically matches desired count, unless there was
-  a problem initiating the shards at creation time.
+* `"actualCount"`: *整数，只读*。通常与所需计数匹配，除非在创建时存在问题。
 
-* `"virtualPerPhysical"`: *integer, immutable, optional*, defaults to `128`.
-  Weaviate uses virtual shards. This helps in reducing the amount of data
-  moved when resharding.
+* `"virtualPerPhysical"`: *整数，不可更改，可选*，默认为 `128`。
+  Weaviate使用虚拟分片。这有助于在重新分片时减少数据移动量。
 
-* `"desiredVirtualCount"`: *integer, readonly*. Matches `desiredCount *
-  virtualPerPhysical`
+* `"desiredVirtualCount"`: *整数，只读*。与 `desiredCount *
+  virtualPerPhysical` 匹配。
 
-* `"actualVirtualCount"`: *integer, readonly*. Like `actualCount`, but for
-  virtual shards, instead of physical.
+* `"actualVirtualCount"`：*整数，只读*。类似于`actualCount`，但用于虚拟分片，而不是物理分片。
 
-* `"strategy"`: *string, optional, immutable*. As of `v1.8.0` only supports `"hash"`. This
-  value controls how Weaviate should decide which (virtual - and therefore
-  physical) shard a new object belongs to. The hash is performed on the field
-  specified in `"key"`.
+* `"strategy"`：*字符串，可选，不可变*。从`v1.8.0`开始，仅支持`"hash"`。该值控制Weaviate如何决定新对象属于哪个（虚拟 - 因此是物理）分片。哈希计算是在`"key"`中指定的字段上执行的。
 
-* `"key"`: *string, optional, immutable*. As of `v1.8.0` only supports `"_id"`.
-  This value controls the partitioning key that is used for the hashing function
-  to determine the target shard. As of now, only the internal id-field
-  (containing the object's UUID) can be used to determine the target shard.
-  Custom keys may be supported at a later point.
+* `"key"`：*字符串，可选，不可变*。从`v1.8.0`开始，仅支持`"_id"`。
+  该值控制用于哈希函数的分区键，以确定目标分片。目前，只能使用内部的id字段（包含对象的UUID）来确定目标分片。以后可能会支持自定义键。
 
-* `"function"`: *string, optional, immutable*. As of `v1.8.0` only `"murmur3"` is
-  supported as a hashing function. It describes the hashing function used on
-  the `"key"` property to determine the hash which in turn determines the
-  target (virtual - and therefore physical) shard. `"murmur3"` creates a 64bit
-  hash making hash collisions very unlikely.
+* `"function"`：*字符串，可选，不可变*. 从`v1.8.0`开始，只支持`"murmur3"`作为哈希函数。它描述了用于哈希的函数。
+  `"key"`属性用于确定哈希值，进而确定目标（虚拟 - 因此也是物理）分片。`"murmur3"`创建一个64位哈希值，使哈希冲突的可能性非常低。
 
 ### replicationConfig
 
-[Replication](../configuration/replication.md) configurations can be set using the schema, through the `replicationConfig` parameter.
+可以使用模式通过`replicationConfig`参数来设置[复制](../configuration/replication.md)配置。
 
-The `factor` parameter sets the number of copies of to be stored for objects in this class.
+`factor`参数设置了该类对象要存储的副本数量。
 
 ```json
 {
@@ -205,15 +189,15 @@ The `factor` parameter sets the number of copies of to be stored for objects in 
 }
 ```
 
-### invertedIndexConfig > stopwords (stopword lists)
+### invertedIndexConfig > stopwords（停用词列表）
 
 :::note
 This feature was introduced in `v1.12.0`.
 :::
 
-`text` properties may contain words that are very common and don't contribute to search results. Ignoring them speeds up queries that contain stopwords, as they can be automatically removed from queries as well. This speed up is very notable on scored searches, such as `BM25`.
+`text` 属性可能包含非常常见且对搜索结果没有贡献的词语。忽略这些词语可以加快包含停用词的查询速度，因为它们可以自动从查询中移除。这种加速在得分搜索（如 `BM25`）中非常显著。
 
-The stopword configuration uses a preset system. You can select a preset to use the most common stopwords for a particular language. If you need more fine-grained control, you can add additional stopwords or remove stopwords that you believe should not be part of the list. Alternatively, you can create your custom stopword list by starting with an empty (`"none"`) preset and adding all your desired stopwords as additions.
+停止词配置使用预设系统。您可以选择一个预设来使用特定语言的最常见停止词。如果您需要更精细的控制，可以添加额外的停止词或删除您认为不应包含在列表中的停止词。另外，您还可以通过使用空白的（`"none"`）预设并添加所有所需的停止词来创建自定义停止词列表。
 
 ```json
   "invertedIndexConfig": {
@@ -225,24 +209,24 @@ The stopword configuration uses a preset system. You can select a preset to use 
   }
 ```
 
-This configuration allows stopwords to be configured by class. If not set, these values are set to the following defaults:
+该配置允许通过类进行停用词的配置。如果未设置，这些值将默认设置为以下默认值：
 
-| Parameter | Default value | Acceptable values |
+| 参数 | 默认值 | 可接受值 |
 | --- | --- | --- |
 | `"preset"` | `"en"` | `"en"`, `"none"` |
-| `"additions"` | `[]` | *any list of custom words* |
-| `"removals"` | `[]` | *any list of custom words* |
+| `"additions"` | `[]` | *任何自定义单词列表* |
+| `"removals"` | `[]` | *任何自定义单词列表* |
 
 :::note
 - If none is the selected preset, then the class' stopwords will consist entirely of the additions list.
 - If the same item is included in both additions and removals, then an error is returned
 :::
 
-As of `v1.18`, stopwords are indexed, but are skipped in BM25. Meaning, stopwords are included in the inverted index, but when the BM25 algorithm is applied, they are not considered for relevance ranking.
+从`v1.18`版本开始，停用词已经被索引，但在BM25算法中会被跳过。这意味着停用词被包含在倒排索引中，但在应用BM25算法时，它们不会被考虑在内作为相关性排序的依据。
 
-Stopwords can now be configured at runtime. You can use the RESTful API to [update](/developers/weaviate/api/rest/schema#parameters-2) the list of stopwords after your data has been indexed.
+现在可以在运行时配置停用词。在您的数据被索引之后，您可以使用RESTful API来[更新](/developers/weaviate/api/rest/schema#parameters-2)停用词列表。
 
-Below is an example request on how to update the list of stopwords:
+以下是如何更新停用词列表的示例请求：
 
 ```python
 import weaviate
@@ -267,7 +251,7 @@ client.schema.update_config("Article", class_obj)
 This feature was introduced in `v1.13.0`.
 :::
 
-To perform queries which are filtered by timestamps, the target class must first be configured to maintain an inverted index for each object by their internal timestamps -- currently these include `creationTimeUnix` and `lastUpdateTimeUnix`. This configuration is done by setting the `indexTimestamps` field of the `invertedIndexConfig` object to `true`.
+要执行按时间戳筛选的查询，首先必须配置目标类以通过其内部时间戳为每个对象维护一个倒排索引 - 目前包括 `creationTimeUnix` 和 `lastUpdateTimeUnix`。通过将 `invertedIndexConfig` 对象的 `indexTimestamps` 字段设置为 `true` 来完成此配置。
 
 ```json
   "invertedIndexConfig": {
@@ -281,7 +265,7 @@ To perform queries which are filtered by timestamps, the target class must first
 This feature was introduced in `v1.16.0`.
 :::
 
-To perform queries which are filtered by being null or not null, the target class must first be configured to maintain an inverted index for each property of a class that tracks if objects are null or not. This configuration is done by setting the `indexNullState` field of the `invertedIndexConfig` object to `true`.
+要执行按null或非null进行筛选的查询，目标类必须首先配置为对跟踪对象是否为null的类的每个属性维护一个倒排索引。可以通过将`invertedIndexConfig`对象的`indexNullState`字段设置为`true`来进行此配置。
 
 ```json
   "invertedIndexConfig": {
@@ -295,7 +279,7 @@ To perform queries which are filtered by being null or not null, the target clas
 This feature was introduced in `v1.16.0`.
 :::
 
-To perform queries which are filtered by the length of a property, the target class must first be configured to maintain an inverted index for this. This configuration is done by setting the `indexPropertyLength` field of the `invertedIndexConfig` object to `true`.
+要执行按属性长度过滤的查询，目标类必须首先配置为维护此属性的倒排索引。通过将`invertedIndexConfig`对象的`indexPropertyLength`字段设置为`true`来进行此配置。
 
 ```json
   "invertedIndexConfig": {
@@ -309,9 +293,9 @@ Using these features requires more resources, as the additional inverted indices
 
 ### invertedIndexConfig > bm25
 
-The settings for BM25 are the [free parameters `k1` and `b`](https://en.wikipedia.org/wiki/Okapi_BM25#The_ranking_function), and they are optional. The defaults (`k1` = 1.2 and `b` = 0.75) work well for most cases.
+BM25的设置包括[自由参数`k1`和`b`](https://en.wikipedia.org/wiki/Okapi_BM25#The_ranking_function)，它们是可选的。默认值(`k1` = 1.2和`b` = 0.75)适用于大多数情况。
 
-If necessary, they can be configured in the schema per class, and can optionally be overridden per property:
+如果有必要，可以在模式中为每个类配置它们，并且可以选择性地在每个属性上进行覆盖。
 
 ```json
 {
@@ -349,9 +333,9 @@ If necessary, they can be configured in the schema per class, and can optionally
 :::info Available from `v1.20` onwards
 :::
 
-The `multiTenancyConfig` value will determine whether[multi-tenancy](../concepts/data.md#multi-tenancy) is enabled for this class. If enabled, objects of this class will be isolated for each tenant. It is disabled by default.
+`multiTenancyConfig`的值将确定是否为此类启用[multi-tenancy](../concepts/data.md#multi-tenancy)。如果启用，此类的对象将为每个租户进行隔离。默认情况下它是禁用的。
 
-To enable it, set the `enabled` key to `true`, as shown below:
+要启用它，请将`enabled`键设置为`true`，如下所示：
 
 ```json
 {
@@ -362,11 +346,11 @@ To enable it, set the `enabled` key to `true`, as shown below:
 }
 ```
 
-## Property object
+## 属性对象
 
-Property names allow `/[_A-Za-z][_0-9A-Za-z]*/` in the name.
+属性名称允许在名称中使用 `/[_A-Za-z][_0-9A-Za-z]*/`。
 
-An example of a complete property object:
+完整属性对象的示例：
 
 ```json
 {
@@ -387,15 +371,15 @@ An example of a complete property object:
 }
 ```
 
-### Property tokenization
+### 属性标记化
 
 :::note
 This feature was introduced in `v1.12.0`.
 :::
 
-You can customize how `text` data is tokenized and indexed in the inverted index. Tokenization influences the results returned by the [`bm25`](../api/graphql/vector-search-parameters.md#bm25) and [`hybrid`](../api/graphql/vector-search-parameters.md#hybrid) operators, and [`where` filters](../api/graphql/filters.md).
+您可以自定义如何对 `text` 数据进行分词和建立倒排索引。分词会影响 [`bm25`](../api/graphql/vector-search-parameters.md#bm25) 和 [`hybrid`](../api/graphql/vector-search-parameters.md#hybrid) 操作符以及 [`where` 过滤器](../api/graphql/filters.md) 的返回结果。
 
-The tokenization of `text` properties can be customized via the `tokenization` field in the property definition:
+可以通过属性定义中的 `tokenization` 字段来自定义 `text` 属性的分词方式：
 
 ```json
 {
@@ -418,27 +402,27 @@ The tokenization of `text` properties can be customized via the `tokenization` f
 }
 ```
 
-Each token will be indexed separately in the inverted index. For example, if you have a `text` property with the value `Hello, (beautiful) world`, the following table shows how the tokens would be indexed for each tokenization method:
+每个标记将在倒排索引中单独进行索引。例如，如果您有一个值为`Hello, (beautiful) world`的`text`属性，下表显示了每种标记化方法的索引标记：
 
-| Tokenization Method | Explanation                                                                  | Indexed Tokens                   |
+| 标记化方法 | 说明 | 索引标记 |
 |---------------------|------------------------------------------------------------------------------|----------------------------------|
-| `word` (default)    | Keep only alpha-numeric characters, lowercase them, and split by whitespace. | `hello`, `beautiful`, `world`    |
-| `lowercase`         | Lowercase the entire text and split on whitespace.                           | `hello,`, `(beautiful)`, `world` |
-| `whitespace`        | Split the text on whitespace. Searches/filters become case-sensitive.        | `Hello,`, `(beautiful)`, `world` |
-| `field`             | Index the whole field after trimming whitespace characters.                  | `Hello, (beautiful) world`       |
+| `word`（默认）       | 保留只包含字母和数字的字符，将它们转换为小写，并按空格分割。                     | `hello`，`beautiful`，`world`    |
+| `lowercase`         | 将整个文本转换为小写，并按空格分割。                                       | `hello,`，`（beautiful）`，`world` |
+| `whitespace`        | 在空白处分割文本。搜索/过滤变得区分大小写。        | `Hello,`, `(beautiful)`, `world` |
+| `field`             | 在修剪空白字符后对整个字段进行索引。                  | `Hello, (beautiful) world`       |
 
-### Tokenization and search / filtering
+### 分词和搜索/过滤
 
-Tokenization will impact how filters or keywords searches behave. This is because the filter or keyword search is also tokenized before being matched against the inverted index.
+分词将会影响到过滤器或关键词搜索的行为。这是因为过滤器或关键词搜索在与倒排索引进行匹配之前也会被分词。
 
-The following table shows an example scenario showing whether a filter or keyword search would identify a `text` property with value `Hello, (beautiful) world` as a hit.
+以下表格显示了一个示例场景，展示了使用筛选器或关键字搜索来判断具有值`Hello, (beautiful) world`的`text`属性是否匹配。
 
-- **Row**: Various tokenization methods.
-- **Column**: Various search strings.
+- **行**：各种分词方法。
+- **列**：各种搜索字符串。
 
 |   | `Beautiful` | `(Beautiful)` | `(beautiful)` | `Hello, (beautiful) world` |
 |---|-------------|---------------|---------------|----------------------------|
-| `word` (default)    | ✅ | ✅ | ✅ | ✅ |
+| `word` (默认)    | ✅ | ✅ | ✅ | ✅ |
 | `lowercase`         | ❌ | ✅ | ✅ | ✅ |
 | `whitespace`        | ❌ | ❌ | ✅ | ✅ |
 | `field`             | ❌ | ❌ | ❌ | ✅ |
@@ -474,13 +458,13 @@ So, a `string` property value `Hello, (beautiful) world` with `tokenization` set
 </details>
 :::
 
-## Configure semantic indexing
+## 配置语义索引
 
 import VectorizationBehavior from '/_includes/vectorization.behavior.mdx';
 
 <VectorizationBehavior/>
 
-For example, this data object,
+例如，这个数据对象，
 
 ```js
 Article = {
@@ -489,17 +473,17 @@ Article = {
 }
 ```
 
-will be vectorized as:
+将被向量化为:
 
 ```md
 article cows lose their jobs as milk prices drop as his diary cows lumbered over for their monday...
 ```
 
-By default, the `class name` and all property `values` *will* be taken in the calculation, but the property `names` *will not* be indexed. The vectorization behavior can be configured on a per-class basis with `vectorizeClassName` and per-property basis with `skip` and `vectorizePropertyName`.
+默认情况下，将考虑`类名`和所有属性`值`的计算，但不会对属性`名称`进行索引。可以通过`vectorizeClassName`对每个类进行向量化行为配置，通过`skip`和`vectorizePropertyName`对每个属性进行配置。
 
-### Default distance metric
+### 默认距离度量
 
-Weaviate allows you to configure the `DEFAULT_VECTOR_DISTANCE_METRIC` which will be applied to every class unless overridden individually. You can choose from: `cosine` (default), `dot`, `l2-squared`, `manhattan`, `hamming`.
+Weaviate允许您配置`DEFAULT_VECTOR_DISTANCE_METRIC`，该配置将应用于每个类，除非单独进行覆盖。您可以选择以下选项：`cosine`（默认）、`dot`、`l2-squared`、`manhattan`、`hamming`。
 
 ```python
 class_obj = {
@@ -512,9 +496,8 @@ class_obj = {
 client.schema.create_class(class_obj)
 ```
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 
 <DocsMoreResources />
-

@@ -1,9 +1,9 @@
 ---
-title: Binary Passage Retrieval
-sidebar_position: 80
 image: og/docs/concepts.jpg
-# tags: ['architecture', 'binary-passage-retrieval', 'memory consumption', 'learning-to-hash', 'resource optimization']
+sidebar_position: 80
+title: Binary Passage Retrieval
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -12,78 +12,80 @@ import Badges from '/_includes/badges.mdx';
 BPR support in Weaviate is under development.
 :::
 
-## Overview
+## 概述
 
-Binary Passage Retrieval, or learning-to-hash, is the idea of producing a lightweight encoding (or hash) of each vector and using the hash instead of the vector. The term Binary Passage Retrieval (or short BPR) originates from a [2021 research paper by Yamada et al](https://arxiv.org/abs/2106.00882). It is also called learning-to-hash as the models used for BPR are trained with a combined loss function that looks at both cosine/dot distance between the regular vectors, as well as the Hamming distance between the binary hash representations of the vectors.
+二进制段落检索（Binary Passage Retrieval）或学习哈希（learning-to-hash）是指生成每个向量的轻量级编码（或哈希），并使用哈希代替向量的思想。二进制段落检索（Binary Passage Retrieval，简称BPR）这个术语来源于Yamada等人于2021年的一篇研究论文（[https://arxiv.org/abs/2106.00882](https://arxiv.org/abs/2106.00882)）。它也被称为学习哈希，因为用于BPR的模型是通过一个综合的损失函数进行训练的，该损失函数考虑了常规向量之间的余弦/点距离以及向量的二进制哈希表示之间的汉明距离。
 
-Since vectors are typically held in memory for optimal performance, reducing the size of a large vector can greatly reduce the overall memory requirements for running Weaviate with larger datasets.
+由于向量通常存储在内存中以获得最佳性能，因此减小大向量的大小可以极大地减少在处理较大数据集时运行Weaviate所需的总内存要求。
 
-### Up to 32x memory reduction
+### 最多可减少32倍的内存消耗
 
-![Weaviate binary passage retrieval](./img/binary-passage-retrieval-vector-vs-binary-hash@3x.png "Reduce Memory requirements by a factor of 32 when using binary hashing")
+![Weaviate二进制段检索](./img/binary-passage-retrieval-vector-vs-binary-hash@3x.png "使用二进制哈希时，将内存需求降低32倍")
 
-The above example shows a reduction factor of 32x which is based on the original resource paper. Instead of searching on the full vectors, we search on a hash representing the vector. In this example, a hash is built by representing the sign of the original dimension of the vector. Each dimension would previously occupy a `float32` variable which is 4 Bytes or 32 bits large. Since the sign can only ever be positive or negative, we only need two possible options, i.e. a single bit for each dimension. Thus, the memory footprint is reduced 32-fold.
+上面的例子展示了一个32倍的减少因子，这是基于原始资源论文的。我们不再对完整的向量进行搜索，而是对表示向量的哈希进行搜索。在这个例子中，哈希是通过表示向量原始维度的符号来构建的。以前，每个维度都占用一个大小为4字节或32位的`float32`变量。由于符号只能是正或负，所以我们只需要两个可能的选项，即每个维度一个位。因此，内存占用减少了32倍。
 
-### No accuracy-loss thanks to two-step retrieval
+### 通过两步检索来避免精度损失
 
-Since only the sign is kept in the hash, two vectors with different magnitudes but the same sign on each dimension produce identical hashes. The original vectors could however have vastly different positions in the vectors space. For example, take the two vectors `[0.13, 0.97]` and `[0.87, 0.02]`. Since all dimensions are positive the hashes would be identical. However, the cosine distance between both vectors is non-zero.
+由于哈希只保留符号信息，具有不同幅度但在每个维度上具有相同符号的两个向量将产生相同的哈希值。然而，原始向量在向量空间中的位置可能有很大的差异。例如，取两个向量 `[0.13, 0.97]` 和 `[0.87, 0.02]`。由于所有维度都是正数，哈希值将是相同的。然而，两个向量之间的余弦距离是非零的。
 
-![BPR two step binary reranker in Weaviate](./img/bpr-two-step-query-binary-rerank-vector@3x.png "Efficiently retrieve candidates using hashing, then re-rank using original vectors")
+![Weaviate中的BPR两步二进制再排序器](./img/bpr-two-step-query-binary-rerank-vector@3x.png "使用哈希高效检索候选项，然后使用原始向量重新排序")
 
-To overcome this potential accuracy loss with BPR, the original paper suggests a two-step ranking process. The hashes are used to produce suitable candidates. For each candidate, the original vectors can then be used to determine the correct order. For example, to retrieve the top 50 objects, we would query 1,000 candidates and then re-rank them according to their cosine distance to the query vector. Although this may seem like additional work, the process is still very efficient, because:
+为了克服BPR可能的准确性损失，原始论文建议采用两步排序过程。哈希用于生成合适的候选项。对于每个候选项，可以使用原始向量确定正确的排序。例如，要检索前50个对象，我们将查询1,000个候选项，然后根据它们与查询向量的余弦距离重新排序。尽管这可能看起来需要额外的工作，但该过程仍然非常高效，因为：
 
-- Calculating the Hamming distances on the hashes is considerably cheaper than calculating the cosine distances, so the initial lookup is cheaper than a pure cosine-based search. (This holds true regardless of whether a vector-index is used or not, see more later on.)
-- The number of candidates is small enough (e.g. 1,000), so that a brute-force re-ranking based on the original vectors requires a negligible amount of compute time.
+- 计算哈希的汉明距离比计算余弦距离要便宜得多，因此初始查找比纯粹基于余弦的搜索要便宜。 （无论是否使用向量索引，这都是正确的，稍后会有更多详细信息。）
+- 候选项数量足够小（例如1,000），因此基于原始向量的蛮力重新排名需要极少的计算时间。
 
-## BRP in Weaviate
+## Weaviate中的BRP
 
 :::note
 BPR support in Weaviate is currently under development.
 :::
 
-Weaviate's BPR integration aims to provide the best possible user experience. Since BPR can be mostly seen as an optimization, our view is to support native BPR integration which can be toggled on or off with a simple flag. BPR-supported Weaviate modules can advertise their BPR capabilities and default to BPR if desired. For users of Weaviate `text2vec-*` modules, using BPR within Weaviate will feel exactly the same way. For users importing their own vectors, a simple flag will activate BPR mode if your custom module is compatible with BPR.
+Weaviate的BPR集成旨在提供最佳的用户体验。由于BPR主要被视为一种优化，我们的观点是支持本地BPR集成，可以通过简单的标志开启或关闭。支持BPR的Weaviate模块可以宣传其BPR功能，并在需要时默认使用BPR。对于使用Weaviate的`text2vec-*`模块的用户，在Weaviate中使用BPR将感觉完全相同。对于导入自己的向量的用户，如果您的自定义模块与BPR兼容，只需使用一个简单的标志来激活BPR模式。
 
-### BPR-enabled Weaviate text2vec-modules
+### 启用BPR的Weaviate text2vec模块
 
-BPR makes use of specially trained neural models. Instead of optimizing for a cosine or dot-product-based loss, BPR-enabled models optimize for a combined cosine/dot and binary loss. As a result, only neural-network based models (e.g. those with `text2vec-transformers`) can be used with BPR. BPR will not be available with the `text2vec-contextionary` module.
+BPR使用经过特殊训练的神经模型。与优化余弦或点积损失不同，启用BPR的模型优化的是余弦/点积和二进制损失的组合。因此，只有基于神经网络的模型（例如`text2vec-transformers`）可以与BPR一起使用。`text2vec-contextionary`模块将不支持BPR。
 
-### BPR-enabled out-of-the-box models
+### 开箱即用的启用BPR的模型
 
-Long-term, we aim to provide BPR support for the most commonly used `text2vec-transformers` models (typically [Sentence-BERT](https://sbert.net) models). When launching the BPR feature, at least one popular general-purpose model will be supported.
+长期来看，我们的目标是为最常用的`text2vec-transformers`模型（通常是[Sentence-BERT](https://sbert.net)模型）提供BPR支持。在推出BPR功能时，至少会支持一个流行的通用模型。
 
-## BPR FAQ
+## BPR常见问题解答
 
-<!-- #### When will BPR officially be supported in Weaviate?
+<!-- #### When will BPR officially be supported in Weaviate? -->
 
-BPR support will be available around the end of Q1 2022 in production quality. If you want to try it out earlier and aren't afraid to play with POC-style code, join our [Slack](https://weaviate.io/slack) and you can get started considerably sooner. -->
 
-#### What vector distances are used with BPR?
 
-To generate candidates (step 1), a Hamming distance is used on the binary hashes. To re-rank the candidates and produce the final result set (step 2), the distance metric is the same as without BRP. Typically this is cosine distance or dot product on the raw vector representation.
+BPR支持将在2022年第一季度末以生产质量的形式提供。如果您想提前尝试并且不介意使用POC样式的代码进行实验，请加入我们的[Slack](https://weaviate.io/slack)，您可以更早地开始。
 
-#### Do we still need a (HNSW or similar) vector index with BPR?
+#### 在BPR中使用哪些向量距离？
 
-The benefits of an efficient Approximate Nearest Neighbor (ANN) vector index still apply to BPR. Since hashes are much more compact and calculating the Hamming distance is considerably cheaper than calculating cosine distance, the point where brute-force is still possible is raised considerably. So for some cases, you may consider skipping vector-indexing entirely and relying on a flat search. However, when optimizing either for low latency or high throughput, a vector index will produce considerably better results. We therefor expect BPR to be used with our existing indices (currently HNSW) in most cases.
+为了生成候选项（第一步），使用汉明距离对二进制哈希进行比较。为了重新排列候选项并生成最终的结果集（第二步），距离度量与没有 BPR 时相同。通常情况下，这是在原始向量表示上使用余弦距离或点积。
 
-#### Will my memory requirements go down by a factor of 32?
+#### 在使用 BPR 时是否还需要（HNSW 或类似的）向量索引？
 
-No. The 32x is the theoretical reduction of the vectors themselves. However, the vector index also requires memory which grows with the dataset size. The great news is that since calculating the Hamming distance on the binary hashes is much faster, we can offload a lot of the computation to the query time without sacrificing latencies. As a result, we can build a "weaker" (binary) vector index which will consume less memory. As of now, we are still running experiments to figure out the final memory requirements with BPR. The requirements will be drastically lower albeit not by a factor of 32.
+高效的近似最近邻（ANN）向量索引的优势仍然适用于BPR。由于哈希值更加紧凑，计算汉明距离比计算余弦距离要廉价得多，所以可以显著提高仍然可以使用暴力搜索的点。因此，在某些情况下，您可以考虑完全跳过向量索引，依赖于平面搜索。然而，当优化低延迟或高吞吐量时，向量索引将产生更好的结果。因此，我们预计在大多数情况下，BPR将与我们现有的索引（当前为HNSW）一起使用。
 
-#### Which media types can be used with BPR?
+#### 我的内存需求会减少32倍吗？
 
-There is no limitation to media types. As long as the models used can be (re-)trained to include a binary loss, any model can be used with BPR. We will roll out support for text-based models first, but other media types (image, CLIP, etc.) can also benefit from BPR support.
+不。32倍是向量本身的理论减小量。然而，向量索引还需要随着数据集大小增长的内存。好消息是，由于在二进制哈希上计算汉明距离要快得多，我们可以将大部分计算转移到查询时间，而不会牺牲延迟。因此，我们可以构建一个“较弱”的（二进制）向量索引，它将消耗更少的内存。目前，我们仍在进行实验，以确定使用BPR的最终内存需求。虽然要求会大大降低，但并非降低32倍。
 
-The name "binary passage retrieval" implies text passages, but the technique used is not in any way specific to text-based media.
+#### BPR 可以与哪些媒体类型一起使用？
 
-#### Can BPR be used with custom vectors or only with Weaviate modules?
+对于媒体类型没有限制。只要所使用的模型可以被（重新）训练以包含二进制损失，任何模型都可以与 BPR 一起使用。我们将首先推出对基于文本的模型的支持，但其他媒体类型（图像，CLIP 等）也可以受益于 BPR 的支持。
 
-BPR support will be provided for all uses-cases including your own vectors from your custom modules outside of Weaviate. However, in this case, it is your responsibility to make sure that the model provides vectors which can be hashed without too much accuracy loss. Typically this is done by including the binary loss as part of the loss function during the training process.
+名称“二进制段落检索”暗示了文本段落，但所使用的技术并不特定于基于文本的媒体。
 
-#### Can I use a non-BPR-specific model in BPR mode?
+#### BPR可以与自定义向量一起使用，还是只能与Weaviate模块一起使用？
 
-From a purely technical perspective, there is no impediment to using any model with BPR. Since the hashing function is very simple, any existing vector can be hashed. However, it is unlikely that your hashes will hold a lot of semantic meaning if the model has not been specifically trained to produce good hashes alongside good vectors. Typically this is done by including the binary loss as part of the loss function during the training process.
+BPR支持所有用例，包括来自Weaviate之外的自定义模块中的自定义向量。然而，在这种情况下，您有责任确保模型提供的向量在哈希过程中不会有太多的精度损失。通常，在训练过程中，这是通过将二进制损失包含在损失函数中来完成的。
 
-## More Resources
+#### 在BPR模式下，我可以使用非BPR特定的模型吗？
+
+从纯技术的角度来看，使用任何模型与BPR没有障碍。由于哈希函数非常简单，任何现有的向量都可以进行哈希。然而，如果模型没有经过专门训练以在生成良好向量的同时生成良好哈希，那么你的哈希很可能不会具有很多语义含义。通常，在训练过程中，会将二进制损失作为损失函数的一部分来完成这个目标。
+
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

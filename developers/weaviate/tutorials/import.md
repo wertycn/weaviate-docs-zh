@@ -1,45 +1,45 @@
 ---
-title: Imports in detail
-sidebar_position: 20
 image: og/docs/tutorials.jpg
-# tags: ['import']
+sidebar_position: 20
+title: Imports in detail
 ---
+
 import Badges from '/_includes/badges.mdx';
 import { DownloadButton } from '/src/theme/Buttons';
 
 <Badges/>
 
-## Overview
+## 概述
 
-In this section, we will explore data import, including details of the batch import process. We will discuss points such as how vectors are imported, what a batch import is, how to manage errors, and some advice on optimization.
+在本节中，我们将探讨数据导入的概述，包括批量导入过程的详细信息。我们将讨论向量如何导入，什么是批量导入，如何管理错误以及一些建议的优化方法。
 
-## Prerequisites
+## 先决条件
 
-We recommend you complete the [Quickstart tutorial](../quickstart/index.md) first.
+我们建议您先完成[快速入门教程](../quickstart/index.md)。
 
-Before you start this tutorial, you should follow the steps in the tutorials to have:
+在开始本教程之前，你应该按照教程中的步骤完成以下准备工作：
 
-- An instance of Weaviate running (e.g. on the [Weaviate Cloud Services](https://console.weaviate.cloud)),
-- An API key for your preferred inference API, such as OpenAI, Cohere, or Hugging Face,
-- Installed your preferred Weaviate client library, and
-- Set up a `Question` class in your schema.
-    - You can follow the Quickstart guide, or the [schema tutorial](./schema.md) to construct the Question class if you have not already.
+- 运行一个Weaviate实例（例如在[Weaviate云服务](https://console.weaviate.cloud)上），
+- 获取你首选的推理API（如OpenAI、Cohere或Hugging Face）的API密钥，
+- 安装你首选的Weaviate客户端库，以及
+- 在你的模式中设置一个`Question`类。
+    - 如果您还没有构建Question类，您可以按照快速入门指南或[模式教程](./schema.md)进行操作。
 
-We will use the dataset below. We suggest that you download it to your working directory.
+我们将使用下面的数据集。建议您将其下载到工作目录中。
 
 <p>
-  <DownloadButton link="https://raw.githubusercontent.com/weaviate-tutorials/quickstart/main/data/jeopardy_tiny.json">Download jeopardy_tiny.json</DownloadButton>
+  <DownloadButton link="https://raw.githubusercontent.com/weaviate-tutorials/quickstart/main/data/jeopardy_tiny.json">下载 jeopardy_tiny.json</DownloadButton>
 </p>
 
-## Import setup
+## 导入设置
 
-As mentioned in the [schema tutorial](./schema.md), the `schema` specifies the data structure for Weaviate.
+如在[schema教程](./schema.md)中提到的，`schema`指定了Weaviate的数据结构。
 
-So the data import must map properties of each record to those of the relevant class in the schema. In this case, the relevant class is **Question** as defined in the previous section.
+因此，数据导入必须将每个记录的属性映射到模式中相关类的属性。在本例中，相关类是在前一节中定义的**Question**。
 
-### Data object structure
+### 数据对象结构
 
-Each Weaviate data object is structured as follows:
+每个Weaviate数据对象的结构如下：
 
 ```json
 {
@@ -51,69 +51,69 @@ Each Weaviate data object is structured as follows:
 }
 ```
 
-Most commonly, Weaviate users import data through a Weaviate client library.
+通常情况下，Weaviate用户通过Weaviate客户端库导入数据。
 
-It is worth noting, however, that data is ultimately added through the RESTful API, either through the [`objects` endpoint](../api/rest/objects.md) or the [`batch` endpoint](../api/rest/batch.md).
+值得注意的是，数据最终是通过RESTful API添加的，可以通过[`objects`端点](../api/rest/objects.md)或[`batch`端点](../api/rest/batch.md)来进行。
 
-As the names suggest, the use of these endpoints depend on whether objects are being imported as batches or individually.
+正如名称所示，使用这些端点取决于是批量导入对象还是逐个导入对象。
 
-### To batch or not to batch
+### 批量还是逐个导入
 
-For importing data, we **strongly suggest that you use batch imports** unless you have a specific reason not to. Batch imports can greatly improve performance by sending multiple objects in a single request.
+对于导入数据，**强烈建议您使用批量导入**，除非有特定原因不使用。批量导入可以通过一次请求发送多个对象来大大提高性能。
 
-We note that batch imports are carried out through the [`batch` REST endpoint](../api/rest/batch.md).
+我们注意到批量导入是通过[`batch` REST端点](../api/rest/batch.md)来执行的。
 
-### Batch import process
+### 批量导入过程
 
-A batch import process generally looks like this:
+批量导入过程通常如下所示：
 
-1. Connect to your Weaviate instance
-1. Load objects from the data file
-1. Prepare a batch process
-1. Loop through the records
-    1. Parse each record and build an object
-    1. Push the object through a batch process
-1. Flush the batch process – in case there are any remaining objects in the buffer
+1. 连接到您的Weaviate实例
+2. 从数据文件中加载对象
+3. 准备批量处理
+1. 遍历记录
+   1. 解析每个记录并构建一个对象
+   1. 通过批处理将对象推送
+2. 刷新批处理 - 以防缓冲区中还有剩余的对象
 
-Here is the full code you need to import the **Question** objects:
+这是您需要导入**Question**对象的完整代码：
 
 import CodeImportQuestions from '/_includes/code/quickstart.import.questions.mdx';
 
 <CodeImportQuestions />
 
-There are a couple of things to note here.
+这里有几点需要注意。
 
-#### Batch size
+#### 批处理大小
 
-Some clients include this as a parameter (e.g. `batch_size` in the Python client), or it can be manually set by periodically flushing the batch.
+一些客户端将其作为参数包含在内（例如Python客户端中的`batch_size`），或者可以通过定期刷新批处理来手动设置。
 
-Typically, a size between 20 and 100 is a reasonable starting point, although this depends on the size of each data object. A smaller size may be preferable for larger data objects, such as if vectors are included in each object upload.
+通常，20到100之间的大小是一个合理的起点，但这取决于每个数据对象的大小。对于较大的数据对象，较小的大小可能更合适，例如如果每个对象上传中包含向量。
 
-#### Where are the vectors?
+#### 向量在哪里？
 
-You may have noticed that we do not provide a vector. As a `vectorizer` is specified in our schema, Weaviate will send a request to the appropriate module (`text2vec-openai` in this case) to vectorize the data, and the vector in the response will be indexed and saved as a part of the data object.
+您可能已经注意到，我们没有提供一个向量。由于在我们的模式中指定了一个`vectorizer`，Weaviate将向适当的模块（在本例中为`text2vec-openai`）发送请求来对数据进行向量化，响应中的向量将作为数据对象的一部分进行索引和保存。
 
-### Bring your own vectors
+### 使用自己的向量
 
-If you wish to upload your own vectors, you can do so with Weaviate. Refer to the [`batch` data object API documentation](../api/rest/batch.md#batch-create-objects). The object fields correspond to those of the [individual objects](../api/rest/objects.md#parameters-1).
+如果您想要上传自己的向量，可以使用Weaviate进行操作。请参考[`batch`数据对象API文档](../api/rest/batch.md#batch-create-objects)。对象字段对应于[单个对象](../api/rest/objects.md#parameters-1)的字段。
 
-You can also manually upload existing vectors and use a vectorizer module for vectorizing queries.
+您还可以手动上传现有的向量，并使用矢量化模块对查询进行矢量化。
 
-## Confirm data import
+## 确认数据导入
 
-You can quickly check the imported object by opening `<weaviate-endpoint>/v1/objects` in a browser, like this (replace with your endpoint):
+您可以通过在浏览器中打开`<weaviate-endpoint>/v1/objects`来快速检查导入的对象，如下所示（请替换为您的端点）：
 
 ```
 https://some-endpoint.semi.network/v1/objects
 ```
 
-Or you can read the objects in your project, like this:
+或者您可以像这样读取项目中的对象：
 
 import CodeImportGet from '/_includes/code/quickstart.import.get.mdx';
 
 <CodeImportGet />
 
-The result should look something like this:
+结果应该类似于以下内容：
 
 ```json
 {
@@ -125,24 +125,24 @@ The result should look something like this:
 }
 ```
 
-## Data import - best practices
+## 数据导入 - 最佳实践
 
-When importing large datasets, it may be worth planning out an optimized import strategy. Here are a few things to keep in mind.
+在导入大型数据集时，计划一个优化的导入策略可能是值得的。以下是几个需要记住的事项。
 
-1. The most likely bottleneck is the import script. Accordingly, aim to max out all the CPUs available.
-  1. Use `htop` when importing to see if all CPUs are maxed out.
-1. Use [parallelization](https://www.computerhope.com/jargon/p/parallelization.htm#:~:text=Parallelization%20is%20the%20act%20of,the%20next%2C%20then%20the%20next.); if the CPUs are not maxed out, just add another import process.
-1. For Kubernetes, fewer large machines are faster than more small machines (due to network latency).
+1. 最有可能成为瓶颈的是导入脚本。因此，要尽量利用所有可用的CPU。
+  1. 在导入时使用`htop`命令查看是否所有CPU都达到最大利用率。
+1. 使用[并行化](https://www.computerhope.com/jargon/p/parallelization.htm#:~:text=Parallelization%20is%20the%20act%20of,the%20next%2C%20then%20the%20next.)；如果CPU没有达到最大使用率，可以添加另一个导入进程。
+2. 对于Kubernetes，较少的大型机器比较多的小型机器更快（由于网络延迟）。
 
-Our rules of thumb are:
-* You should always use batch import.
-* As mentioned above, max out your CPUs (on the Weaviate cluster). Often your import script is the bottleneck.
-* Process error messages.
-* Some clients (e.g. Python) have some built-in logic to efficiently control batch importing.
+我们的经验法则是：
+* 您应该始终使用批量导入。
+* 如上所述，充分利用您的CPU（在Weaviate集群上）。通常导入脚本是瓶颈。
+* 处理错误消息。
+* 一些客户端（例如Python）内置了一些逻辑，以有效地控制批量导入。
 
-### Error handling
+### 错误处理
 
-We recommend that you implement error handling at an object level, such as in [this example](../api/rest/batch.md#error-handling).
+我们建议您在对象级别实现错误处理，例如在[此示例](../api/rest/batch.md#error-handling)中。
 
 :::tip `200` status code != 100% batch success
 It is important to note that an HTTP `200` status code only indicates that the **request** has been successfully sent to Weaviate. In other words, there were no issues with the connection or processing of the batch and no malformed request.
@@ -150,24 +150,24 @@ It is important to note that an HTTP `200` status code only indicates that the *
 A request with a `200` response may still include object-level errors, which is why error handling is critical.
 :::
 
-## Recap
+## 总结
 
-* Data to be imported should match the database schema
-* Use batch import unless you have a good reason not to
-* For importing large datasets, make sure to consider and optimize your import strategy.
+* 导入的数据应该符合数据库模式
+* 除非有充分的理由，否则应该使用批量导入
+* 对于导入大型数据集，确保考虑和优化导入策略。
 
-## Suggested reading
+## 推荐阅读
 
-- [Tutorial: Schemas in detail](./schema.md)
-- [Tutorial: Queries in detail](./query.md)
-- [Tutorial: Introduction to modules](./modules.md)
-- [Tutorial: Introduction to Weaviate Console](../../wcs/guides/console.mdx)
+- [教程：详细了解模式](./schema.md)
+- [教程：详细了解查询](./query.md)
+- [教程：模块介绍](./modules.md)
+- [教程：Weaviate控制台介绍](../../wcs/guides/console.mdx)
 
-### Other object operations
+### 其他对象操作
 
-All other CRUD object operations are available in the [objects RESTful API documentation](../api/rest/index.md) and the [batch RESTful API documentation](../api/rest/batch.md).
+所有其他的CRUD对象操作都可以在[对象RESTful API文档](../api/rest/index.md)和[批量RESTful API文档](../api/rest/batch.md)中找到。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

@@ -1,55 +1,54 @@
 ---
-title: Text2Vec-Contextionary Quickstart
-sidebar_position: 7
 image: og/docs/further-guides.jpg
-# tags: ['how to', 'schema']
+sidebar_position: 7
+title: Text2Vec-Contextionary Quickstart
 ---
 
-# **Run Weaviate with a demo dataset**
+# **使用演示数据集运行 Weaviate**
 
-There are many different ways how you can run Weaviate, from local development setups up to large scale Kubernetes environments or hosted and managed Weaviate clusters. For this quick start guide we will be using the [Docker Compose](https://docs.docker.com/compose/) setup where you can run Weaviate on your local machine to which we will add the demo dataset with news publications.
+您可以以许多不同的方式运行 Weaviate，从本地开发设置到大规模的 Kubernetes 环境或托管和管理的 Weaviate 集群。在本快速入门指南中，我们将使用 [Docker Compose](https://docs.docker.com/compose/) 设置，在您的本地机器上运行 Weaviate，并添加包含新闻出版物的演示数据集。
 
-The Docker Compose files below contain both Weaviate and the dataset.
+下面的 Docker Compose 文件包含 Weaviate 和数据集。
 
-Download the Docker Compose file (note, the Dockerfile has GPUs - i.e., CUDA - disabled, this impacts import and query time significantly. If you have a GPU available ([that is reachable with Docker](https://docs.docker.com/compose/gpu-support/)) simply set `ENABLE_CUDA` to `1` in the [dockerfile](https://github.com/weaviate/weaviate-examples/blob/main/weaviate-transformers-newspublications/docker-compose-withgpu.yaml#L27)
+下载Docker Compose文件（请注意，Dockerfile已禁用GPU，即CUDA，这会显著影响导入和查询时间。如果您有一个可用的GPU（可以通过Docker访问），只需在[dockerfile](https://github.com/weaviate/weaviate-examples/blob/main/weaviate-transformers-newspublications/docker-compose-withgpu.yaml#L27)中将`ENABLE_CUDA`设置为`1`
 
 ```bash
 curl -o docker-compose.yml https://raw.githubusercontent.com/weaviate/weaviate-examples/main/weaviate-transformers-newspublications/docker-compose-simple.yml
 ```
 
-Run Docker (optional: run with `-d` to run Docker in the background)
+运行 Docker（可选：使用 `-d` 参数在后台运行 Docker）
 
 ```bash
 docker-compose up
 ```
 
-Weaviate will be available and preloaded with the news article demo dataset on:
+Weaviate将在以下地址上提供并预加载新闻文章演示数据集：
 
 - `http://localhost:8080/v1`
-- [Via the Console](https://console.weaviate.cloud).
+- [通过控制台访问](https://console.weaviate.cloud)。
 
-# **Query via the Weaviate console**
+# **通过Weaviate控制台查询**
 
-You can query your local machine via the [Weaviate console](https://console.weaviate.cloud). In the "Self-hosted Weaviate" input box, fill in `http://localhost:8080/` (you will get redirected to the "http" version of the client).
+您可以通过[Weaviate控制台](https://console.weaviate.cloud)查询您的本地机器。在"Self-hosted Weaviate"输入框中，填写`http://localhost:8080/`（您将被重定向到客户端的"http"版本）。
 
-# **Validate via the RESTful API**
+# **通过RESTful API验证**
 
-You will always use Weaviate via its HTTP API interface. The interface consists of two different interfaces:
+您将始终通过Weaviate的HTTP API接口使用它。该接口包含两个不同的接口：
 
-- The RESTful API, which is mostly used to add and manipulate data.
-- The GraphQL API (which also runs over HTTP) to query data.
+- RESTful API，主要用于添加和操作数据。
+- GraphQL API（也通过HTTP运行）用于查询数据。
 
-We will first check if Weaviate runs correctly, if the schema is added successfully, and if the data is available. In the example below, we will show you how to do it from the command line.
+我们将首先检查Weaviate是否正常运行，模式是否成功添加，以及数据是否可用。在下面的示例中，我们将向您展示如何通过命令行完成这些操作。
 
-First, we want to check if Weaviate is running correctly by inspecting the `/v1/meta` endpoint.
+首先，我们想通过检查`/v1/meta`端点来确认Weaviate是否正常运行。
 
-_Note: make sure to replace `localhost:8080` with the location of your Weaviate if you have your Weaviate running on a different endpoint or location._
+注意：请确保将`localhost:8080`替换为您的Weaviate位置，如果您的Weaviate在不同的端点或位置上运行。
 
 ```bash
 curl -s http://localhost:8080/v1/meta
 ```
 
-The output will look something like this:
+输出结果将类似于这样：
 
 ```json
 {
@@ -64,15 +63,15 @@ The output will look something like this:
 }
 ```
 
-This validates that your Weaviate is running correctly.
+这将验证您的Weaviate是否正常运行。
 
-Next, we want to check if the news publication schema was added correctly, you can do this by inspecting the `/v1/schema` endpoint.
+接下来，我们想要检查新闻发布模式是否正确添加，您可以通过检查`/v1/schema`端点来完成。
 
 ```bash
 curl -s http://localhost:8080/v1/schema
 ```
 
-The output will look something like this:
+输出结果将类似于这样：
 
 ```json
 {
@@ -348,15 +347,15 @@ The output will look something like this:
 }
 ```
 
-You should be able to identify four classes: `Publication`, `Author`, `Article` and `Category`.
+你应该能够识别出四个类：`Publication`（出版物）、`Author`（作者）、`Article`（文章）和`Category`（分类）。
 
-Lastly, we will validate if all data was added correctly, we will do this via the `/v1/objects` endpoint.
+最后，我们将通过`/v1/objects`端点验证所有数据是否添加正确。
 
 ```bash
 curl -s http://localhost:8080/v1/objects
 ```
 
-The output will look something like this:
+输出的结果将类似于以下内容：
 
 ```json
 {
@@ -693,17 +692,17 @@ The output will look something like this:
 }
 ```
 
-# Query the dataset with GraphQL
+# 使用GraphQL查询数据集
 
-When querying Weaviate, you will always be using the GraphQL API. Weaviate has a publicly available graphical user interface (GUI) called [the Console](https://console.weaviate.cloud), which you can use to query.
+在查询Weaviate时，您将始终使用GraphQL API。Weaviate有一个公开可用的图形用户界面(GUI)，称为[控制台](https://console.weaviate.cloud)，您可以使用它进行查询。
 
-### Accessing the Console
+### 访问控制台
 
-Go to [console.weaviate.cloud](https://console.weaviate.cloud). Log in and connect to your Weaviate instance (e.g. on `http://localhost:8080`), and then go to 'Query' in the left menu.
+前往[console.weaviate.cloud](https://console.weaviate.cloud)。登录并连接到您的Weaviate实例(例如，在`http://localhost:8080`上)，然后转到左侧菜单中的“查询”。
 
-### Your First Query
+### 您的第一个查询
 
-Let's first get all news publications out.
+首先，让我们将所有新闻出版物取出。
 
 ```graphql
 # GraphQL
@@ -716,7 +715,7 @@ Let's first get all news publications out.
 }
 ```
 
-You can also find which articles are related to these publications.
+您还可以查找与这些出版物相关的文章。
 
 ```graphql
 # GraphQL
@@ -734,7 +733,7 @@ You can also find which articles are related to these publications.
 }
 ```
 
-And you can even go deeper, to find which authors are related to these publications.
+您甚至可以深入了解，找出与这些出版物相关的作者。
 
 ```graphql
 # GraphQL
@@ -757,7 +756,7 @@ And you can even go deeper, to find which authors are related to these publicati
 }
 ```
 
-When querying for articles, you can also add classic filters to narrow down your search.
+在查询文章时，您还可以添加经典过滤器来缩小搜索范围。
 
 ```graphql
 # GraphQL
@@ -779,7 +778,7 @@ When querying for articles, you can also add classic filters to narrow down your
 }
 ```
 
-Do you want to know how many articles, authors and publications there are? This is something you can find using the Aggregate{} function.
+你想知道有多少篇文章、作者和出版物吗？这是您可以使用Aggregate{}函数找到的内容。
 
 ```graphql
 # GraphQL
@@ -814,9 +813,9 @@ Do you want to know how many articles, authors and publications there are? This 
 }
 ```
 
-# Explore with semantic search
+# 通过语义搜索进行探索
 
-In Weaviate, you can also semantically explore your datasets. Let's search for articles related to money.
+在Weaviate中，您还可以通过语义方式探索您的数据集。让我们搜索与金钱相关的文章。
 
 ```graphql
 # GraphQL
@@ -835,7 +834,7 @@ In Weaviate, you can also semantically explore your datasets. Let's search for a
 }
 ```
 
-You can also combine filters!
+您还可以组合使用筛选器！
 
 ```graphql
 # GraphQL
@@ -867,9 +866,9 @@ You can also combine filters!
 }
 ```
 
-Or group similar topics semantically together. Look how the Publications `International New York Times`, `The New York Times Company` and `New York Times` are merged.
+或者根据语义将类似的主题进行分组。看看如何合并出版物`国际纽约时报`、`纽约时报公司`和`纽约时报`。
 
-_Tip: play around with the force variable._
+提示：尝试调整force变量。
 
 ```graphql
 # GraphQL
@@ -887,9 +886,9 @@ _Tip: play around with the force variable._
 }
 ```
 
-# Automatic classification
+# 自动分类
 
-If you run the following query, you might notice that there are no categories classified for articles.
+如果您运行以下查询，您可能会注意到文章没有被分类到任何类别中。
 
 ```graphql
 # GraphQL
@@ -907,9 +906,9 @@ If you run the following query, you might notice that there are no categories cl
 }
 ```
 
-Here we can use Weaviate's auto-classification function to let Weaviate decide which categories to attach to news publications.
+在这里，我们可以使用Weaviate的自动分类功能，让Weaviate决定将哪些类别附加到新闻出版物上。
 
-To do this, we will use the RESTful API.
+为了实现这一点，我们将使用RESTful API。
 
 ```bash
 curl http://localhost:8080/v1/classifications -X POST -H 'Content-type: application/json' -d \
@@ -925,7 +924,7 @@ curl http://localhost:8080/v1/classifications -X POST -H 'Content-type: applicat
 }' | jq .
 ```
 
-When Weaviate is done with the classification, you can rerun the previous query and see how Weaviate classified all articles.
+当Weaviate完成分类后，您可以重新运行之前的查询，查看Weaviate如何对所有文章进行分类。
 
 ```graphql
 # GraphQL
@@ -944,20 +943,22 @@ When Weaviate is done with the classification, you can rerun the previous query 
 ```
 
 
-By using the RESTful API, you can even get statistics related to the classification. You can find the `{CLASSIFICATION ID}` in the returned body of the query that started the classification.
+通过使用RESTful API，您甚至可以获取与分类相关的统计信息。您可以在启动分类的查询的返回主体中找到`{CLASSIFICATION ID}`。
 
 ```bash
 curl -k http://localhost:8080/v1/classifications/{CLASSIFICATION ID} | jq .
 ```
 
-# What's next
-In this tutorial you learned about how to quickly set up a Weaviate with a demo dataset, use semantic search and classification. Next, check out the following:
-- Check out how to [spin up a Weaviate](/developers/weaviate/installation/index.md) with your own [schema](../tutorials/schema.md) and [import](../tutorials/how-to-import-data.md).
-- Learn more about [authentication](/developers/weaviate/configuration/authentication.md) and [authorization](/developers/weaviate/configuration/authorization.md).
-- Install one of the [client libraries](/developers/weaviate/client-libraries/index.md) for smooth interaction with the Weaviate APIs.
-- Consult the [RESTful API references](/developers/weaviate/api/rest/index.md) and the [GraphQL references](../api/graphql/index.md) to learn about all interaction possibilities with Weaviate.
+# 下一步
 
-## More Resources
+在本教程中，您学习了如何快速设置Weaviate以及如何使用语义搜索和分类。接下来，请查看以下内容：
+
+- 查看如何使用您自己的[模式](../tutorials/schema.md)和[导入](../tutorials/how-to-import-data.md)来[启动Weaviate](/developers/weaviate/installation/index.md)。
+- 了解有关 [身份验证](/developers/weaviate/configuration/authentication.md) 和 [授权](/developers/weaviate/configuration/authorization.md) 的更多信息。
+- 安装其中一个 [客户端库](/developers/weaviate/client-libraries/index.md)，以便与 Weaviate API 进行平滑交互。
+- 请参阅 [RESTful API 参考](/developers/weaviate/api/rest/index.md) 和 [GraphQL 参考](../api/graphql/index.md) 以了解与 Weaviate 的所有交互可能性。
+
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

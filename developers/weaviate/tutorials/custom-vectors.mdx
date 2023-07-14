@@ -1,87 +1,84 @@
 ---
-title: Custom vectors tutorial
-sidebar_position: 10
 image: og/docs/quickstart-tutorial.jpg
-# tags: ['getting started']
+sidebar_position: 10
+title: Custom vectors tutorial
 ---
 
-As a vector database, Weaviate operates using vector representations, also known as "embeddings", of data objects.
+作为一个向量数据库，Weaviate 使用数据对象的向量表示，也被称为 "嵌入"。
 
-To generate these vector embeddings, you can employ a Weaviate ["vectorizer" module](../modules/retriever-vectorizer-modules/index.md), which can generate vectors at the time of import. Alternatively, you're welcome to supply your own "custom" vector embeddings.
+要生成这些向量嵌入，您可以使用 Weaviate 的 ["向量化器" 模块](../modules/retriever-vectorizer-modules/index.md)，它可以在导入数据时生成向量。或者，您也可以使用自己提供的 "自定义" 向量嵌入。
 
-In this tutorial, we'll guide you through the process of using Weaviate with your own vectors.
+在本教程中，我们将指导您如何使用自己的向量来使用 Weaviate。
 
-If you choose to specify your own vector embeddings, performing a vector search with Weaviate looks like this:
+如果你选择指定自己的向量嵌入，使用Weaviate进行向量搜索的步骤如下：
 
-1. Create a Weaviate instance
-2. Connect to the Weaviate instance
-3. Import your data, specifying your own vectors
-4. Perform a vector search with Weaviate
+1. 创建一个 Weaviate 实例
+2. 连接到 Weaviate 实例
+3. 导入你的数据，指定自己的向量
+4. 使用 Weaviate 进行向量搜索
 
 
-## Data
+## 数据
 
-We'll use as an example a tiny dataset consisting of 10 questions from the popular quiz show "Jeopardy!". Each object has an associated vector embedding.
+我们将使用一个小数据集作为示例，该数据集包含来自知名问答节目“Jeopardy!”的10个问题。每个对象都有一个关联的向量嵌入。
 
-In this example, these vectors were obtained through an OpenAI API, using the <nobr>[`text-embedding-ada-002` model](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)</nobr>. But your vectors can come from any source, such as another inference service provider (e.g Cohere or Hugging Face) or your own fine-tuned model.
+在这个例子中，这些向量是通过使用OpenAI API（使用[`text-embedding-ada-002`模型](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)）获取的。但是您的向量可以来自任何来源，比如另一个推理服务提供商（如Cohere或Hugging Face）或您自己的精调模型。
 
 <details>
-  <summary>Take a look at the dataset</summary>
+  <summary>查看数据集</summary>
 
-  |    | Category   | Question                                                                                                          | Answer                  | Vector                                             |
+  |    | 类别       | 问题                                                                                                              | 答案                    | 向量                                               |
   |---:|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------| ---------------------------------------------------|
-  |  0 | SCIENCE    | This organ removes excess glucose from the blood & stores it as glycogen                                          | Liver                   | [ -0.006632288, -0.0042016874, ..., -0.020163147 ] |
-  |  1 | ANIMALS    | It's the only living mammal in the order Proboseidea                                                              | Elephant                | [ -0.0166891, -0.00092290324, ..., -0.032253385 ]  |
-  |  2 | ANIMALS    | The gavial looks very much like a crocodile except for this bodily feature                                        | the nose or snout       | [ -0.015592773, 0.019883318, ..., 0.0033349802 ]   |
-  |  3 | ANIMALS    | Weighing around a ton, the eland is the largest species of this animal in Africa                                  | Antelope                | [ 0.014535263, -0.016103541, ..., -0.025882969 ]   |
-  |  4 | ANIMALS    | Heaviest of all poisonous snakes is this North American rattlesnake                                               | the diamondback rattler | [ -0.0030859283, 0.015239313, ..., -0.021798335 ]  |
-  |  5 | SCIENCE    | 2000 news: the Gunnison sage grouse isn't just another northern sage grouse, but a new one of this classification | species                 | [ -0.0090561025, 0.011155112, ..., -0.023036297 ]  |
-  |  6 | SCIENCE    | A metal that is "ductile" can be pulled into this while cold & under pressure                                     | wire                    | [ -0.02735741, 0.01199829, ..., 0.010396339 ]      |
-  |  7 | SCIENCE    | In 1953 Watson & Crick built a model of the molecular structure of this, the gene-carrying substance              | DNA                     | [ -0.014227471, 0.020493254, ..., -0.0027445166 ]  |
-  |  8 | SCIENCE    | Changes in the tropospheric layer of this are what gives us weather                                               | the atmosphere          | [ 0.009625228, 0.027518686, ..., -0.0068922946 ]   |
-  |  9 | SCIENCE    | In 70-degree air, a plane traveling at about 1,130 feet per second breaks it                                      | Sound barrier           | [ -0.0013459147, 0.0018580769, ..., -0.033439033 ] |
+  |  0 | 科学    | 这个器官从血液中去除多余的葡萄糖，并将其储存为糖原                                          | 肝脏                   | [ -0.006632288, -0.0042016874, ..., -0.020163147 ] |
+  |  1 | 动物    | 它是目前仅存的长鼻目哺乳动物                                                              | 大象                | [ -0.0166891, -0.00092290324, ..., -0.032253385 ]  |
+  |  2 | 动物       | 长鳄非常像鳄鱼，除了这个身体特征                                     | 鼻子或口鼻部              | [ -0.015592773, 0.019883318, ..., 0.0033349802 ]   |
+  |  3 | 动物       | 重约一吨的羚羊是非洲这种动物中体型最大的物种                | 羚羊                  | [ 0.014535263, -0.016103541, ..., -0.025882969 ]   |
+  |  4 | 动物       | 所有有毒蛇中最重的是北美的响尾蛇                                                     | 钻石背响尾蛇                | [ -0.0030859283, 0.015239313, ..., -0.021798335 ]  |
+|  5 | 科学       | 2000年的新闻：Gunnison鸡腿松鸡不仅仅是另一种北方松鸡，而是这个分类中的新物种 | 物种                      | [ -0.0090561025, 0.011155112, ..., -0.023036297 ]  |
+  |  6 | 科学    | 一种"延展性"金属可以在冷却和压力下被拉成这个形状 | 电线 | [ -0.02735741, 0.01199829, ..., 0.010396339 ]      |
+  |  7 | 科学    | 在1953年，沃森和克里克建立了这个物质的分子结构模型，这个物质携带基因 | DNA | [ -0.014227471, 0.020493254, ..., -0.0027445166 ]  |
+  |  8 | 科学    | 这个层次的对流层的变化是给我们带来天气的原因                                               | 大气层          | [ 0.009625228, 0.027518686, ..., -0.0068922946 ]   |
+|  9 | 科学    | 在70度的空气中，以约每秒1,130英尺的速度飞行的飞机突破了它                                      | 音障           | [ -0.0013459147, 0.0018580769, ..., -0.033439033 ] |
 
 </details>
 
 
-## Installation
+## 安装
 
-Weaviate is open source and you can easily [run the binary on Linux](../installation/embedded.md) or [run a local instance from a Docker image](../installation/docker-compose.md) on any OS, or even easier - you can create a free sandbox instance with the [Weaviate Cloud Services](../../wcs/quickstart.mdx) (WCS).
+Weaviate是开源的，您可以轻松地在Linux上运行二进制文件，或者在任何操作系统上从Docker镜像运行本地实例，甚至更简单地，您可以使用Weaviate Cloud Services（WCS）创建一个免费的沙箱实例。
 
-For this example, we will assume that you are using a WCS instance with authentication enabled.
+对于本示例，我们假设您正在使用启用了身份验证的WCS实例。
 
+## 客户端库
 
-## Client library
-
-For the best experience with Weaviate, we recommend installing a Weaviate client library for one of these languages:
+为了获得最佳的Weaviate体验，我们建议使用以下语言之一安装Weaviate客户端库：
 
 import CodeClientInstall from '/_includes/code/quickstart.clients.install.mdx';
 
 <CodeClientInstall />
 
-For JavaScript/TypeScript, we'll also need the `node-fetch` library to download the dataset, so make sure to `npm install node-fetch`.
+对于JavaScript/TypeScript，我们还需要`node-fetch`库来下载数据集，所以请确保执行`npm install node-fetch`。
 
+## 认证
 
-## Authentication
-
-The recommended way to [authenticate](../configuration/authentication.md) to WCS is with an API key. Once the instance is ready, click on its <kbd>Details</kbd> button, then the key <kbd>🔑</kbd> icon to access the API key:
+使用API密钥是[WCS身份验证](../configuration/authentication.md)的推荐方法。一旦实例准备就绪，点击其<kbd>详情</kbd>按钮，然后点击<kbd>🔑</kbd>图标以访问API密钥：
 
 import WCSGetKey from '../../wcs/guides/img/wcs-get-key.png';
 
-<img src={WCSGetKey} width="100%" alt="Instance configuration"/>
+<img src={WCSGetKey} width="100%" alt="实例配置"/>
 
-Grab the "Admin" key. You'll need it later for the client instantiation, which looks like this:
+获取"Admin"密钥。您以后需要用它来进行客户端实例化，如下所示：
 
 import WCSAuthenticationApiKey from '/_includes/code/wcs.authentication.api.key.mdx';
 
 <WCSAuthenticationApiKey/>
 
 
-## Schema
+## 架构
 
-Weaviate [stores data](../concepts/data.md) objects in collections, each of which is called a `class`. Each object has a set of properties, and a vector representation generated automatically by a vectorizer, or specified at import time.
+Weaviate将数据对象以集合的形式存储在称为`class`的每个对象中。每个对象都有一组属性，以及由矢量化器自动生成的矢量表示，或在导入时指定的。
 
-Weaviate lets you define vectorizers at the class level, with further control (e.g. specific model, or vectorization behavior) at the property level. Since you're bringing your own vectors, a vectorizer is not needed, so we will set `vectorizer: "none"` in the class here.
+在Weaviate中，您可以在类级别上定义矢量化器，并在属性级别上进行进一步控制（例如，特定的模型或矢量化行为）。由于您正在使用自己的向量，因此不需要矢量化器，所以我们会在此类中设置`vectorizer: "none"`。
 
 :::note Optional: Set a **compatible** vectorizer
 If you're using "custom" vectors that utilize the same model available through a Weaviate module, you have the option to **designate that specific model and module** as the class vectorizer.<p><br/></p>
@@ -95,58 +92,56 @@ import CreateSchema from '/_includes/code/quickstart.byov.schema.mdx'
 
 <CreateSchema />
 
+## 使用向量导入数据
 
-## Import data with vectors
+这是一组[10个预先向量化的Jeopardy问题](https://raw.githubusercontent.com/weaviate-tutorials/quickstart/main/data/jeopardy_tiny+vectors.json)，以JSON格式提供。
 
-Here is the set of [10 pre-vectorized Jeopardy questions](https://raw.githubusercontent.com/weaviate-tutorials/quickstart/main/data/jeopardy_tiny+vectors.json) in JSON format.
+以下代码将加载带有向量的问题对象，并将它们导入到Weaviate。
 
-The following will load the question objects with vectors, and import them to Weaviate.
-
-Note that we use a batch import process, so that each request to the inference API contains multiple objects. You should use batch imports unless you have a good reason not to, as it will significantly improve the speed of data ingestion.
+请注意，我们使用批量导入的方式，因此每个对推理API的请求都包含多个对象。除非有充分的理由不这样做，否则您应该使用批量导入，因为它将显著提高数据摄入的速度。
 
 import ImportQuestionsWithVectors from '/_includes/code/quickstart.import.questions+vectors.mdx'
 
 <ImportQuestionsWithVectors />
 
+## 查询
 
-## Query
-
-Let's say you want to find questions related to biology. We can do that by obtaining a vector embedding for "biology", and finding objects nearest to it.
-In this example, we've used the OpenAI API to generate it, with the same [`text-embedding-ada-002` model](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings). Then, in the following query, we pass that vector to the [`nearVector` parameter](../api/graphql/vector-search-parameters.md#nearvector):
+假设您想要找到与生物学相关的问题。我们可以通过获取“生物学”的向量嵌入，并找到与之最接近的对象来实现这一点。
+在这个示例中，我们使用OpenAI API来生成它，使用相同的[`text-embedding-ada-002`模型](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)。然后，在下面的查询中，我们将该向量传递给[`nearVector`参数](../api/graphql/vector-search-parameters.md#nearvector)：
 
 import NearVector from '/_includes/code/quickstart.query.nearVector.mdx';
 
 <NearVector />
 
-You should see something like this:
+您应该会看到类似以下内容的结果:
 
 import BiologyQuestionsJson from '/_includes/code/quickstart.biology.questions.mdx';
 
 <BiologyQuestionsJson />
 
 
-## Putting it together
+## 把它们放在一起
 
-The following code puts it all together, taking care of everything from schema definition to data import to query. Remember to replace the endpoint and Weaviate key.
+以下代码将所有内容整合在一起，从模式定义到数据导入再到查询。请记得替换端点和Weaviate密钥。
 
 import ByovAll from '/_includes/code/quickstart.byov.all.mdx'
 
 <ByovAll />
 
 
-## Recap
+## 总结
 
-If you made it here - well done. We have covered a lot, and you've successfully built a fully functioning vector database! 🥳
+如果你能看到这里 - 干得好。我们已经涵盖了很多内容，你成功构建了一个完全功能的向量数据库！🥳
 
-You have:
-- Populated your Weaviate instance with your own vectors, and
-- Performed text similarity searches.
+你已经：
+- 用自己的向量填充了你的Weaviate实例，并且
+- 执行了文本相似性搜索。
 
-Of course, there is a lot more to Weaviate that we have not yet covered, and probably a lot that you wish to know about. So we include a few links below that might help you to get started in your journey with us.
+当然，Weaviate还有很多内容我们还没有涉及到，也可能有很多你想要了解的内容。因此，我们在下面提供了一些链接，希望能帮助你开始我们的旅程。
 
-Also, please feel free to reach out to us on our community [Slack](https://weaviate.io/slack). We love to hear from our users.
+另外，如果您有任何问题，欢迎在我们的社区 [Slack](https://weaviate.io/slack) 上与我们联系。我们非常乐意听到用户的声音。
 
-## What next
+## 下一步
 
 import WhatNext from '/_includes/quickstart.what-next.mdx';
 

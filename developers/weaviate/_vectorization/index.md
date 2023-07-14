@@ -1,33 +1,32 @@
 ---
-title: Concepts - Vectors
-sidebar_position: 2
 image: og/docs/vectors.jpg
-# tags: []
+sidebar_position: 2
+title: Concepts - Vectors
 ---
 
-## Introduction
-You would have seen us describe Weaviate as a vector database. In this section, we will talk a little more about what that means. We will discuss what vectors are, how vectors are indexed in Weaviate, and even a little bit about how to choose the right vectorizer for your needs.
+## 简介
+您可能注意到我们将Weaviate描述为一个向量数据库。在本节中，我们将更详细地介绍这是什么意思。我们将讨论向量是什么，向量是如何在Weaviate中进行索引的，甚至还会谈到如何根据您的需求选择合适的向量化器。
 
-## What is a vector?
-A [vector](https://en.wikipedia.org/wiki/Euclidean_vector) is a collection of numbers, such as [1, 0] or [0.513, 0.155, 0.983, 0.001, 0.932]. It can be of any length - as short as one, or contain thousands of numbers.
+## 什么是向量？
+[向量](https://en.wikipedia.org/wiki/Euclidean_vector)是一组数字，例如[1, 0]或[0.513, 0.155, 0.983, 0.001, 0.932]。它可以是任意长度-可以只有一个数字，也可以包含数千个数字。
 
-Amazingly, these numbers can be used to effectively represent data objects. A very simple example of this can be found in representation of colors. Any color can be represented as a composition of red, green, or blue (R, G, B) values. So a `red` color can be represented by (1, 0, 0), or (255, 0, 0) in an 8-bit number system.
+令人惊讶的是，这些数字可以有效地表示数据对象。一个非常简单的例子是颜色的表示。任何颜色都可以用红色、绿色或蓝色（R、G、B）值的组合来表示。所以一个`红色`可以用(1, 0, 0)或者在一个8位数系统中表示为(255, 0, 0)。
 
-## How does Weaviate use Vectors?
-Modern machine learning algorithms extrapolate this idea to represent concepts, or meaning, of data objects such as pieces of text, images, or sound. Running a sentence through one of Weaviate's `text2vec` modules will produce a (long) vector, for example comprising 384 numbers (sometimes called "dimensions"). While this vector may seem meaningless to a human, it captures some meaning, or semantics, of the source sentence.
+## Weaviate 如何使用向量？
+现代机器学习算法将这个思想推广到表示数据对象（如文本、图像或声音）的概念或含义。通过将句子输入到Weaviate的`text2vec`模块中，将会生成一个（长）向量，例如包含384个数字（有时称为“维度”）。虽然这个向量对人类来说可能毫无意义，但它捕捉到了源句子的一些含义或语义。
 
-And because a vector is just a set of numbers, a vector can be compared to other vectors to derive some measure of similarity. This similarity then represents similarity of meaning according to the model used.
+因为向量只是一组数字，所以可以将一个向量与其他向量进行比较，以得到一些相似度的度量。这种相似度表示了根据所使用的模型的意义相似性。
 
-These are the core principles that allows vector searching to be effective. Weaviate stores each data object as a vector particular to this data object, and as such, it can recall related data objects that are related in meaning.
+这些是使向量搜索有效的核心原理。Weaviate将每个数据对象存储为特定于该数据对象的向量，因此它可以检索与含义相关的相关数据对象。
 
-## More on vectors & Weaviate
-To convert data objects into vectors, Weaviate uses vectorizers, which are available as modules. And then Weaviate builds a vector index which stores the vector data in a form that allows for fast retrieval at high recall. Currently, Weaviate supports the HNSW algorithm for vector indexing.
+## 关于向量和Weaviate的更多信息
+为了将数据对象转化为向量，Weaviate使用可作为模块使用的向量化器。然后，Weaviate构建了一个向量索引，以一种能够实现快速高召回率检索的形式存储向量数据。目前，Weaviate支持HNSW算法用于向量索引。
 
-You can read more about these concepts below.
-- [Vector index](./vector-index.md)
-- [Comparison of vectorizers](./vectorizer-comparisons.md)
+您可以在下面了解更多有关这些概念的信息。
+- [向量索引](./vector-index.md)
+- [向量化器比较](./vectorizer-comparisons.md)
 
-## More Resources
+## 更多资源
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 
 <DocsMoreResources />

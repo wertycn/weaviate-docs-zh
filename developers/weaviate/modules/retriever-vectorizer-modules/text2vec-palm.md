@@ -1,85 +1,85 @@
 ---
-title: text2vec-palm
-sidebar_position: 1
 image: og/docs/modules/text2vec-palm.jpg
-# tags: ['text2vec', 'text2vec-palm', 'palm', 'gcp']
+sidebar_position: 1
+title: text2vec-palm
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## In short
+## 简介
 
-* This module uses a third-party API and may incur costs.
-* Check the vendor pricing (e.g. check Google Vertex AI pricing) before vectorizing large amounts of data.
-* Weaviate automatically parallelizes requests to the API when using the batch endpoint.
-* Added in Weaviate `v1.19.1`.
-* You need an API key for a PaLM API to use this module.
-* The default model is `textembedding-gecko`.
+* 本模块使用第三方API，可能会产生费用。
+* 在向大量数据进行向量化之前，请查看供应商定价（例如，检查Google Vertex AI定价）。
+* Weaviate在使用批处理端点时会自动并行化API请求。
+* 在Weaviate `v1.19.1`中添加。
+* 使用此模块需要一个PaLM API的API密钥。
+* 默认模型为`textembedding-gecko`。
 
-## Overview
+## 概述
 
-The `text2vec-palm` module enables you to use PaLM embeddings in Weaviate to represent data objects and run semantic (`nearText`) queries.
+`text2vec-palm`模块使您能够在Weaviate中使用PaLM嵌入表示数据对象并运行语义（`nearText`）查询。
 
-## Inference API key
+## 推理 API 密钥
 
 :::caution Important: Provide PaLM API key to Weaviate
 As the `text2vec-palm` uses a PaLM API endpoint, you must provide a valid PaLM API key to weaviate.
 :::
 
-### For Google Cloud users
+### 对于Google Cloud用户
 
-This is called an `access token` in Google Cloud.
+这在Google Cloud中被称为`access token`。
 
-If you have the [Google Cloud CLI tool](https://cloud.google.com/cli) installed and set up, you can view your token by running the following command:
+如果您已经安装并配置了[Google Cloud CLI工具](https://cloud.google.com/cli)，您可以通过运行以下命令来查看您的令牌：
 
 ```shell
 gcloud auth print-access-token
 ```
 
-### Providing the key to Weaviate
+### 提供 Weaviate API 密钥
 
-You can provide your PaLM API key by providing `"X-Palm-Api-Key"` through the request header. If you use the Weaviate client, you can do so like this:
+您可以通过请求头中提供`"X-Palm-Api-Key"`来提供您的 PaLM API 密钥。如果您使用 Weaviate 客户端，您可以像这样提供：
 
 import ClientKey from '/_includes/code/core.client.palm.apikey.mdx';
 
 <ClientKey />
 
-Optionally (not recommended), you can provide the PaLM API key as an environment variable.
+可选（不推荐的）方法是将 PaLM API 密钥提供为环境变量。
 
 <details>
-  <summary>How to provide the PaLM API key as an environment variable</summary>
+  <summary>如何将 PaLM API 密钥提供为环境变量</summary>
 
-During the **configuration** of your Docker instance, by adding `PALM_APIKEY` under `environment` to your `docker-compose` file, like this:
+在配置Docker实例时，通过在`docker-compose`文件的`environment`下添加`PALM_APIKEY`，如下所示：
 
-  ```yaml
-  environment:
-    PALM_APIKEY: 'your-key-goes-here'  # Setting this parameter is optional; you can also provide the key at runtime.
-    ...
-  ```
+```yaml
+environment:
+  PALM_APIKEY: 'your-key-goes-here'  # 设置此参数是可选的；您也可以在运行时提供密钥。
+  ...
+```
 
 </details>
 
-### Token expiry for Google Cloud users
+### Google Cloud用户的令牌过期
 
 import GCPTokenExpiryNotes from '/_includes/gcp.token.expiry.notes.mdx';
 
 <GCPTokenExpiryNotes/>
 
-## Module configuration
+## 模块配置
 
 :::tip Not applicable to WCS
 This module is enabled and pre-configured on Weaviate Cloud Services.
 :::
 
-### Configuration file (Weaviate open source only)
+### 配置文件（仅适用于Weaviate开源版本）
 
-Through the configuration file (e.g. `docker-compose.yaml`), you can:
-- enable the `text2vec-palm` module,
-- set it as the default vectorizer, and
-- provide the API key for it.
+通过配置文件（例如 `docker-compose.yaml`），您可以：
+- 启用 `text2vec-palm` 模块，
+- 将其设置为默认的向量化器，并且
+- 提供其API密钥。
 
-Using the following variables:
+使用以下变量：
 
 ```
 ENABLE_MODULES: 'text2vec-palm,generative-palm'
@@ -88,7 +88,7 @@ PALM_APIKEY: sk-foobar
 ```
 
 <details>
-  <summary>See a full example of a Docker configuration with <code>text2vec-palm</code></summary>
+  <summary>查看一个使用<code>text2vec-palm</code>的完整Docker配置示例</summary>
 
 ```yaml
 ---
@@ -116,21 +116,21 @@ import T2VInferenceYamlNotes from './_components/text2vec.inference.yaml.notes.m
 
 <T2VInferenceYamlNotes apiname="PALM_APIKEY"/>
 
-## Schema configuration
+## 架构配置
 
-You can provide additional module configurations through the schema. You can [learn about schemas here](/developers/weaviate/tutorials/schema.md).
+您可以通过架构提供额外的模块配置。您可以在[此处了解有关架构的更多信息](/developers/weaviate/tutorials/schema.md)。
 
-For `text2vec-palm`, you can set the vectorizer model and vectorizer behavior using parameters in the `moduleConfig` section of your schema:
+对于 `text2vec-palm`，您可以在架构的 `moduleConfig` 部分中使用参数来设置矢量化模型和矢量化行为：
 
-Note that the `projectId` parameter is required.
+请注意，`projectId`参数是必需的。
 
-### Example schema
+### 示例模式
 
-For example, the following schema configuration will set the PaLM API information.
+例如，以下模式配置将设置PaLM API信息。
 
-- The `"projectId"` is REQUIRED, and may be something like `"cloud-large-language-models"`
-- The `"apiEndpoint"` is optional, and may be something like: `"us-central1-aiplatform.googleapis.com"`, and
-- The `"modelId"` is optional, and may be something like `"textembedding-gecko"`.
+- `"projectId"` 是必需的，可以是类似 `"cloud-large-language-models"` 的字符串，
+- `"apiEndpoint"` 是可选的，可以是类似 `"us-central1-aiplatform.googleapis.com"` 的字符串，
+- `"modelId"` 是可选的，可以是类似 `"textembedding-gecko"` 的字符串。
 
 ```json
 {
@@ -153,9 +153,9 @@ For example, the following schema configuration will set the PaLM API informatio
 }
 ```
 
-### Vectorizer behavior
+### 向量化器行为
 
-Set property-level vectorizer behavior using the `moduleConfig` section under each property:
+使用每个属性下的 `moduleConfig` 部分来设置属性级别的向量化器行为:
 
 ```json
 {
@@ -189,41 +189,41 @@ Set property-level vectorizer behavior using the `moduleConfig` section under ea
 }
 ```
 
-## Usage
+## 用法
 
-Enabling this module will make [GraphQL vector search operators](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext) available.
+启用此模块将使[GraphQL向量搜索运算符](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext)可用。
 
-### Example
+### 示例
 
 import CodeNearText from '/_includes/code/graphql.filters.nearText.palm.mdx';
 
 <CodeNearText />
 
-## Additional information
+## 附加信息
 
-### Available model
+### 可用模型
 
-You can specify the model as a part of the schema as shown earlier.
+您可以将模型作为模式的一部分来指定，如前面所示。
 
-Currently, the only available model is `textembedding-gecko`.
+目前，唯一可用的模型是`textembedding-gecko`。
 
-The `textembedding-gecko` model accepts a maximum of 3,072 input tokens, and outputs 768-dimensional vector embeddings.
+`textembedding-gecko` 模型接受最多3,072个输入标记，并输出768维的向量嵌入。
 
-### Rate limits
+### 速率限制
 
-Since you will obtain embeddings using your own API key, any corresponding rate limits related to your account will apply to your use with Weaviate also.
+由于您将使用自己的API密钥获取嵌入，与您的帐户相关的任何速率限制也将适用于您在Weaviate上的使用。
 
-If you exceed your rate limit, Weaviate will output the error message generated by the PaLM API. If this persists, we suggest requesting to increase your rate limit by contacting [Vertex AI support](https://cloud.google.com/vertex-ai/docs/support/getting-support) describing your use case with Weaviate.
+如果您超过了速率限制，Weaviate将输出由PaLM API生成的错误消息。如果问题仍然存在，我们建议您通过联系[Vertex AI支持](https://cloud.google.com/vertex-ai/docs/support/getting-support)来申请增加速率限制，并描述您在Weaviate中的使用情况。
 
-### Throttle the import inside your application
+### 在应用程序中限制导入速率
 
-One way of dealing with rate limits is to throttle the import within your application. For example, when using the Weaviate client:
+处理速率限制的一种方法是在应用程序内部限制导入速率。例如，在使用Weaviate客户端时:
 
 import CodeThrottlingExample from '/_includes/code/text2vec-api.throttling.example.mdx';
 
 <CodeThrottlingExample />
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

@@ -1,103 +1,103 @@
 ---
-title: Generative Search - PaLM
-sidebar_position: 12
 image: og/docs/modules/generative-palm.jpg
-# tags: ['generative', 'transformers', 'palm', 'gcp']
+sidebar_position: 12
+title: Generative Search - PaLM
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## In short
+## 简介
 
-* The Generative PaLM (`generative-palm`) module generates responses based on the data stored in your Weaviate instance.
-* The module can generate a response for each returned object, or a single response for a group of objects.
-* The module adds a `generate {}` parameter to the GraphQL `_additional {}` property of the `Get {}` queries.
-* Added in Weaviate `v1.19.1`.
-* You need an API key for a PaLM API to use this module.
-* The default model is `chat-bison`.
+* 生成式PaLM (`generative-palm`) 模块根据存储在您的Weaviate实例中的数据生成响应。
+* 该模块可以为每个返回的对象生成一个响应，或者为一组对象生成一个单一的响应。
+* 该模块在`Get {}`查询的GraphQL `_additional {}`属性中添加了一个`generate {}`参数。
+* 在Weaviate版本`v1.19.1`中添加。
+* 您需要一个PaLM API的API密钥来使用该模块。
+* 默认模型是 `chat-bison`。
 
-## Introduction
+## 简介
 
-`generative-palm` generates responses based on the data stored in your Weaviate instance.
+`generative-palm` 基于存储在您的 Weaviate 实例中的数据生成响应。
 
-The module works in two steps:
-1. (Weaviate) Run a search query in Weaviate to find relevant objects.
-2. (PaLM) Use a PaLM model to generate a response based on the results (from the previous step) and the provided prompt or task.
+该模块分为两个步骤：
+1. (Weaviate) 在 Weaviate 中运行搜索查询以查找相关对象。
+2. (PaLM) 使用 PaLM 模型根据结果（来自前一步骤）和提供的提示或任务生成响应。
 
 :::note
 You can use the Generative PaLM module with non-PaLM upstream modules. For example, you could use `text2vec-openai`, `text2vec-cohere` or `text2vec-huggingface` to vectorize and query your data, but then rely on the `generative-palm` module to generate a response.
 :::
 
-The generative module can provide results for:
-* each returned object, using `singleResult{ prompt }`
-* the group of all results together, using `groupedResult{ task }`
+生成模块可以提供以下结果：
+* 对于每个返回的对象，使用 `singleResult{ prompt }`
+* 对于所有结果的组合，使用 `groupedResult{ task }`
 
-You need to input both a query and a prompt (for individual responses) or a task (for all responses).
+您需要同时输入查询和提示（用于个别响应）或任务（用于所有响应）。
 
-## Inference API key
+## 推理 API 密钥
 
 :::caution Important: Provide PaLM API key to Weaviate
 As the `generative-palm` uses a PaLM API endpoint, you must provide a valid PaLM API key to weaviate.
 :::
 
-### For Google Cloud users
+### 对于Google Cloud用户
 
-This is called an `access token` in Google Cloud.
+在Google Cloud中，这被称为 `access token`。
 
-If you have the [Google Cloud CLI tool](https://cloud.google.com/cli) installed and set up, you can view your token by running the following command:
+如果您已经安装并配置了[Google Cloud CLI工具](https://cloud.google.com/cli)，您可以通过运行以下命令来查看您的令牌：
 
 ```shell
 gcloud auth print-access-token
 ```
 
-### Providing the key to Weaviate
+### 提供 Weaviate 的密钥
 
-You can provide your PaLM API key by providing `"X-Palm-Api-Key"` through the request header. If you use the Weaviate client, you can do so like this:
+您可以通过请求头部提供 `"X-Palm-Api-Key"` 来提供您的 PaLM API 密钥。如果您使用 Weaviate 客户端，可以像这样进行操作：
 
 import ClientKey from '/_includes/code/core.client.palm.apikey.mdx';
 
 <ClientKey />
 
-Optionally (not recommended), you can provide the PaLM API key as an environment variable.
+可选地（不建议），您可以将 PaLM API 密钥作为环境变量提供。
 
 <details>
-  <summary>How to provide the PaLM API key as an environment variable</summary>
+  <summary>如何将 PaLM API 密钥作为环境变量提供</summary>
 
-During the **configuration** of your Docker instance, by adding `PALM_APIKEY` under `environment` to your `docker-compose` file, like this:
+在配置Docker实例时，通过在`docker-compose`文件的`environment`下添加`PALM_APIKEY`，像这样：
 
-  ```yaml
-  environment:
-    PALM_APIKEY: 'your-key-goes-here'  # Setting this parameter is optional; you can also provide the key at runtime.
-    ...
-  ```
+```yaml
+environment:
+  PALM_APIKEY: 'your-key-goes-here'  # 设置此参数是可选的；您也可以在运行时提供密钥。
+  ...
+```
 
 </details>
 
-### Token expiry for Google Cloud users
+### Google Cloud用户的令牌过期
 
 import GCPTokenExpiryNotes from '/_includes/gcp.token.expiry.notes.mdx';
 
 <GCPTokenExpiryNotes/>
 
-## Module configuration
+## 模块配置
 
 :::tip Not applicable to WCS
 This module is enabled and pre-configured on Weaviate Cloud Services.
 :::
 
-### Configuration file (Weaviate open source only)
+### 配置文件（仅适用于Weaviate开源版本）
 
-You can enable the Generative Palm module in your configuration file (e.g. `docker-compose.yaml`). Add the `generative-palm` module (alongside any other module you may need) to the `ENABLE_MODULES` property, like this:
+您可以在配置文件（例如`docker-compose.yaml`）中启用Generative Palm模块。将`generative-palm`模块（以及您可能需要的任何其他模块）添加到`ENABLE_MODULES`属性中，如下所示：
 
 ```
 ENABLE_MODULES: 'text2vec-palm,generative-palm'
 ```
 
 <details>
-  <summary>See a full example of a Docker configuration with <code>generative-palm</code></summary>
+  <summary>查看使用`generative-palm`和`text2vec-palm`模块的Docker配置的完整示例</summary>
 
-Here is a full example of a Docker configuration, which uses the `generative-palm` module in combination with `text2vec-palm`, and provides the API key:
+以下是一个完整的Docker配置示例，它结合了`generative-palm`模块和`text2vec-palm`模块，并提供了API密钥：
 
 ```yaml
 ---
@@ -129,19 +129,19 @@ services:
 
 </details>
 
-## Schema configuration
+## 模式配置
 
-You can define settings for this module in the schema, including the API endpoint and project information, as well as optional model parameters.
+您可以在模式中定义此模块的设置，包括API端点和项目信息，以及可选的模型参数。
 
-Note that the `projectId` parameter is required.
+请注意，`projectId`参数是必需的。
 
-### Example schema
+### 示例模式
 
-For example, the following schema configuration will set the PaLM API information, as well as the optional parameters.
+例如，以下模式配置将设置PaLM API信息以及可选参数。
 
-- The `"projectId"` is REQUIRED, and may be something like `"cloud-large-language-models"`
-- The `"apiEndpoint"` is optional, and may be something like: `"us-central1-aiplatform.googleapis.com"`, and
-- The `"modelId"` is optional, and may be something like `"chat-bison"`.
+- `"projectId"`是必需的，可以是类似`"cloud-large-language-models"`的值。
+- `"apiEndpoint"` 是可选的，可能是类似于 `"us-central1-aiplatform.googleapis.com"` 的内容，
+- `"modelId"` 是可选的，可能是类似于 `"chat-bison"` 的内容。
 
 ```json
 {
@@ -168,31 +168,31 @@ For example, the following schema configuration will set the PaLM API informatio
 }
 ```
 
-See the relevant PaLM API documentation for further details on these parameters.
+查看相关的PaLM API文档以获取有关这些参数的详细信息。
 
 <details>
-  <summary>New to Weaviate Schemas?</summary>
+  <summary>对Weaviate Schemas不熟悉？</summary>
 
-If you are new to Weaviate, check out the [Weaviate schema tutorial](/developers/weaviate/tutorials/schema.md).
+如果您对Weaviate不熟悉，请查看[Weaviate模式教程](/developers/weaviate/tutorials/schema.md)。
 
 </details>
 
-## How to use
+## 如何使用
 
-This module extends the `_additional {...}` property with a `generate` operator.
+该模块通过`_additional {...}`属性扩展了`generate`操作符。
 
-`generate` takes the following arguments:
+`generate`接受以下参数：
 
-| Field | Data Type | Required | Example | Description |
+| 字段 | 数据类型 | 是否必需 | 示例 | 描述 |
 |- |- |- |- |- |
-| `singleResult {prompt}`  | string | no | `Summarize the following in a tweet: {summary}`  | Generates a response for each individual search result. You need to include at least one result field in the prompt, between braces. |
-| `groupedResult {task}`  | string | no | `Explain why these results are similar to each other`  | Generates a single response for all search results |
+| `singleResult {prompt}`  | string | no | `在一条推文中概述以下内容: {summary}`  | 为每个单独的搜索结果生成响应。您需要在提示中至少包含一个结果字段，放在大括号之间。 |
+| `groupedResult {task}`  | string | no | `解释为什么这些结果彼此相似`  | 为所有搜索结果生成单个响应 |
 
-### Example of properties in the prompt
+### 示例中的属性
 
-When piping the results to the prompt, at least one field returned by the query must be added to the prompt. If you don't add any fields, Weaviate will throw an error.
+当将结果导入到提示符时，查询返回的至少一个字段必须添加到提示符中。如果您没有添加任何字段，Weaviate将会抛出一个错误。
 
-For example, assume your schema looks like this:
+例如，假设您的模式如下所示：
 
 ```graphql
 {
@@ -203,7 +203,7 @@ For example, assume your schema looks like this:
 }
 ```
 
-You can add both `title` and `summary` to the prompt by enclosing them in curly brackets:
+您可以通过使用花括号将`title`和`summary`包裹起来，将它们添加到提示中：
 
 ```graphql
 {
@@ -230,18 +230,18 @@ You can add both `title` and `summary` to the prompt by enclosing them in curly 
 }
 ```
 
-### Example - single result
+### 示例 - 单个结果
 
-Here is an example of a query where:
-* we run a vector search (with `nearText`) to find articles about "Italian food"
-* then we ask the generator module to describe each result as a Facebook ad.
-  * the query asks for the `summary` field, which it then includes in the `prompt` argument of the `generate` operator.
+这是一个查询的示例，其中:
+* 我们运行了一个向量搜索（使用 `nearText`）来查找关于"意大利食品"的文章
+* 然后我们要求生成器模块将每个结果描述为Facebook广告。
+  * 查询要求返回 `summary` 字段，然后将其包含在 `generate` 操作符的 `prompt` 参数中。
 
 import PalmSingleResult from '/_includes/code/generative.palm.singleresult.mdx';
 
 <PalmSingleResult/>
 
-### Example response - single result
+### 示例响应 - 单个结果
 
 ```json
 {
@@ -264,17 +264,17 @@ import PalmSingleResult from '/_includes/code/generative.palm.singleresult.mdx';
 }
 ```
 
-### Example - grouped result
+### 示例 - 分组结果
 
-Here is an example of a query where:
-* we run a vector search (with `nearText`) to find publications about finance,
-* then we ask the generator module to explain why these articles are about finance.
+以下是一个查询示例，其中：
+* 我们运行了一个向量搜索（使用 `nearText` ）来查找关于金融的出版物，
+* 然后我们要求生成器模块解释为什么这些文章与金融有关。
 
 import PalmGroupedResult from '/_includes/code/generative.palm.groupedresult.mdx';
 
 <PalmGroupedResult />
 
-### Example response - grouped result
+### 示例响应 - 分组结果
 
 ```json
 {
@@ -308,17 +308,17 @@ import PalmGroupedResult from '/_includes/code/generative.palm.groupedresult.mdx
 }
 ```
 
-## Additional information
+## 附加信息
 
-### Supported models
+### 支持的模型
 
-The `chat-bison` model is used by default. The model has the following properties:
+默认情况下使用`chat-bison`模型。该模型具有以下属性：
 
-- Max input token: 8,192
-- Max output tokens: 1,024
-- Training data: Up to Feb 2023
+- 最大输入标记数：8,192
+- 最大输出标记数：1,024
+- 训练数据：截至2023年2月
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

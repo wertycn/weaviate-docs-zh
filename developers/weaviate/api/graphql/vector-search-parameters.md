@@ -1,9 +1,9 @@
 ---
-title: GraphQL - Vector search parameters
-sidebar_position: 7
 image: og/docs/api.jpg
-# tags: ['graphql', 'vector search parameters']
+sidebar_position: 7
+title: GraphQL - Vector search parameters
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -12,90 +12,87 @@ import TryEduDemo from '/_includes/try-on-edu-demo.mdx';
 
 <TryEduDemo />
 
-## Setting search parameters
+## 设置搜索参数
 
-Vector search parameters are added to GraphQL queries on the class level.
+向类级别的GraphQL查询中添加向量搜索参数。
 
-For example:
+例如：
 
 import GraphQLFiltersExample from '/_includes/code/graphql.filters.example.mdx';
 
 <GraphQLFiltersExample/>
 
-## Built-in parameters
+## 内置参数
 
-Built-in search parameters are available in all Weaviate instances and don't require any modules.
+内置搜索参数在所有的Weaviate实例中都可用，无需任何模块。
 
-Weaviate provides the following built-in parameters:
+Weaviate提供以下内置参数：
 * [nearVector](#nearvector)
 * [nearObject](#nearobject)
 * [hybrid](#hybrid)
 * [bm25](#bm25)
 * [group](#group)
 
-## Module-specific parameters
+## 模块特定参数
 
-Module-specific search parameters are made available in certain Weaviate modules.
+某些Weaviate模块提供了特定的搜索参数。
 
-By adding relevant modules, you can use the following parameters:
+通过添加相关模块，您可以使用以下参数：
 * [nearText](#neartext)
 * [ask](#ask)
 
 ## nearVector
 
-This filter allows you to find data objects in the vicinity of an input vector. It's supported by the `Get{}` function.
+此过滤器允许您在输入向量的附近找到数据对象。它由`Get{}`函数支持。
 
-* Note: this argument is different from the [GraphQL `Explore{}` function](./explore.md)
-* Note: Cannot use multiple `'near'` arguments, or a `'near'` argument along with an [`'ask'`](/developers/weaviate/modules/reader-generator-modules/qna-transformers.md) filter
+* 注意：此参数与[GraphQL `Explore{}`函数](./explore.md)不同
+* 注意：不能使用多个`'near'`参数，也不能同时使用`'near'`参数和[`'ask'`](/developers/weaviate/modules/reader-generator-modules/qna-transformers.md)过滤器
 
-### Variables
+### 变量
 
-| Variable | Required | Type | Description |
+| 变量 | 是否必需 | 类型 | 描述 |
 | --- | --- | --- | --- |
-| `vector` | yes | `[float]` | This variable takes a vector embedding in the form of an array of floats. The array should have the same length as the vectors in this class. |
-| `distance` | no | `float` | The required degree of similarity between an object's characteristics and the provided filter values. Can't be used together with the `certainty` variable. The interpretation of the value of the distance field depends on the [distance metric used](/developers/weaviate/config-refs/distances.md). |
-| `certainty` | no | `float` | Normalized Distance between the result item and the search vector. Normalized to be between 0 (perfect opposite) and 1 (identical vectors). Can't be used together with the `distance` variable. |
+| `vector` | 是 | `[float]` | 此变量接受一个向量嵌入，形式为浮点数数组。该数组的长度应与该类中的向量长度相同。 |
+| `distance` | 否 | `float` | 对象特征和提供的过滤器值之间所需的相似度程度。不能与 `certainty` 变量一起使用。距离字段的值的解释取决于所使用的[距离度量](/developers/weaviate/config-refs/distances.md)。 |
+| `certainty` | no | `float` | 结果项目与搜索向量之间的归一化距离。归一化后的值介于0（完全相反）和1（相同向量）之间。不能与 `distance` 变量一起使用。 |
 
-### Example
+### 示例
 
 import GraphQLFiltersNearVector from '/_includes/code/graphql.filters.nearVector.mdx';
 
 <GraphQLFiltersNearVector/>
 
-### Additional information
+### 附加信息
 
-If the distance metric is `cosine` you can also use `certainty` instead of
-`distance`. Certainty normalizes the distance in a range of 0..1, where 0
-represents a perfect opposite (cosine distance of 2) and 1 represents vectors
-with an identical angle (cosine distance of 0). Certainty is not available on
-non-cosine distance metrics.
+如果距离度量是 `cosine`，您也可以使用 `certainty` 代替 distance。
+`distance`。确定性将距离归一化到0..1的范围内，其中0表示完全相反（余弦距离为2），1表示具有相同角度的向量（余弦距离为0）。确定性在非余弦距离度量上不可用。
 
 ## nearObject
 
-This filter allows you to find data objects in the vicinity of other data objects by UUID. It's supported by the `Get{}` function.
+此筛选器允许您通过UUID在其他数据对象附近查找数据对象。它由`Get{}`函数支持。
 
-* Note: You cannot use multiple `near<Media>` arguments, or a `near<Media>` argument along with an [`ask`](/developers/weaviate/modules/reader-generator-modules/qna-transformers.md) argument.
-* Note: You can specify an object's `id` or `beacon` in the argument, along with a desired `certainty`.
-* Note that the first result will always be the object in the filter itself.
-* Near object search can also be combined with `text2vec` modules.
+* 注意：您不能同时使用多个`near<Media>`参数，或者同时使用`near<Media>`参数和[`ask`](/developers/weaviate/modules/reader-generator-modules/qna-transformers.md)参数。
+* 注意：您可以在参数中指定对象的`id`或`beacon`，以及所需的`certainty`。
+* 请注意，第一个结果将始终是过滤器本身的对象。
+* 近似对象搜索也可以与`text2vec`模块结合使用。
 
-### Variables
+### 变量
 
-| Variable | Required | Type | Description |
-| --------- | -------- | ---- | ----------- |
-| `id` | yes | `UUID` | Data object identifier in the uuid format. |
-| `beacon` | yes | `url` | Data object identifier in the beacon URL format. E.g., `weaviate://<hostname>/<kind>/id`. |
-| `distance` | no | `float` | The required degree of similarity between an object's characteristics and the provided filter values. Can't be used together with the `certainty` variable. The interpretation of the value of the distance field depends on the [distance metric used](/developers/weaviate/config-refs/distances.md). |
-| `certainty` | no | `float` | Normalized Distance between the result item and the search vector. Normalized to be between 0 (perfect opposite) and 1 (identical vectors). Can't be used together with the `distance` variable. |
+| 变量 | 必填 | 类型 | 描述 |
+| ------ | ------ | ---- | ------ |
+| `id` | 是 | `UUID` | 以 UUID 格式表示的数据对象标识符。 |
+| `beacon` | 是 | `url` | 以 Beacon URL 格式表示的数据对象标识符。例如，`weaviate://<hostname>/<kind>/id`。 |
+| `distance` | 否 | `float` | 对象特征与提供的过滤器值之间的相似度要求的程度。不能与`certainty`变量一起使用。距离字段的值的解释取决于所使用的[距离度量](/developers/weaviate/config-refs/distances.md)。 |
+| `certainty` | no | `float` | 结果项与搜索向量之间的标准化距离。标准化到0（完全相反）到1（完全相同）之间。不能与`distance`变量一起使用。 |
 
-### Example
+### 示例
 
 import GraphQLFiltersNearObject from '/_includes/code/graphql.filters.nearObject.mdx';
 
 <GraphQLFiltersNearObject/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 ```json
 {
@@ -135,31 +132,31 @@ import GraphQLFiltersNearObject from '/_includes/code/graphql.filters.nearObject
 
 </details>
 
-## hybrid
-This filter allows you to combine [BM25](#bm25) and vector search to get the best of both search methods. It's supported by the `Get{}` function.
+## 混合搜索
+此筛选器允许您将[BM25](#bm25)和向量搜索相结合，以获得两种搜索方法的最佳效果。它由`Get{}`函数支持。
 
-### Variables
+### 变量
 
-| Variables    | Required | Type       | Description                                                                 |
+| 变量名       | 必需     | 类型       | 描述                                                                        |
 |--------------|----------|------------|-----------------------------------------------------------------------------|
-| `query`      | yes      | `string`   | search query                                                                |
-| `alpha`      | no       | `float`    | weighting for each search algorithm, default 0.75                           |
-| `vector`     | no       | `[float]`  | optional to supply your own vector                                          |
-| `properties` | no       | `[string]` | list of properties to limit the BM25 search to, default all text properties |
-| `fusionType` | no       | `string` | the type of hybrid fusion algorithm (available from `v1.20.0`)              |
+| `query`      | 是       | `string`   | 搜索查询                                                               |
+| `alpha`      | 否       | `float`    | 每个搜索算法的权重，默认为0.75                           |
+| `vector`     | 否       | `[float]`  | 可选项，提供自定义的向量                                          |
+| `properties` | 否       | `[string]` | 限制BM25搜索的属性列表，默认为所有文本属性 |
+| `fusionType` | no       | `string` | 混合融合算法的类型（从 `v1.20.0` 版本开始可用）              |
 
-* Notes:
-    * `alpha` can be any number from 0 to 1, defaulting to 0.75.
-        * `alpha` = 0 forces using a pure **keyword** search method (BM25)
-        * `alpha` = 1 forces using a pure **vector** search method
-        * `alpha` = 0.5 weighs the BM25 and vector methods evenly
-    * `fusionType` can be `rankedFusion` or `relativeScoreFusion`
-        * `rankedFusion` (default) adds inverted ranks of the BM25 and vector search methods
-        * `relativeScoreFusion` adds normalized scores of the BM25 and vector search methods
+* 注意：
+    * `alpha` 可以是从 0 到 1 的任意数字，默认为 0.75。
+        * `alpha` = 0 强制使用纯**关键字**搜索方法（BM25）
+        * `alpha` = 1 强制使用纯**向量**搜索方法
+        * `alpha` = 0.5 平均权衡 BM25 和向量方法
+    * `fusionType` 可以是 `rankedFusion` 或 `relativeScoreFusion`
+        * `rankedFusion`（默认）将BM25和向量搜索方法的倒排排名相加
+   * `relativeScoreFusion`将BM25和向量搜索方法的归一化得分相加
 
-### GraphQL response
+### GraphQL响应
 
-The `_additional` property in the GraphQL result exposes the `score`. Results are sorted descending by the score.
+GraphQL结果中的`_additional`属性公开了`score`。结果按照得分降序排序。
 
 ```json
 {
@@ -170,33 +167,32 @@ The `_additional` property in the GraphQL result exposes the `score`. Results ar
 ```
 
 
-### Example
+### 示例
 
 import GraphQLFiltersHybrid from '/_includes/code/graphql.filters.hybrid.mdx';
 
 <GraphQLFiltersHybrid/>
 
-### Example with vector parameter
-If you're providing your own embeddings, you can supply the vector query to the `vector` variable. If Weaviate is handling the vectorization, then you can ignore the `vector` variable and use the example code snippets above.
+### 带有向量参数的示例
+如果您提供自己的嵌入向量，可以将向量查询提供给`vector`变量。如果Weaviate正在处理向量化，则可以忽略`vector`变量并使用上面的示例代码片段。
 
 import GraphQLFiltersHybridVector from '/_includes/code/graphql.filters.hybrid.vector.mdx';
 
 <GraphQLFiltersHybridVector/>
 
-### Hybrid with Where filter
+### 使用 Where 过滤器的 Hybrid 模式
 
-Starting with `v1.18`, you can use [`where` filters](../graphql/filters.md#where-filter) with `hybrid`.
+从 `v1.18` 开始，您可以在 `hybrid` 模式下使用 [`where` 过滤器](../graphql/filters.md#where-filter)。
 
 import GraphQLFiltersHybridFilterExample from '/_includes/code/graphql.filters.hybrid.filter.example.mdx';
 
 <GraphQLFiltersHybridFilterExample/>
 
+### 限制 BM25 属性
 
-### Limiting BM25 properties
+从`v1.19`开始，`hybrid`接受一个字符串数组`properties`，用于限制BM25搜索组件将搜索的属性集。如果未指定，则将搜索所有文本属性。
 
-Starting with `v1.19`, `hybrid` accepts a `properties` array of strings that limits the set of properties that will be searched by the BM25 component of the search. If not specified, all text properties will be searched.
-
-In the examples below, the `alpha` parameter is set close to 0 to favor BM25 search, and changing the `properties` from `"question"` to `"answer"` will yield a different set of results.
+在下面的示例中，`alpha`参数设置接近0以支持BM25搜索，将`properties`从`"question"`更改为`"answer"`将得到不同的结果集。
 
 import GraphQLFiltersHybridProperties from '/_includes/code/graphql.filters.hybrid.properties.mdx';
 
@@ -205,35 +201,35 @@ import GraphQLFiltersHybridProperties from '/_includes/code/graphql.filters.hybr
 
 ## BM25
 
-The `bm25` operator performs a keyword (sparse vector) search, and uses the BM25F ranking function to score the results. BM25F (**B**est **M**atch **25** with Extension to Multiple Weighted **F**ields) is an extended version of BM25 that applies the scoring algorithm to multiple fields (`properties`), producing better results.
+`bm25`操作符执行关键字（稀疏向量）搜索，并使用BM25F排名函数对结果进行评分。BM25F（**B**est **M**atch **25** with Extension to Multiple Weighted **F**ields）是BM25的扩展版本，它将评分算法应用于多个字段（`properties`），从而产生更好的结果。
 
-The search is case-insensitive, and case matching does not confer a score advantage. Stop words are removed. [Stemming is not supported yet](https://github.com/weaviate/weaviate/issues/2439).
+搜索是不区分大小写的，大小写匹配不会给予分数优势。停用词会被删除。[目前不支持词干处理](https://github.com/weaviate/weaviate/issues/2439)。
 
-### Schema configuration
+### 模式配置
 
-The [free parameters `k1` and `b`](https://en.wikipedia.org/wiki/Okapi_BM25#The_ranking_function) are configurable and optional. See the [schema reference](../../config-refs/schema.md#invertedindexconfig--bm25) for more details.
+[可配置和可选的自由参数 `k1` 和 `b`](https://en.wikipedia.org/wiki/Okapi_BM25#The_ranking_function)。有关更多详细信息，请参阅[模式参考](../../config-refs/schema.md#invertedindexconfig--bm25)。
 
-### Variables
-The `bm25` operator supports the following variables:
+### 变量
+`bm25`操作符支持以下变量：
 
-| Variables | Required | Description |
-| --------- | -------- | ----------- |
-| `query`   | yes      | The keyword search query. |
-| `properties` | no    | Array of properties (fields) to search in, defaulting to all properties in the class. |
+| 变量 | 是否必需 | 描述 |
+| ---- | -------- | ---- |
+| `query` | 是 | 关键字搜索查询。 |
+| `properties` | 否 | 要搜索的属性（字段）数组，默认为类中的所有属性。 |
 
 :::info Boosting properties
 Specific properties can be boosted by a factor specified as a number after the caret sign, for example `properties: ["title^3", "summary"]`.
 :::
 
-### Example query
+### 示例查询
 
 import GraphQLFiltersBM25 from '/_includes/code/graphql.filters.bm25.mdx';
 
 <GraphQLFiltersBM25/>
 
-### GraphQL response
+### GraphQL 响应
 
-The `_additional` property in the GraphQL result exposes the score:
+GraphQL结果中的`_additional`属性暴露了评分（score）:
 
 ```json
 {
@@ -246,7 +242,7 @@ The `_additional` property in the GraphQL result exposes the score:
 ```
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 ```json
 {
@@ -270,15 +266,15 @@ The `_additional` property in the GraphQL result exposes the score:
 
 </details>
 
-### BM25 with Where Filter
-Introduced in `v1.18`, you can now use [`where` filters](../graphql/filters.md#where-filter) with `bm25`.
+### 使用 Where 过滤器的 BM25
+在 `v1.18` 版本中引入了 [`where` 过滤器](../graphql/filters.md#where-filter)，您现在可以在 `bm25` 中使用它。
 
 import GraphQLFiltersBM25FilterExample from '/_includes/code/graphql.filters.bm25.filter.example.mdx';
 
 <GraphQLFiltersBM25FilterExample/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期的响应</summary>
 
 ```json
 {
@@ -303,27 +299,27 @@ import GraphQLFiltersBM25FilterExample from '/_includes/code/graphql.filters.bm2
 
 </details>
 
-## group
+## 分组
 
-You can use a group operator to combine similar concepts (aka _entity merging_). There are two ways of grouping objects with a semantic similarity together.
+您可以使用分组操作符将类似的概念（也称为实体合并）组合在一起。有两种方法可以将具有语义相似性的对象分组在一起。
 
-### Variables
+### 变量
 
-| Variable | Required | Type | Description |
-| --------- | -------- | ---- | ----------- |
-| `type` | yes | `string` | You can only show the closest concept (`closest`) or merge all similar entities into one single string (`merge`). |
-| `force` | yes | `float` | The force to apply for a particular movements. Must be between 0 and 1 where 0 is equivalent to no movement and 1 is equivalent to largest movement possible. |
+| 变量 | 是否必填 | 类型 | 描述 |
+| ---- | -------- | ---- | ---- |
+| `type` | 是 | `string` | 您可以选择仅显示最接近的概念（`closest`），或将所有相似实体合并为一个字符串（`merge`）。 |
+| `force` | 是 | `float` | 用于特定移动的力量。必须介于0和1之间，其中0等同于无移动，1等同于最大可能的移动。 |
 
-### Example
+### 示例
 
 import GraphQLFiltersGroup from '/_includes/code/graphql.filters.group.mdx';
 
 <GraphQLFiltersGroup/>
 
-This results in the following. Note that publications `International New York Times`, `The New York Times Company` and `New York Times` are merged. The property values that do not have an exact overlap will all be shown, with the value of the most central concept before the brackets.
+这将导致以下结果。请注意，出版物`International New York Times`、`The New York Times Company`和`New York Times`被合并。没有完全重叠的属性值都将显示出来，在括号之前是最核心概念的值。
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期的响应</summary>
 
 ```json
 {
@@ -373,51 +369,51 @@ This results in the following. Note that publications `International New York Ti
 
 ## nearText
 
-Enabled by the modules:
+通过以下模块启用：
 - [text2vec-openai](../../modules/retriever-vectorizer-modules/text2vec-openai.md),
 - [text2vec-cohere](../../modules/retriever-vectorizer-modules/text2vec-cohere.md),
 - [text2vec-huggingface](../../modules/retriever-vectorizer-modules/text2vec-huggingface.md),
 - [text2vec-transformers](../../modules/retriever-vectorizer-modules/text2vec-transformers.md),
-- [text2vec-contextionary](../../modules/retriever-vectorizer-modules/text2vec-contextionary.md).
-- [multi2vec-clip](../../modules/retriever-vectorizer-modules/multi2vec-clip.md).
+- [text2vec-contextionary](../../modules/retriever-vectorizer-modules/text2vec-contextionary.md)。
+- [multi2vec-clip](../../modules/retriever-vectorizer-modules/multi2vec-clip.md)。
 
-This filter allows you to find data objects in the vicinity of the vector representation of a single or multiple concepts. It's supported by the `Get{}` function.
+该过滤器允许您在单个或多个概念的向量表示附近找到数据对象。它由`Get{}`函数支持。
 
-### Variables
+### 变量
 
-| Variable | Required | Type | Description |
+| 变量 | 必填 | 类型 | 描述 |
 | --- | --- | --- | --- |
-| `concepts` | yes | `[string]` | An array of strings that can be natural language queries, or single words. If multiple strings are used, a centroid is calculated and used. Learn more about how the concepts are parsed [here](#concept-parsing). |
-| `certainty` | no | `float` | The required degree of similarity between an object's characteristics and the provided filter values.<br/>Values can be between 0 (no match) and 1 (perfect match).<br/><i className="fas fa-triangle-exclamation"/> Can't be used together with the `distance` variable. |
-| `distance` | no | `float` | Normalized Distance between the result item and the search vector.<br/>The interpretation of the value of the distance field depends on the [distance metric used](/developers/weaviate/config-refs/distances.md).<br/><i className="fas fa-triangle-exclamation"/> Can't be used together with the `certainty` variable.|
-| `autocorrect` | no | `boolean` | Autocorrect input text values |
-| `moveTo` | no | `object{}` | Move your search term closer to another vector described by keywords |
-| `moveTo{concepts}`| no | `[string]` | An array of strings - natural language queries or single words. If multiple strings are used, a centroid is calculated and used. |
-| `moveTo{objects}`| no | `[UUID]` | Object IDs to move the results to. This is used to "bias" NLP search results into a certain direction in vector space. |
-| `moveTo{force}`| no | `float` | The force to apply to a particular movement. Must be between 0 and 1 where 0 is equivalent to no movement and 1 is equivalent to largest movement possible. |
-| `moveAwayFrom` | no | `object{}` | Move your search term away from another vector described by keywords |
-| `moveAwayFrom{concepts}`| no | `[string]` | An array of strings - natural language queries or single words. If multiple strings are used, a centroid is calculated and used. |
-| `moveAwayFrom{objects}`| no | `[UUID]` | Object IDs to move the results from. This is used to "bias" NLP search results into a certain direction in vector space. |
-| `moveAwayFrom{force}`| no | `float` | The force to apply to a particular movement. Must be between 0 and 1 where 0 is equivalent to no movement and 1 is equivalent to largest movement possible. |
+| `concepts` | 是 | `[string]` | 一个包含自然语言查询或单个单词的字符串数组。如果使用多个字符串，将计算并使用质心。了解更多关于如何解析概念的信息，请参阅[这里](#concept-parsing)。 |
+| `certainty` | no | `float` | 对象特征与提供的过滤器值之间所需的相似度程度。<br/>值可以介于0（无匹配）和1（完全匹配）之间。<br/><i className="fas fa-triangle-exclamation"/> 不能与 `distance` 变量同时使用。 |
+| `distance` | 否 | `float` | 结果项与搜索向量之间的归一化距离。<br/>距离字段的值的解释取决于所使用的[距离度量](/developers/weaviate/config-refs/distances.md)。<br/><i className="fas fa-triangle-exclamation"/> 不能与`certainty`变量一起使用。|
+| `autocorrect` | 否 | `boolean` | 自动纠正输入文本值 |
+| `moveTo` | 否 | `object{}` | 将搜索词移动到由关键词描述的另一个向量附近 |
+| `moveTo{concepts}` | 否 | `[string]` | 一个字符串数组 - 自然语言查询或单个单词。如果使用多个字符串，将计算并使用一个质心。 |
+| `moveTo{objects}` | 否 | `[UUID]` | 要将结果移动到的对象ID。这用于在向量空间中将NLP搜索结果"偏向"特定方向。 |
+| `moveTo{force}` | 否 | `float` | 对特定运动施加的力。必须在0和1之间，其中0等同于没有运动，1等同于最大可能的运动。 |
+| `moveAwayFrom` | 否 | `object{}` | 将搜索词从由关键词描述的另一个向量中移开 |
+| `moveAwayFrom{concepts}` | 否 | `[string]` | 一个字符串数组 - 自然语言查询或单个单词。如果使用多个字符串，将计算并使用质心。 |
+| `moveAwayFrom{objects}`| 否 | `[UUID]` | 要从中移动结果的对象ID。这用于在向量空间中将NLP搜索结果“偏向”某个方向。 |
+| `moveAwayFrom{force}`| 否 | `float` | 要施加到特定移动的力量。必须介于0和1之间，其中0等同于无移动，而1等同于最大移动。 |
 
-### Example I
+### 示例 I
 
-This example shows a basic overview of using the `nearText` filter.
+此示例演示了使用`nearText`筛选器的基本概述。
 
 import GraphQLFiltersNearText from '/_includes/code/graphql.filters.nearText.mdx';
 
 <GraphQLFiltersNearText/>
 
-### Example II
+### 示例 II
 
-You can also bias results toward other data objects' vector representations. For example, in this query, we move our query about "travelling in asia", towards an article on food.
+您还可以将结果偏向于其他数据对象的向量表示。例如，在这个查询中，我们将关于"在亚洲旅行"的查询偏向于一篇关于食物的文章。
 
 import GraphQLFiltersNearText2Obj from '/_includes/code/graphql.filters.nearText.2obj.mdx';
 
 <GraphQLFiltersNearText2Obj/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>期望的响应</summary>
 
 ```json
 {
@@ -447,76 +443,72 @@ import GraphQLFiltersNearText2Obj from '/_includes/code/graphql.filters.nearText
 
 </details>
 
-### Additional information
+### 附加信息
 
-#### Distance metrics
+#### 距离度量
 
-If the distance metric is `cosine` you can also use `certainty` instead of
-`distance`. Certainty normalizes the distance in a range of 0..1, where 0
-represents a perfect opposite (cosine distance of 2) and 1 represents vectors
-with an identical angle (cosine distance of 0). Certainty is not available on
-non-cosine distance metrics.
+如果距离度量为`cosine`，您还可以使用`certainty`代替`distance`。`certainty`将距离归一化到0..1的范围内，其中0表示完全相反（余弦距离为2），1表示具有相同角度的向量（余弦距离为0）。`certainty`在非余弦距离度量上不可用。
 
-#### Concept parsing
+#### 概念解析
 
-Strings written in the concepts array are your fuzzy search terms. An array of concepts is required to set in the Explore query, and all words in this array should be present in the Contextionary.
+在概念数组中编写的字符串是模糊搜索的术语。在Explore查询中需要设置一个概念数组，并且该数组中的所有单词都应该存在于Contextionary中。
 
-There are three ways to define the concepts array argument in the filter.
+有三种方式来定义筛选器中的概念数组参数。
 
-- `["New York Times"]` = one vector position is determined based on the occurrences of the words
-- `["New", "York", "Times"]` = all concepts have a similar weight.
-- `["New York", "Times"]` = a combination of the two above.
+- `["New York Times"]` = 根据单词的出现次数确定一个向量位置
+- `["New", "York", "Times"]` = 所有概念具有相似的权重。
+- `["New York", "Times"]` = 上述两种方式的组合。
 
-A practical example would be: `concepts: ["beatles", "John Lennon"]`
+一个实际的例子是: `concepts: ["beatles", "John Lennon"]`
 
-#### Semantic Path
+#### 语义路径
 
-* Only available in `txt2vec-contextionary` module
+* 仅在`txt2vec-contextionary`模块中可用
 
-The semantic path returns an array of concepts from the query to the data object. This allows you to see which steps Weaviate took and how the query and data object are interpreted.
+语义路径返回一个从查询到数据对象的概念数组。这样可以让您看到Weaviate采取了哪些步骤以及如何解释查询和数据对象。
 
-| Property | Description |
+| 属性 | 描述 |
 | --- | --- |
-| `concept` | the concept that is found in this step. |
-| `distanceToNext` | the distance to the next step (null for the last step). |
-| `distanceToPrevious` | this distance to the previous step (null for the first step). |
-| `distanceToQuery` | the distance of this step to the query. |
-| `distanceToResult` | the distance of the step to this result. |
+| `concept` | 在此步骤中找到的概念。 |
+| `distanceToNext` | 下一步的距离（最后一步为null）。 |
+| `distanceToPrevious` | 上一步的距离（第一步为null）。 |
+| `distanceToQuery` | 步骤与查询之间的距离。 |
+| `distanceToResult` | 步骤与结果之间的距离。 |
 
-_Note: Building a semantic path is only possible if a [`nearText: {}` filter](#neartext) is set as the explore term represents the beginning of the path and each search result represents the end of the path. Since `nearText: {}` queries are currently exclusively possible in GraphQL, the `semanticPath` is therefore not available in the REST API._
+注意：只有在设置了 [`nearText: {}` 过滤器](#neartext) 作为探索术语时，才能构建语义路径，因为探索术语表示路径的起点，每个搜索结果表示路径的终点。由于 `nearText: {}` 查询目前只能在 GraphQL 中执行，因此 REST API 中没有 `semanticPath`。
 
-Example: showing a semantic path without edges.
+示例：显示没有边的语义路径。
 
 import GraphQLUnderscoreSemanticpath from '/_includes/code/graphql.underscoreproperties.semanticpath.mdx';
 
 <GraphQLUnderscoreSemanticpath/>
 
-## ask
+## 问
 
-Enabled by the module: [Question Answering](/developers/weaviate/modules/reader-generator-modules/qna-transformers.md).
+由模块：[问答模块](/developers/weaviate/modules/reader-generator-modules/qna-transformers.md) 启用。
 
-This filter allows you to return answers to questions by running the results through a Q&A model.
+此过滤器允许您通过将结果传递给问答模型来返回问题的答案。
 
-### Variables
+### 变量
 
-| Variable | Required | Type | Description |
-| --------- | -------- | ---- | ----------- |
-| `question` 	| yes	| `string` | The question to be answered. |
-| `certainty` | no 	| `float` | Desired minimal certainty or confidence of answer to the question. The higher the value, the stricter the search becomes. The lower the value, the fuzzier the search becomes. If no certainty is set, any answer that could be extracted will be returned. |
-| `properties`	| no 	| `[string]` | The properties of the queries Class which contains text. If no properties are set, all are considered.	|
-| `rerank` 	| no 	| `boolean`	| If enabled, the qna module will rerank the result based on the answer score. For example, if the 3rd result - as determined by the previous (semantic) search contained the most likely answer, result 3 will be pushed to position 1, etc. *Supported since v1.10.0* |
+| 变量 | 必需 | 类型 | 描述 |
+| ---- | ---- | ---- | ---- |
+| `question` 	| 是 	| `string` 	| 要回答的问题。   |
+| `certainty` 	| 否 	| `float` 	| 对问题答案的期望最低确定度或置信度。值越高，搜索越严格。值越低，搜索越模糊。如果没有设置确定度，将返回任何可能的答案。  |
+| `properties` 	| 否 	| `[string]` 	| 查询类的属性，其中包含文本。如果未设置属性，则会考虑所有属性。  |
+| `rerank` 	| no 	| `boolean`	| 如果启用，qna模块将根据答案分数对结果进行重新排名。例如，如果第三个结果 - 根据之前的（语义）搜索确定的最可能的答案，结果3将被推到位置1，依此类推。*自v1.10.0起支持* |
 
-### Example
+### 示例
 
 import QNATransformersAsk from '/_includes/code/qna-transformers.ask.mdx';
 
 <QNATransformersAsk/>
 
-### GraphQL response
+### GraphQL响应
 
-The `_additional{}` property is extended with the answer and a certainty of the answer.
+`_additional{}`属性被扩展为包含回答和回答的确定性。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

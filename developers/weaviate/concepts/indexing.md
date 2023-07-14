@@ -1,9 +1,9 @@
 ---
-title: Indexing
-sidebar_position: 20
 image: og/docs/concepts.jpg
-# tags: ['basics']
+sidebar_position: 20
+title: Indexing
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -13,39 +13,39 @@ import Badges from '/_includes/badges.mdx';
 - [Configuration: Indexes](../configuration/indexes.md)
 :::
 
-## Introduction
+## 简介
 
-Weaviate supports two types of indices.
+Weaviate支持两种类型的索引。
 
-1. An **approximate nearest neighbor index (ANN)** - the ANN index is used to serve all vector-search queries.
-1. An **inverted index** - the inverted index allows for filtering by properties, as well as serve BM25 queries.
+1. **近似最近邻索引（ANN索引）** - ANN索引用于处理所有向量搜索查询。
+2. **倒排索引** - 倒排索引允许按属性进行过滤，并提供BM25查询。
 
-You can configure indices in Weaviate per class. One of Weaviate's core strengths is combining the ANN index with an inverted index.
+您可以在Weaviate中为每个类别配置索引。Weaviate的核心优势之一是将ANN索引与倒排索引相结合。
 
-Some things to bear in mind:
+请注意以下几点：
 
-* Especially for large datasets, configuring the indices is important because the more you index, the more storage is needed.
-* A rule of thumb -- if you don't query over a specific field or vector space, don't index it.
-* One of Weaviate's unique features is how the indices are configured (learn more about this [here](../concepts/prefiltering.md)).
+* 对于大型数据集，配置索引非常重要，因为索引的数量越多，需要的存储空间就越多。
+* 一个经验法则是，如果您不在特定字段或向量空间上进行查询，则不要对其进行索引。
+* Weaviate的一个独特功能是索引的配置方式（了解更多信息，请点击[这里](../concepts/prefiltering.md)）。
 
-### ANN indexing
+### ANN索引化
 
-What's important to know, is that the "A" in ANN (i.e., the "approximate") comes with a trade-off. That is, the index is _approximate_ and, therefore _not_ always 100% accurate. This is what the experts mean when they talk about the "recall of the algorithm."
+需要知道的重要一点是，ANN中的"A"（即"approximate"）带来了一个权衡。也就是说，索引是_近似_的，因此并不总是100%准确。这就是专家在谈论算法的"召回率"时所指的意思。
 
 :::tip
 There are different ANN algorithms, you can find a nice overview of them on <a href="http://ann-benchmarks.com/" data-proofer-ignore>this website</a>. Only those algorithms which support [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) can be used in Weaviate (we want that sweet database UX) and Weaviate's ANN system is [completely plug-and-playable](../concepts/index.md#weaviate-architecture) so that we can always add other algorithms in the future.
 :::
 
-<!-- TODO: Not sure if we need this here -->
-<!-- If you always want total recall (i.e., a 100% recall, not to be confused with the Arnold Schwarzenegger movie), you need brute-force vector comparisons that are super slow (as in, _really_ slow) and not useful for production settings (hence ANN algorithms exist). -->
+<!-- TODO: 不确定我们是否需要在这里 -->
+<!-- 如果您总是想要完全回忆（即100%回忆，不要与阿诺德·施瓦辛格的电影混淆），那么您需要进行超级慢速（真的非常慢）的蛮力向量比较，这对于生产环境来说并不实用（因此存在ANN算法）。 -->
 
 :::note
 Because vector search use cases are growing rapidly, more and more ANN-algorithm are produced. A "good" ANN algorithm means that the recall is high _and_ that it's fast. You can dive into the rabbit hole right [here](https://arxiv.org/search/?query=approximate+nearest+neighbor&searchtype=all). But! Don't be like Alice; just make sure to come back here.
 :::
 
-Let's take a look a few ANN settings in an example schema.
+让我们来看一个示例模式中的几个ANN设置。
 
-_(note that we've removed some JSON that's irrelevant to the topic at hand)._
+（请注意，我们已经删除了与当前主题无关的一些JSON代码。）
 
 ```js
 {
@@ -74,22 +74,22 @@ _(note that we've removed some JSON that's irrelevant to the topic at hand)._
 }
 ```
 
-As shown above, there are quite a few configurable parameters available for an ANN index. Modifying them can affect Weaviate's performance, such as tradeoffs between the recall performance and query time, or between query time and import time.
+如上所示，ANN索引提供了许多可配置的参数。修改这些参数可以影响Weaviate的性能，例如在召回性能和查询时间之间的权衡，或者在查询时间和导入时间之间的权衡。
 
-Read more below on:
-- [Configuring the vector index](../configuration/indexes.md)
-- [Explanation of vector indices](../concepts/vector-index.md)
+在下面了解更多：
+- [配置向量索引](../configuration/indexes.md)
+- [向量索引解释](../concepts/vector-index.md)
 
 :::note
 The [ANN benchmark page](/developers/weaviate/benchmarks/ann.md) contains a wide variety of vector search use cases and relative benchmarks. This page is ideal for finding a dataset similar to yours and learning what the most optimal settings are.
 :::
 
-## Module configuration
-<!-- TODO: Check whether this can be removed. Feels duplicated. -->
+## 模块配置
+<!-- TODO: 检查是否可以移除。感觉是重复的。 -->
 
-You can use Weaviate with or without modules. To use Weaviate _with_ modules, you must configure them in the schema.
+您可以使用带有或不带有模块的 Weaviate。要使用带有模块的 Weaviate，您必须在模式中配置它们。
 
-An example configuration:
+一个示例配置：
 
 ```js
 {
@@ -103,7 +103,7 @@ An example configuration:
 }
 ```
 
-When using vectorizers, you need to set vectorization at the class and property level. If you use text vectorizers, the way the vectorizers work is explained [here](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md#configure-semantic-indexing).
+使用向量化器时，您需要在类和属性级别上设置向量化。如果您使用文本向量化器，关于向量化器工作原理的解释在[这里](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md#configure-semantic-indexing)。
 
 ```js
 {
@@ -132,13 +132,13 @@ When using vectorizers, you need to set vectorization at the class and property 
 Because Weaviate's vectorizer module configuration is set on class and property level, you can have multiple vectorizers for different classes. You can even mix multimodal, NLP, and image modules.
 :::
 
-## Recap
+## 总结
 
-* The ANN index needs to be set for your use case (especially if you have a large dataset)
-* You can enable or disable the index based on your use case
-* You can configure Weaviate modules in the schema
+* 针对您的用例需要设置ANN索引（尤其是如果您有一个大型数据集）
+* 根据您的用例可以启用或禁用索引
+* 您可以在模式中配置Weaviate模块
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

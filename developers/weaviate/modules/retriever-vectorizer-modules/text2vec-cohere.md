@@ -1,34 +1,34 @@
 ---
-title: text2vec-cohere
-sidebar_position: 1
 image: og/docs/modules/text2vec-cohere.jpg
-# tags: ['text2vec', 'text2vec-cohere', 'cohere']
+sidebar_position: 1
+title: text2vec-cohere
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## In short
+## 简介
 
-* This module uses a third-party API and may incur costs.
-* Make sure to check the Cohere [pricing page](https://cohere.com/pricing) before vectorizing large amounts of data.
-* Weaviate automatically parallelizes requests to the Cohere-API when using the batch endpoint.
+* 此模块使用第三方API可能会产生费用。
+* 在对大量数据进行向量化之前，请确保查看Cohere的[定价页面](https://cohere.com/pricing)。
+* 当使用批处理端点时，Weaviate会自动并行化向Cohere-API发出的请求。
 
-## Introduction
+## 简介
 
-The `text2vec-cohere` module enables you to use [Cohere embeddings](https://docs.cohere.com/docs/embeddings) in Weaviate to represent data objects and run semantic (`nearText`) queries.
+`text2vec-cohere`模块使您能够在Weaviate中使用[Cohere嵌入](https://docs.cohere.com/docs/embeddings)来表示数据对象并运行语义（`nearText`）查询。
 
-## How to enable
+## 如何启用
 
-Request a Cohere API-key via [their dashboard](https://dashboard.cohere.com/welcome/login).
+通过[Cohere仪表板](https://dashboard.cohere.com/welcome/login)申请Cohere API密钥。
 
-### Weaviate Cloud Services
+### Weaviate云服务
 
-This module is enabled by default on the WCS.
+此模块在WCS上默认启用。
 
-### Weaviate open source
+### Weaviate开源版本
 
-You can find an example Docker-compose file below, which will spin up Weaviate with the Cohere module.
+您可以在下面找到一个示例的Docker-compose文件，它将使用Cohere模块启动Weaviate。
 
 ```yaml
 ---
@@ -54,11 +54,11 @@ import T2VInferenceYamlNotes from './_components/text2vec.inference.yaml.notes.m
 
 <T2VInferenceYamlNotes apiname="COHERE_APIKEY"/>
 
-## How to configure
+## 如何配置
 
-In your Weaviate schema, you must define how you want this module to vectorize your data. If you are new to Weaviate schemas, you might want to check out the [tutorial on the Weaviate schema](/developers/weaviate/tutorials/schema.md) first.
+在您的Weaviate模式中，您必须定义您希望该模块如何对数据进行向量化。如果您对Weaviate模式还不熟悉，您可能想先查阅[Weaviate模式教程](/developers/weaviate/tutorials/schema.md)。
 
-The following schema configuration tells Weaviate to vectorize the `Document` class with `text2vec-cohere`, using the `multilingual-22-12` model and without input truncation by the Cohere API.
+下面的模式配置告诉Weaviate使用`text2vec-cohere`对`Document`类进行向量化，使用`multilingual-22-12`模型，并且不通过Cohere API进行输入截断。
 
 :::info
 The multilingual models use dot product, and the English model uses cosine. Make sure to set this accordingly in your Weaviate schema. You can see supported distance metrics [here](../../config-refs/distances.md).
@@ -100,24 +100,24 @@ The multilingual models use dot product, and the English model uses cosine. Make
 }
 ```
 
-## Usage
+## 使用方法
 
-* If the Cohere API key is not set in the `text2vec-cohere` module, you can set the API key at query time by adding the following to the HTTP header: `X-Cohere-Api-Key: YOUR-COHERE-API-KEY`.
-* Using this module will enable [GraphQL vector search operators](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext).
+* 如果`text2vec-cohere`模块中未设置Cohere API密钥，则可以在查询时通过将以下内容添加到HTTP头部来设置API密钥: `X-Cohere-Api-Key: YOUR-COHERE-API-KEY`。
+* 使用此模块将启用[GraphQL向量搜索操作符](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext)。
 
-### Example
+### 示例
 
 import GraphQLFiltersNearNextCohere from '/_includes/code/graphql.filters.nearText.cohere.mdx';
 
 <GraphQLFiltersNearNextCohere/>
 
-## Additional information
+## 附加信息
 
-### Available models
+### 可用的模型
 
-Weaviate defaults to Cohere's `multilingual-22-12` embedding model unless specified otherwise.
+除非另有指定，Weaviate默认使用Cohere的`multilingual-22-12`嵌入模型。
 
-For example, the following schema configuration will set Weaviate to vectorize the `Document` class with `text2vec-cohere` using the `multilingual-22-12` model.
+例如，以下模式配置将设置Weaviate将`Document`类使用`text2vec-cohere`和`multilingual-22-12`模型进行向量化。
 
 ```json
 {
@@ -135,30 +135,30 @@ For example, the following schema configuration will set Weaviate to vectorize t
         }
 ```
 
-### Truncation
+### 截断
 
-If the input text contains too many tokens and is not truncated, the API will throw an error. The Cohere API can be set to automatically truncate your input text.
+如果输入文本包含太多的标记并且没有进行截断，API将会抛出一个错误。Cohere API可以设置自动截断输入文本。
 
-You can set the truncation option with the `truncate` parameter to `RIGHT` or `NONE`. Passing RIGHT will discard the right side of the input, the remaining input is exactly the maximum input token length for the model. [source](https://docs.cohere.com/reference/embed)
+您可以使用`truncate`参数将截断选项设置为`RIGHT`或`NONE`。传递RIGHT将丢弃输入的右侧部分，剩余的输入恰好是模型的最大输入标记长度。[来源](https://docs.cohere.com/reference/embed)
 
-* The _upside_ of truncating is that a batch import always succeeds.
-* The _downside_ of truncating (i.e., `NONE`) is that a large text will be partially vectorized without the user being made aware of the truncation.
+* 截断的好处是批量导入总是成功的。
+* 截断的缺点（即 `NONE`）是在用户没有意识到截断的情况下对大文本进行部分向量化。
 
-### Cohere Rate Limits
+### Cohere 速率限制
 
-Because you will be getting embeddings based on your own API key, you will be dealing with rate limits applied to your account. More information about Cohere rate limits can be found [here](https://docs.cohere.com/docs/going-live).
+由于您将根据自己的 API 密钥获取嵌入向量，因此您将面对适用于您帐户的速率限制。有关 Cohere 速率限制的更多信息，请参阅[此处](https://docs.cohere.com/docs/going-live)。
 
-### Throttle the import inside your application
+### 在应用程序中限制导入速率
 
-If you run into rate limits, you can also decide to throttle the import in your application.
+如果遇到速率限制，您也可以决定在应用程序中限制导入速率。
 
-E.g., in Python and Go using the Weaviate client.
+例如，在使用Weaviate客户端的Python和Go中。
 
 import CodeThrottlingExample from '/_includes/code/text2vec-api.throttling.example.mdx';
 
 <CodeThrottlingExample />
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

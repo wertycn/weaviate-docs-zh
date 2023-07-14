@@ -1,8 +1,7 @@
 ---
-title: Aggregate data
-sidebar_position: 85
 image: og/docs/howto.jpg
-# tags: ['how to', 'aggregate data']
+sidebar_position: 85
+title: Aggregate data
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,30 +10,30 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PythonCode from '!!raw-loader!/_includes/code/howto/search.aggregate.py';
 import TSCode from '!!raw-loader!/_includes/code/howto/search.aggregate.ts';
 
-## Overview
+## 概述
 
-This section shows how to retrieve aggregate data from a results set using the `Aggregate` function. `Aggregate` is largely similar to `Get`, with the difference being that `Aggregate` returns summary data about the results set instead of individual objects in the results set.
+本节介绍如何使用`Aggregate`函数从结果集中检索聚合数据。`Aggregate`函数与`Get`函数在很大程度上相似，区别在于`Aggregate`函数返回的是结果集的摘要数据，而不是结果集中的单个对象。
 
 :::info Related pages
 - [API References: GraphQL: Aggregate](../api/graphql/aggregate.md)
 :::
 
-## `Aggregate` function requirements
+## `Aggregate`函数要求
 
-To use `Aggregate`, you must specify at least:
-- The target `class` to search, and
-- One or more aggregated properties. The aggregated properties can include:
-    - The `meta` property,
-    - An object property, OR
-    - The `groupedBy` property (if using `groupBy`).
+要使用`Aggregate`函数，您必须至少指定以下内容：
+- 要搜索的目标`class`，
+- 一个或多个聚合属性。聚合属性可以包括：
+    - `meta`属性，
+    - 对象属性，或者
+    - `groupBy`属性（如果使用`groupBy`）。
 
-You must then select at least one sub-property for each selected property.
+然后，您必须为每个选定的属性选择至少一个子属性。
 
-See the [`Aggregate` function syntax page](../api/graphql/aggregate.md#aggregate-syntax-and-query-structure) for details.
+请参考[`Aggregate`函数语法页面](../api/graphql/aggregate.md#aggregate-syntax-and-query-structure)了解详情。
 
-## Retrieve a `meta` property
+## 获取`meta`属性
 
-The `meta` property has only one sub-property (`count`) available. This returns the count of objects matched by the query.
+`meta`属性只有一个可用的子属性(`count`)。它返回查询匹配的对象数量。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -56,8 +55,8 @@ The `meta` property has only one sub-property (`count`) available. This returns 
     language="js"
   />
 
-  </TabItem>
-  <TabItem value="graphql" label="GraphQL">
+</TabItem>
+<TabItem value="graphql" label="GraphQL">
 
   <FilteredTextBlock
     text={PythonCode}
@@ -66,13 +65,13 @@ The `meta` property has only one sub-property (`count`) available. This returns 
     language="graphql"
   />
 
-  </TabItem>
+</TabItem>
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-  The query should produce a response like the one below:
+  查询应该生成如下所示的响应:
 
   <FilteredTextBlock
     text={PythonCode}
@@ -82,15 +81,15 @@ The `meta` property has only one sub-property (`count`) available. This returns 
   />
 </details>
 
-## Retrieve aggregated object `properties`
+## 检索聚合对象的 `properties`
 
-You can retrieve aggregations of `text`, `number`, `int`, or `boolean` data types.
+您可以检索 `text`、`number`、`int` 或 `boolean` 数据类型的聚合。
 
-The [available sub-types](../api/graphql/aggregate.md#aggregate-syntax-and-query-structure) vary for each data type, except for `type` which is available to all, and `count` which is available to all but cross-references.
+每种数据类型的[可用子类型](../api/graphql/aggregate.md#aggregate-syntax-and-query-structure)各不相同，除了`type`对所有类型都可用，以及`count`对所有类型都可用，但不适用于交叉引用。
 
-### Example with `text`
+### 使用`text`的示例
 
-The following example retrieves information about the most commonly occurring examples in the `question` property:
+以下示例检索关于`question`属性中最常出现的示例的信息：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -126,9 +125,9 @@ The following example retrieves information about the most commonly occurring ex
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-  The query should produce a response like the one below:
+  查询应该产生如下所示的响应：
 
   <FilteredTextBlock
     text={PythonCode}
@@ -138,9 +137,9 @@ The following example retrieves information about the most commonly occurring ex
   />
 </details>
 
-### Example with `int`
+### 使用`int`的示例
 
-The following example retrieves the sum of the `points` property values:
+以下示例检索`points`属性值的总和：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -176,9 +175,9 @@ The following example retrieves the sum of the `points` property values:
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-  The query should produce a response like the one below:
+  查询应该生成如下所示的响应：
 
   <FilteredTextBlock
     text={PythonCode}
@@ -188,11 +187,11 @@ The following example retrieves the sum of the `points` property values:
   />
 </details>
 
-## Retrieve `groupedBy` properties
+## 检索 `groupedBy` 属性
 
-You can use the `groupBy` variable to group the results set into subsets. Then, you can retrieve the grouped aggregate data for each group through the `groupedBy` properties.
+您可以使用`groupBy`变量将结果集分组为子集。然后，可以通过`groupedBy`属性检索每个组的分组聚合数据。
 
-For example, to list all distinct values of a property, and the counts for each:
+例如，要列出属性的所有不同值及其计数：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -214,8 +213,8 @@ For example, to list all distinct values of a property, and the counts for each:
     language="js"
   />
 
-  </TabItem>
-  <TabItem value="graphql" label="GraphQL">
+</TabItem>
+<TabItem value="graphql" label="GraphQL">
 
   <FilteredTextBlock
     text={PythonCode}
@@ -224,14 +223,14 @@ For example, to list all distinct values of a property, and the counts for each:
     language="graphql"
   />
 
-  </TabItem>
+</TabItem>
 </Tabs>
 
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-  The query should produce a response like the one below:
+  查询应该生成类似下面的响应：
 
   <FilteredTextBlock
     text={PythonCode}
@@ -242,19 +241,19 @@ For example, to list all distinct values of a property, and the counts for each:
 </details>
 
 
-## With `nearXXX`
+## 使用`nearXXX`
 
-When using a [similarity search](./similarity.md) parameter (i.e. `nearXXX`) with `Aggregate`, you should include a way to [limit the search results](../api/graphql/aggregate.md#limiting-the-search-space). This is because a vector search in itself does not exclude any objects from the results set - _all_ objects have some degree of similarity to the query.
+当使用`Aggregate`与相似性搜索（例如`nearXXX`）参数（参见[similarity.md](./similarity.md)）时，您应该包含一种方法来[限制搜索结果](../api/graphql/aggregate.md#limiting-the-search-space)。这是因为向量搜索本身不会从结果集中排除任何对象 - 所有对象都与查询具有一定程度的相似性。
 
-Thus, for the vector search to affect the `Aggregate` output, you **must** set a limit on:
-- The number of results returned (with `limit`), or
-- How similar the results are to the query (with `distance`).
+因此，为了使向量搜索影响`Aggregate`的输出，您**必须**在以下方面设置限制：
+- 返回的结果数量（使用`limit`参数），
+- 结果与查询的相似程度（使用`distance`参数）。
 
-### Set an object limit
+### 设置对象限制
 
-You can set the `objectLimit` argument to specify the maximum number of results to be aggregated.
+您可以设置`objectLimit`参数来指定要聚合的结果的最大数量。
 
-The below query retrieves the 10 `question` objects with vectors that are closest to `"animals in space"`, and return the sum total of the `point` property.
+以下查询检索与`"animals in space"`最接近的10个`question`对象，并返回`point`属性的总和。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -290,9 +289,9 @@ The below query retrieves the 10 `question` objects with vectors that are closes
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-  The query should produce a response like the one below:
+  查询应该返回如下的响应:
 
   <FilteredTextBlock
     text={PythonCode}
@@ -303,12 +302,11 @@ The below query retrieves the 10 `question` objects with vectors that are closes
 </details>
 
 
-### Set a maximum `distance`
+### 设置最大的 `distance`
 
-You can set the `distance` operator to specify the maximum dissimilarity (i.e. minimum similarity) of results to be aggregated.
+您可以设置 `distance` 运算符来指定要聚合的结果的最大不相似度（即最小相似度）。
 
-The below query retrieves the 10 `question` objects with vectors that are within a distance of `0.19` to `"animals in space"`, and returns the sum total of the `point` property.
-
+下面的查询检索与 `"animals in space"` 距离在 `0.19` 内的 10 个 `question` 对象，并返回 `point` 属性的总和。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -344,24 +342,24 @@ The below query retrieves the 10 `question` objects with vectors that are within
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-  The query should produce a response like the one below:
+  查询应该产生以下类似的响应：
 
   <FilteredTextBlock
     text={PythonCode}
-    startMarker="# nearTextWithDistance Expected Results"
-    endMarker="# END nearTextWithDistance Expected Results"
+    startMarker="# nearTextWithDistance 期望结果"
+    endMarker="# END nearTextWithDistance 期望结果"
     language="json"
   />
 </details>
 
 
-## Add a conditional (`where`) filter
+## 添加条件筛选器 (`where`)
 
-You can add a conditional filter to any aggregate search query, which will filter the results set.
+您可以将条件筛选器添加到任何聚合搜索查询中，以过滤结果集。
 
-The below example searches for objects where the `round` property equals `Double Jeopardy!` and returns the object count.
+下面的示例搜索`round`属性等于`Double Jeopardy!`的对象，并返回对象计数。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -397,23 +395,22 @@ The below example searches for objects where the `round` property equals `Double
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-  The query should produce a response like the one below:
+  查询应该生成如下所示的响应：
 
   <FilteredTextBlock
     text={PythonCode}
     startMarker="# whereFilter Expected Results"
-    endMarker="# END whereFilter Expected Results"
+    endMarker="# END whereFilter 期望结果"
     language="json"
   />
 
 </details>
 
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 
 <DocsMoreResources />
-

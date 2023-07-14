@@ -1,109 +1,108 @@
 ---
-title: Horizontal Scaling
-sidebar_position: 30
 image: og/docs/concepts.jpg
-# tags: ['architecture', 'horizontal scaling', 'cluster', 'replication', 'sharding']
+sidebar_position: 30
+title: Horizontal Scaling
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Introduction
-Weaviate can be scaled horizontally by being run on a set of multiple nodes in a cluster. This section lays out various ways in which Weaviate can be scaled, as well as factors to consider while scaling, and Weaviate's architecture in relation to horizontal scaling.
+## 介绍
+Weaviate可以通过在集群中的多个节点上运行来实现水平扩展。本节介绍了Weaviate的多种扩展方式，以及在进行扩展时需要考虑的因素，以及与水平扩展相关的Weaviate架构。
 
-## Motivation to scale Weaviate
-Generally there are (at least) three distinct motivations to scale out horizontally which all will lead to different setups.
+## 扩展Weaviate的动机
+通常有（至少）三个不同的动机来进行水平扩展，这些动机将导致不同的设置。
 
-### Motivation 1: Maximum Dataset Size
-Due to the [memory footprint of an HNSW graph](./resources.md#the-role-of-memory) it may be desirable to spread a dataset across multiple servers ("nodes"). In such a setup, a single class index is composed of multiple shards and shards are spread across servers.
+### 动机 1：最大数据集大小
+由于[HNSW图的内存占用](./resources.md#the-role-of-memory)可能会希望将数据集分布在多个服务器（"节点"）上。在这种设置中，单个类索引由多个分片组成，而分片则分布在多台服务器上。
 
-Weaviate does the required orchestration at import and query time fully automatically. The only adjustment required is to specify the desired shard count. See [Sharding vs Replication](#sharding-vs-replication) below for trade-offs involved when running multiple shards.
+Weaviate在导入和查询时完全自动进行所需的编排。唯一需要调整的是指定所需的分片数。有关在运行多个分片时涉及的权衡，请参见下面的[分片与复制](#sharding-vs-replication)。
 
-**Solution: Sharding across multiple nodes in a cluster**
+**解决方案：在集群中跨多个节点进行分片**
 
 :::note
 The ability to shard across a cluster was added in Weaviate `v1.8.0`.
 :::
 
-### Motivation 2: Higher Query Throughput
-When you receive more queries than a single Weaviate node can handle, it is desirable to add more Weaviate nodes which can help in responding to your users' queries.
+### 动机 2: 更高的查询吞吐量
+当您收到的查询超过单个Weaviate节点的处理能力时，添加更多的Weaviate节点可以帮助响应用户的查询。
 
-Instead of sharding across multiple nodes, you can replicate (the same data) across multiple nodes. This process also happens fully automatically and you only need to specify the desired replication factor. Sharding and replication can also be combined.
+您可以将相同的数据复制到多个节点，而不是在多个节点之间进行分片。这个过程也是完全自动化的，您只需要指定所需的复制因子。分片和复制也可以结合使用。
 
-**Solution: Replicate your classes across multiple nodes in a cluster**
+**解决方案: 在集群中的多个节点上复制您的类**
 
-### Motivation 3: High Availability
+### 动机 3: 高可用性
 
-When serving critical loads with Weaviate, it may be desirable to be able to keep serving queries even if a node fails completely. Such a failure could be either due to a software or OS-level crash or even a hardware issue. Other than unexpected crashes, a highly available setup can also tolerate zero-downtime updates and other maintenance tasks.
+在使用Weaviate进行关键负载服务时，如果一个节点完全故障，可能希望能够继续提供查询服务。这种故障可能是由于软件或操作系统级别的崩溃，甚至是硬件问题。除了意外崩溃之外，高可用性的设置还可以容忍零停机时间的更新和其他维护任务。
 
-To run a highly available setup, classes must be replicated among multiple nodes.
+为了运行一个高可用的设置，类必须在多个节点之间进行复制。
 
-**Solution: Replicate your classes across multiple nodes in a cluster**
+**解决方案：在集群中将您的类复制到多个节点**
 
-## Sharding vs Replication
-The motivation sections above outline when it is desirable to shard your classes across multiple nodes and when it is desirable to replicate your classes - or both. This section highlights the implications of a sharded and/or replicated setup.
+## 分片 vs 复制
+上面的动机部分概述了何时需要将您的类分片到多个节点以及何时需要复制您的类 - 或者两者兼而有之。本节重点介绍分片和/或复制设置的影响。
 
 :::note
 All of the scenarios below assume that - as sharding or replication is increased - the cluster size is adapted accordingly. If the number of shards or the replication factor is lower than the number of nodes in the cluster, the advantages no longer apply.*
 :::
 
-### Advantages when increasing sharding
-* Run larger datasets
-* Speed up imports
+### 增加分片的优势
+* 处理更大的数据集
+* 加快导入速度
 
-### Disadvantages when increasing sharding
-* Query throughput does not improve when adding more sharded nodes
+### 增加分片的劣势
+* 添加更多分片节点后，查询吞吐量不会提高
 
-### Advantages when increasing replication
-* System becomes highly available
-* Increased replication leads to near-linearly increased query throughput
+### 增加复制的优势
+* 系统变得高度可用
+* 增加复制会导致查询吞吐量近乎线性增加
 
-### Disadvantages when increasing replication
-* Import speed does not improve when adding more replicated nodes
+### 增加复制的劣势
+* 添加更多复制节点后，导入速度不会提高
 
-## Sharding Keys ("Partitioning Keys")
-Weaviate uses specific characteristics of an object to decide which shard it belongs to. As of `v1.8.0`, a sharding key is always the object's UUID. The sharding algorithm is a 64bit Murmur-3 hash. Other properties and other algorithms for sharding may be added in the future.
+## 分片键（"分区键"）
+Weaviate使用对象的特定特征来决定它属于哪个分片。从`v1.8.0`开始，分片键始终是对象的UUID。分片算法是一个64位的Murmur-3哈希算法。将来可能会添加其他属性和其他分片算法。
 
-## Resharding
+## 重新分片
 
-Weaviate uses a virtual shard system to assign objects to shards. This makes it more efficient to re-shard, as minimal data movement occurs when re-sharding. However, due to the HNSW index, resharding is still a very costly process and should be used rarely. The cost of resharding is roughly that of an initial import with regards to the amount of data that needs to be moved.
+Weaviate使用虚拟分片系统将对象分配到分片中。这使得重新分片更加高效，因为重新分片时只发生最小的数据移动。然而，由于HNSW索引的存在，重新分片仍然是一个非常昂贵的过程，应该尽量避免使用。重新分片的成本大致等同于初始导入的数据量。
 
-Example - assume the following scenario: A class is comprised of 4 shards and taking 60 minutes to import all data. When changing the sharding count to 5, each shard will roughly transfer 20% of its data to the new shard. This is equivalent to an import of 20% of the dataset, so the expected time for this process would be ~12 minutes.
+示例 - 假设以下场景：一个类由4个分片组成，导入所有数据需要60分钟。当将分片计数更改为5时，每个分片将大约将其数据的20%传输到新的分片。这相当于数据集的20%的导入，因此此过程的预期时间将为约12分钟。
 
 :::note
 The groundwork to be able to re-shard has been laid by using Weaviate's Virtual shard system. Re-sharding however is not yet implemented and not currently prioritized. See Weaviate's [Architectural Roadmap](/developers/weaviate/roadmap/index.md).
 :::
 
-## Node Discovery
+## 节点发现
 
-Nodes in a cluster use a gossip-like protocol through [Hashicorp's Memberlist](https://github.com/hashicorp/memberlist) to communicate node state and failure scenarios.
+集群中的节点使用类似于八卦协议的方式，通过[Hashicorp的Memberlist](https://github.com/hashicorp/memberlist)来通信节点状态和故障场景。
 
-Weaviate - especially when running as a cluster - is optimized to run on Kubernetes. The [Weaviate Helm chart](/developers/weaviate/installation/kubernetes.md#weaviate-helm-chart) makes use of a `StatefulSet` and a headless `Service` that automatically configures node discovery. All you have to do is specify the desired node count.
+Weaviate - 尤其是在集群模式下运行时 - 优化为在 Kubernetes 上运行。[Weaviate Helm chart](/developers/weaviate/installation/kubernetes.md#weaviate-helm-chart) 使用 `StatefulSet` 和无头的 `Service` 来自动配置节点发现。您只需要指定所需的节点数。
 
-## Node affinity of shards and/or replication shards
+## 分片和/或复制分片的节点亲和性
 
-Weaviate tries to select the node with the most available disk space.
+Weaviate 尝试选择具有最多可用磁盘空间的节点。
 
-This only applies when creating a new class, rather than when adding more data to an existing single class.
+只有在创建新的类时才适用，而不是在向现有的单个类添加更多数据时。
 
 <details>
-  <summary>Pre-<code>v1.18.1</code> behavior</summary>
+  <summary>Pre-<code>v1.18.1</code>的行为</summary>
 
-In versions `v1.8.0`-`v1.18.0`, users could not specify the node-affinity of a specific shard or replication shard.
+在版本`v1.8.0`-`v1.18.0`中，用户无法指定特定分片或复制分片的节点亲和性。
 
-Shards were assigned to 'live' nodes in a round-robin fashion starting with a random node.
+分片会以循环方式分配给“活动”节点，从一个随机节点开始。
 
 </details>
 
-## Consistency and current limitations
+## 一致性和当前限制
 
-* Changes to the schema are strongly consistent across nodes, whereas changes to data aim to be eventually consistent.
-* As of `v1.8.0`, the process of broadcasting schema changes across the cluster uses a form of two-phase transaction that as of now cannot tolerate node failures during the lifetime of the transaction.
-* As of `v1.8.0`, replication is currently under development. ([See Roadmap](/developers/weaviate/roadmap/index.md)).
-* As of `v1.8.0`, dynamically scaling a cluster is not fully supported yet. New nodes can be added to an existing cluster, however it does not affect the ownership of shards. Existing nodes can not yet be removed if data is present, as shards are not yet being moved to other nodes prior to a removal of a node. ([See Roadmap](/developers/weaviate/roadmap/index.md)).
+* 模式的更改在节点之间是强一致的，而数据的更改则是最终一致的。
+* 从`v1.8.0`版本开始，在整个事务的生命周期中，集群中广播模式更改的过程使用了一种两阶段事务的形式，目前无法容忍节点故障。
+* 从`v1.8.0`版本开始，复制功能目前正在开发中。 ([查看路线图](/developers/weaviate/roadmap/index.md)).
+* 从 `v1.8.0` 版本开始，动态扩展集群的支持还不完全。可以将新节点添加到现有集群中，但它不会影响分片的所有权。如果数据存在，现有节点目前不能被移除，因为在移除节点之前还没有将分片移动到其他节点。 （[查看路线图](/developers/weaviate/roadmap/index.md)）
 
-
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

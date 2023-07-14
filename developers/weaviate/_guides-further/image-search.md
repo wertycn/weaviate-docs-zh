@@ -1,14 +1,13 @@
 ---
-title: (NEW) Image search with Weaviate
-sidebar_position: 5
 image: og/docs/further-guides.jpg
-# tags: []
+sidebar_position: 5
+title: (NEW) Image search with Weaviate
 ---
 
-## Overview
+## 概述
 
-Learn how to perform image searches using Weaviate
+学习如何使用Weaviate进行图像搜索
 
-<!-- TODO: Finish this page! -->
-<!-- :::caution This page is under construction.
+<!-- TODO: 完成这个页面！ -->
+<!-- :::caution 该页面正在建设中。 -->
 ::: -->

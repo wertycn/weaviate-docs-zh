@@ -1,8 +1,7 @@
 ---
-title: Delete objects
-sidebar_position: 35
 image: og/docs/howto.jpg
-# tags: ['how-to', 'CRUD', 'delete']
+sidebar_position: 35
+title: Delete objects
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,20 +10,20 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PyCode from '!!raw-loader!/_includes/code/howto/manage-data.delete.py';
 import TSCode from '!!raw-loader!/_includes/code/howto/manage-data.delete.ts';
 
-## Overview
+## 概述
 
-This page will show you how to delete individual objects in Weaviate.
+本页面将向您展示如何在Weaviate中删除单个对象。
 
 :::info See also
 - [References: REST - /v1/objects](../api/rest/objects.md#delete-a-data-object)
 :::
 
 
-## Requirements
+## 需求
 
-To delete an object, you'll need its [id](../api/graphql/additional-properties.md#id) and class name.
+要删除一个对象，您需要知道它的[id](../api/graphql/additional-properties.md#id)和类名。
 
-To delete multiple objects, you'll need their class name, and a filter that matches them.
+要删除多个对象，您需要知道它们的类名和与之匹配的过滤器。
 
 :::tip Multi-tenancy
 For classes where [multi-tenancy](../concepts/data.md#multi-tenancy) is enabled, you will also need to specify the tenant name when deleting objects. See [Manage data: multi-tenancy operations](./multi-tenancy.md) for details on how.
@@ -33,14 +32,14 @@ For classes where [multi-tenancy](../concepts/data.md#multi-tenancy) is enabled,
 import RestObjectsCRUDClassnameNote from '/_includes/rest-objects-crud-classname-note.md';
 
 <details>
-  <summary>Why specify the class name?</summary>
+  <summary>为什么要指定类名？</summary>
   <RestObjectsCRUDClassnameNote/>
 </details>
 
 
-## Delete object by id
+## 根据ID删除对象
 
-To delete an object, [make a `DELETE` request to the `/v1/objects` REST API endpoint](../api/rest/objects.md#delete-a-data-object), or use the client code below.
+要删除一个对象，可以[向`/v1/objects` REST API端点发送`DELETE`请求](../api/rest/objects.md#delete-a-data-object)，或者使用下面的客户端代码。
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -63,9 +62,9 @@ To delete an object, [make a `DELETE` request to the `/v1/objects` REST API endp
 </Tabs>
 
 
-## Error handling
+## 错误处理
 
-If the id doesn't exist in the specified class, a 404 error will be returned. You can handle errors as follows:
+如果指定的类别中不存在该id，则会返回404错误。您可以按照以下方式处理错误：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -88,11 +87,11 @@ If the id doesn't exist in the specified class, a 404 error will be returned. Yo
 </Tabs>
 
 
-## Batch delete multiple objects
+## 批量删除多个对象
 
-To delete multiple objects at once, make a [`DELETE` request to the `/v1/batch/objects` REST API endpoint](../api/rest/batch.md#batch-delete), or use the client code below. Specify which objects to delete using the same kind of [`where` filter](../search/similarity.md) used in similarity search.
+要一次删除多个对象，可以通过向 `/v1/batch/objects` REST API 端点发起 `DELETE` 请求，或者使用下面的客户端代码。使用与相似度搜索中使用的[`where`筛选器](../search/similarity.md)相同的方式指定要删除的对象。
 
-For limitations, optional parameters, and the response format, see the [Batch delete API reference](../api/rest/batch.md#batch-delete).
+有关限制、可选参数和响应格式，请参阅[批量删除 API 参考](../api/rest/batch.md#batch-delete)。
 
 
 <Tabs groupId="languages">
@@ -116,7 +115,7 @@ For limitations, optional parameters, and the response format, see the [Batch de
 </Tabs>
 
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

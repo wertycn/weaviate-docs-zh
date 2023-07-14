@@ -1,46 +1,45 @@
 ---
-title: Example use cases
-sidebar_position: 6
 image: og/docs/more-resources.jpg
-# tags: ['use cases']
+sidebar_position: 6
+title: Example use cases
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-Most use cases of Weaviate benefit from the following two core concepts:
+Weaviate 的大多数用例受益于以下两个核心概念：
 
-1. **Semantic search.**  
-  [80% of data is unstructured](https://www.forbes.com/sites/forbestechcouncil/2019/01/29/the-80-blind-spot-are-you-ignoring-unstructured-organizational-data/) and the largest search engine in the world has only indexed [0.004%](https://www.seeker.com/how-much-of-the-internet-is-hidden-1792697912.html) of all data available. With Weaviate and its Contextionary, semantic search in unstructured data becomes possible. Various use cases benefit from unlocking this potential of unstructured data by semantic search, see [Document search and analysis](#document-search-and-analysis) and [Product search for E-commerce](#product-search-for-e-commerce).
-2. **Automatic classification.**  
-   With your data represented by their meaning in a high dimensional vector space, it becomes possible to automatically find relations between objects and concepts. This can be based on its context, or existing neighboring data objects in your data. See [Classification for ERP](#classification-for-erp) and [Cybersecurity analysis](#cybersecurity-analysis) for examples.
+1. **语义搜索。**  
+  [80%的数据是非结构化的](https://www.forbes.com/sites/forbestechcouncil/2019/01/29/the-80-blind-spot-are-you-ignoring-unstructured-organizational-data/)，而全球最大的搜索引擎只索引了[0.004%](https://www.seeker.com/how-much-of-the-internet-is-hidden-1792697912.html)的所有可用数据。通过Weaviate和其Contextionary，对非结构化数据进行语义搜索变得可能。不同的用例通过语义搜索解锁非结构化数据的潜力，例如[文档搜索和分析](#document-search-and-analysis)和[电子商务产品搜索](#product-search-for-e-commerce)。
+2. **自动分类。**  
+   通过将数据在高维向量空间中表示其含义，可以自动发现对象和概念之间的关系。这可以基于其上下文，或者基于数据中现有的相邻数据对象。有关示例，请参见[企业资源计划（ERP）的分类](#classification-for-erp)和[网络安全分析](#cybersecurity-analysis)。
 
-## Document search and analysis
+## 文档搜索和分析
 
-**Challenge**: Text is often stored in unstructured documents. From PDFs to Word documents and from website input fields to emails. The current problem is that data only can be retrieved by searching for keywords rather than the context in which the data is represented. For example, when searching for "science fiction" in a traditional book search engine, you might find anything related to "science" or "fiction" so this would include "neuro**science**" but not "a book about the future".
+**挑战**：文本通常存储在非结构化文档中，从PDF到Word文档，从网站输入字段到电子邮件。目前的问题是，数据只能通过搜索关键字来检索，而无法根据数据所表示的上下文进行检索。例如，在传统的图书搜索引擎中搜索"科幻"时，你可能会找到与"科学"或"虚构"有关的任何内容，这可能包括"神经**科学**"，但不包括"一本关于未来的书"。
 
-**Solution with Weaviate**: Weaviate indexes data from any source based on its meaning. This is achieved by leveraging machine learning models that index text in a space, similar documents are placed close to similar concepts and words. This allows you to easily find documents based on fuzzy search terms that are not present in the documents but will be realtime processed by Weaviate.
+**使用Weaviate解决方案**：Weaviate根据数据的含义对来自任何来源的数据进行索引。这是通过利用机器学习模型，在一个空间中对文本进行索引，相似的文档被放置在相似的概念和单词附近。这使您可以根据在文档中不存在但将由Weaviate实时处理的模糊搜索词轻松查找文档。
 
-## Product search for E-commerce
+## 电子商务产品搜索
 
-**Challenge**: A product search bar is an important feature of e-commerce websites, but often a potential customer cannot find what they are looking for. Traditional search methods retrieve products based on matching keywords, with the problem that products with different keywords but the same context cannot be found by the user. If potential customers cannot find what they are looking for, this might lead to lost sales.
+**挑战**：产品搜索栏是电子商务网站的重要功能，但往往潜在客户无法找到他们所需的产品。传统的搜索方法是根据匹配关键字来检索产品，但存在一个问题，即具有不同关键字但相同上下文的产品无法被用户找到。如果潜在客户找不到他们需要的产品，可能会导致销售损失。
 
-**Solution with Weaviate**: Weaviate adds machine learning to traditional search capabilities allowing people to not only search for fixed keywords, but also for context. For example, a category that was never created can be realtime processed by Weaviate (e.g., showing pumpkin products when searching for Halloween).
+**使用Weaviate的解决方案**：Weaviate将机器学习添加到传统的搜索功能中，使人们不仅可以搜索固定关键词，还可以搜索上下文。例如，从未创建的类别可以被Weaviate实时处理（例如，在搜索Halloween时显示南瓜产品）。
 
-## Classification for ERP
+## 用于ERP的分类
 
-**Challenge**: Business users create reports (e.g., financial) based on how data is structured in ERP systems. For example, a flight ticket from an airline needs to be classified as "international travel" but this is often not done correctly, not done at all or not done in a way that it works for a specific business question (e.g., an airline ticket classified as "international travel" can't answer the question "How much money has been spent on non-ground travel"). This is currently often solved by manually classifying the data, or hiring data scientists, which is expensive and time-consuming.
+**挑战**：业务用户根据企业资源计划（ERP）系统中数据的结构创建报告（例如财务报告）。例如，航空公司的机票需要被分类为"国际旅行"，但通常这种分类要么不正确，要么根本没有进行，要么无法解决特定的业务问题（例如，将航空公司的机票分类为"国际旅行"无法回答"非地面旅行花费了多少钱"这个问题）。目前通常通过手动分类数据或者雇佣数据科学家来解决这个问题，但这既昂贵又耗时。
 
-**Solution with Weaviate**: Weaviate understands the context of concepts, which allows automatic, real-time classification of unseen, new concepts. For example, because Weaviate knows what "international travel" and "air travel" means, airline tickets can automatically be classified as "travel expenses" or "flight tickets", and "national travel" or "international travel".
+**使用Weaviate的解决方案**: Weaviate能够理解概念的上下文，从而可以对未知的、新的概念进行自动实时分类。例如，由于Weaviate知道"国际旅行"和"航空旅行"的含义，航空机票可以自动分类为"旅行费用"或"机票"，以及"国内旅行"或"国际旅行"。
 
-## Cybersecurity analysis
+## 网络安全分析
 
-**Challenge**: Cybersecurity SIEM (Security information and event management) platforms have to deal with large amounts of streaming security-related data, but indexing and analyzing free-text data is still a challenge to do on a large scale resulting in threat mitigation happening too late or not at all.
+**挑战**:网络安全SIEM（安全信息和事件管理）平台需要处理大量的流式安全相关数据，但是在大规模上对自由文本数据进行索引和分析仍然是一个挑战，导致威胁缓解发生得太晚或根本没有发生。
 
-**Solution with Weaviate**: Weaviate helps in the automation of free text analysis and automatically classify which mitigation should be taken. This can be done based on existing frameworks or custom build mitigations.
+**使用Weaviate的解决方案**：Weaviate可以帮助自动化自由文本分析，并自动分类应采取哪种缓解措施。这可以基于现有框架或自定义构建的缓解措施来实现。
 
-
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

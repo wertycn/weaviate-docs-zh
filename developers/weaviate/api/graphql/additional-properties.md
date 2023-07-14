@@ -1,9 +1,9 @@
 ---
-title: GraphQL - Additional properties
-sidebar_position: 9
 image: og/docs/api.jpg
-# tags: ['graphql', 'additional properties', 'additional', 'underscore']
+sidebar_position: 9
+title: GraphQL - Additional properties
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -12,20 +12,20 @@ import TryEduDemo from '/_includes/try-on-edu-demo.mdx';
 
 <TryEduDemo />
 
-## Introduction
+## 介绍
 
-GraphQL additional properties can be used on data objects in Get{} Queries to get additional information about the returned data objects. Which additional properties are available depends on the modules that are attached to Weaviate. The fields `id`, `vector`, `certainty`, `featureProjection` and `classification` are available from Weaviate Core. On nested GraphQL fields (references to other data classes), only the `id` can be returned. Explanation on specific additional properties can be found on the module pages, see for example [`text2vec-contextionary`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md#additional-graphql-api-properties).
+GraphQL的附加属性可以在Get{}查询中用于获取返回的数据对象的附加信息。可用的附加属性取决于连接到Weaviate的模块。从Weaviate Core中可以获取`id`、`vector`、`certainty`、`featureProjection`和`classification`字段。对于嵌套的GraphQL字段（引用到其他数据类），只能返回`id`。有关特定附加属性的说明可以在模块页面找到，例如[`text2vec-contextionary`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md#additional-graphql-api-properties)。
 
-## Example
+## 示例
 
-An example query getting the [UUID](#id) and the [distance](#distance).
+一个获取[UUID](#id)和[距离](#distance)的示例查询。
 
 import GraphQLUnderscoreDistance from '/_includes/code/graphql.underscoreproperties.distance.mdx';
 
 <GraphQLUnderscoreDistance/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 ```json
 {
@@ -55,11 +55,11 @@ import GraphQLUnderscoreDistance from '/_includes/code/graphql.underscorepropert
 
 </details>
 
-## _additional property
+## _additional属性
 
-All additional properties can be set in the reserved `_additional{}` property.
+所有额外的属性都可以在保留的`_additional{}`属性中设置。
 
-For example:
+例如：
 
 ```graphql
 {
@@ -78,7 +78,7 @@ For example:
 
 ### id
 
-The `id` field contains the unique [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) of the data object.
+`id`字段包含数据对象的唯一[UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier)。
 
 ```graphql
 {
@@ -93,9 +93,9 @@ The `id` field contains the unique [UUID](https://en.wikipedia.org/wiki/Universa
 }
 ```
 
-### vector
+### 向量
 
-The `vector` fields contains the vector representation of the data object
+`vector`字段包含数据对象的向量表示。
 
 ```graphql
 {
@@ -111,12 +111,12 @@ The `vector` fields contains the vector representation of the data object
 ```
 
 
-### generate
+### 生成
 
 :::info Requires a [`generative-xxx` module](../../modules/reader-generator-modules/index.md)
 :::
 
-The `generate` field can be used to perform a [generative search](../../search/generative.md).
+`generate`字段可以用于执行[生成式搜索](../../search/generative.md)。
 
 ```graphql
 {
@@ -143,19 +143,19 @@ The `generate` field can be used to perform a [generative search](../../search/g
 ```
 
 
-### rerank
+### 重新排序
 
 :::info Requires a [`reranker-xxx` module](../../modules/retriever-vectorizer-modules/index.md)
 :::
 
-The `rerank` field can be used to [reorder the search results](../../search/rerank.md). It accepts two parameters:
+`rerank`字段可以用于[重新排序搜索结果](../../search/rerank.md)。它接受两个参数：
 
-| Parameter    | Required | Type       | Description  |
+| 参数         | 必填     | 类型       | 描述         |
 |--------------|----------|------------|--------------|
-| `property`   | yes      | `string`   | Which property to pass to the reranker. For example, you may want to run a similarity search on a Products collection, then rerank specifically on the Name field. |
-| `query`      | no       | `string`    | Optionally specify a different query. |
+| `property`   | 是       | `string`   | 传递给重新排序器的属性。例如，您可能希望在产品集合上运行相似性搜索，然后在名称字段上进行重新排序。 |
+| `query`      | no       | `string`    | 可选地指定一个不同的查询。 |
 
-Syntax:
+语法:
 
 ```graphql
 {
@@ -177,7 +177,7 @@ Syntax:
 
 ### creationTimeUnix
 
-The `creationTimeUnix` field is the timestamp of when the data object was created.
+`creationTimeUnix`字段是数据对象创建的时间戳。
 
 ```graphql
 {
@@ -194,7 +194,7 @@ The `creationTimeUnix` field is the timestamp of when the data object was create
 
 ### lastUpdateTimeUnix
 
-The `lastUpdateTimeUnix` field is the timestamp of when the data object was last updated.
+`lastUpdateTimeUnix`字段是数据对象最后更新的时间戳。
 
 ```graphql
 {
@@ -209,78 +209,60 @@ The `lastUpdateTimeUnix` field is the timestamp of when the data object was last
 }
 ```
 
-### distance
+### 距离
 
-Any time a vector search is involved, the `distance` can be displayed to show
-the distance between the query vector and each result. The distance is the raw
-distance metric that was used as part of the vector search. For example, if the
-distance metric is `cosine`, distance will return a number between 0 and 2. See
-the full overview of [distance metrics and the expected distance
-ranges](/developers/weaviate/config-refs/distances.md).
+任何涉及向量搜索的时候，可以显示`distance`来展示查询向量与每个结果之间的距离。距离是作为向量搜索的一部分使用的原始距离度量。例如，如果距离度量是`cosine`，`distance`将返回一个介于0和2之间的数字。请查看完整的[距离度量和期望距离范围的概述](/developers/weaviate/config-refs/distances.md)。
 
-A distance would be typical in any place that you retrieve objects using a
-vector, for example `Get {}` with `nearObject`, `nearVector`, or `near<Media>`.
-The results are ordered by the ascending distance - unless you explicitly sort
-by another property.
+在使用向量检索对象的任何地方，例如使用`nearObject`、`nearVector`或`near<Media>`的`Get {}`，距离是很常见的。结果按照升序距离排序，除非您明确按另一个属性进行排序。
 
-A lower value for a distance always means that two vectors are closer to
-another, than a higher value. Depending on the distance metric used, this can
-also mean that distances would return negative values. For example, if dot
-product distance is used, a distance of `-50` would indicate more similarity
-between a vector pair than `20`. See [the distances
-page](/developers/weaviate/config-refs/distances.md) for details and exact
-definitions.
+较小的距离值始终意味着两个向量相互之间更接近，而较大的值则意味着相对较远。根据使用的距离度量，这也可能意味着距离会返回负值。例如，如果使用点积
+使用产品距离，距离为`-50`表示向量对之间的相似性比`20`更高。有关详细信息和确切定义，请参见[距离页面](/developers/weaviate/config-refs/distances.md)。
 
-*Note that the distance field was introduced in `v1.14.0`.*
+*请注意，距离字段在`v1.14.0`中引入。*
 
-#### Certainty (only for cosine distance)
+#### 确定性（仅适用于余弦距离）
 
-Prior to `v1.14`, certainty was the only way to display vector similarity in
-the results. `certainty` is an opinionated measure that always returns a number
-between 0 and 1. It is therefore only usable with fixed-range distance metrics,
-such as `cosine`.
+在`v1.14`之前，确定性是在结果中显示向量相似性的唯一方法。`certainty`是一种主观的度量，总是返回一个数值。
+该值介于0和1之间。因此，它只能与固定范围的距离度量一起使用，例如`cosine`。
 
-For a class with `cosine` distance metrics, the `certainty` is a
-normalization of the distance using the formula:
+对于具有`cosine`距离度量的类别，`certainty`是使用以下公式对距离进行归一化的结果:
 
 ```
 certainty = 1 - distance/2
 ```
 
-Given that a cosine distance is always a number between 0 and 2, this will
-result in certainties between 0 and 1, with 1 indicating identical vectors, and
-0 indiating opposing angles. This definition only exists in an angular space.
+鉴于余弦距离始终是0到2之间的数字，这将导致0到1之间的确定性，其中1表示相同的向量，0表示相反的角度。此定义仅存在于角度空间中。
 
-### Classification
+### 分类
 
-When a data-object has been [subjected to classification](../rest/classification.md), you can get additional information about how the object was classified by running the following command:
+当一个数据对象经过分类处理后，您可以通过运行以下命令获取有关对象分类的附加信息：
 
 import GraphQLUnderscoreClassification from '/_includes/code/graphql.underscoreproperties.classification.mdx';
 
 <GraphQLUnderscoreClassification/>
 
-### Feature Projection
+### 特征投影
 
-Because Weaviate stores all data in a vector space, you can visualize the results according to the results of your query. The feature projection is intended to reduce the dimensionality of the object's vector into something easily suitable for visualizing, such as 2d or 3d. The underlying algorithm is exchangeable, the first algorithm to be provided is [t-SNE](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding).
+由于Weaviate将所有数据存储在向量空间中，因此您可以根据查询结果可视化数据。特征投影旨在将对象向量的维度降低到适合可视化的简单维度，例如2D或3D。底层算法是可互换的，首个提供的算法是[t-SNE](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding)。
 
-To tweak the feature projection optional parameters (currently GraphQL-only) can be provided. The values and their defaults are:
+要调整特征投影的可选参数（目前仅支持GraphQL），可以提供以下值及其默认值：
 
-| Parameter | Type | Default | Implication |
+| 参数 | 类型 | 默认值 | 含义 |
 |--|--|--|--|
-| `dimensions` | `int` | `2` | Target dimensionality, usually `2` or `3` |
-| `algorithm` | `string` | `tsne` | Algorithm to be used, currently supported: `tsne` |
-| `perplexity` | `int` | `min(5, len(results)-1)` | The `t-SNE` perplexity value, must be smaller than the `n-1` where `n` is the number of results to be visualized |
-| `learningRate` | `int` | `25` | The `t-SNE` learning rate |
-| `iterations` | `int` | `100` | The number of iterations the `t-SNE` algorithm runs. Higher values lead to more stable results at the cost of a larger response time |
+| `dimensions` | `int` | `2` | 目标维度，通常为 `2` 或 `3` |
+| `algorithm` | `string` | `tsne` | 要使用的算法，目前支持：`tsne` |
+| `perplexity` | `int` | `min(5, len(results)-1)` | `t-SNE`的困惑度值，必须小于要可视化的结果数量减1 |
+| `learningRate` | `int` | `25` | `t-SNE`的学习率 |
+| `iterations` | `int` | `100` | `t-SNE`算法运行的迭代次数。较高的值会导致更稳定的结果，但响应时间会更长 |
 
-An example with default settings:
+默认设置的示例：
 
 import GraphQLUnderscoreFeature from '/_includes/code/graphql.underscoreproperties.featureprojection.mdx';
 
 <GraphQLUnderscoreFeature/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期的响应</summary>
 
 ```json
 {
@@ -318,17 +300,17 @@ import GraphQLUnderscoreFeature from '/_includes/code/graphql.underscoreproperti
 
 </details>
 
-The above result can be plotted as follows (where the result in red is the first result):
+可以将上述结果绘制成如下图所示（红色结果为第一个结果）：
 
-![Weaviate T-SNE example](./img/plot-noSettings.png?i=1 "Weaviate T-SNE example")
+![Weaviate T-SNE示例](./img/plot-noSettings.png?i=1 "Weaviate T-SNE示例")
 
-#### Best practices and notes
-* There is no request size limit (other than the global 10,000 items request limit) which can be used on a `featureProjection` query. However, due to the O(n^2) complexity of the `t-SNE` algorithm, large requests size have an exponential effect on the response time. We recommend to keep the request size at or below 100 items, as we have noticed drastic increases in response time thereafter.
-* Feature Projection happens in real-time, per query. The dimensions returned have no meaning across queries.
-* Currently only root elements (not resolved cross-references) are taken into consideration for the featureProjection.
-* Due to the relatively high cost of the underlying algorithm, we recommend to limit requests including a `featureProjection` in high-load situations where response time matters. Avoid parallel requests including a `featureProjection`, so that some threads stay available to serve other, time-critical requests.
+#### 最佳实践和注意事项
+* 在`featureProjection`查询中，没有请求大小限制（除了全局的10,000个项目请求限制）。然而，由于`t-SNE`算法的O(n^2)复杂度，较大的请求大小对响应时间有指数级影响。我们建议将请求大小保持在100个项目以下，因为我们注意到此后响应时间急剧增加。
+* 特征投影是实时进行的，针对每个查询。返回的维度在不同的查询之间没有意义。
+* 目前，特征投影仅考虑根元素（未解析的交叉引用不考虑在内）。
+* 由于底层算法的相对高成本，我们建议在响应时间重要的高负载情况下限制包含`featureProjection`的请求。避免并行请求包含`featureProjection`，以便一些线程保持可用状态，以处理其他时间关键的请求。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

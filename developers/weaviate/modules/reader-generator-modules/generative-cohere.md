@@ -1,48 +1,48 @@
 ---
-title: Generative Search - Cohere
-sidebar_position: 11
 image: og/docs/modules/generative-cohere.jpg
-# tags: ['generative', 'transformers', 'cohere']
+sidebar_position: 11
+title: Generative Search - Cohere
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## In short
+## 简而言之
 
-* The Generative Cohere (`generative-cohere`) module generates responses based on the data stored in your Weaviate instance.
-* The module can generate a response for each object returned from Weaviate, or a combined response for a group of objects.
-* The module adds a `generate {}` parameter to the GraphQL `_additional {}` property of the `Get {}` queries
-* Added in Weaviate `v1.19.0`
-* The default model is `command-xlarge-nightly`, which the Cohere team trains nightly and pushes updates.
+* 生成式一致性（`generative-cohere`）模块根据存储在您的 Weaviate 实例中的数据生成响应。
+* 该模块可以为从 Weaviate 返回的每个对象生成响应，或为一组对象生成组合响应。
+* 该模块将 `generate {}` 参数添加到 GraphQL `_additional {}` 属性的 `Get {}` 查询中
+* 在 Weaviate `v1.19.0` 中添加
+* 默认模型是`command-xlarge-nightly`，Cohere团队每晚训练并推送更新。
 
-## Introduction
+## 简介
 
-`generative-cohere` generates responses based on the data stored in your Weaviate instance.
+`generative-cohere`基于您的Weaviate实例中存储的数据生成回复。
 
-The module works in two steps:
-1. (Weaviate) Run a search query in Weaviate to find relevant objects.
-2. (Cohere) Use a Cohere Large Language Model to generate a response based on the results (from the previous step) and the provided prompt or task.
+该模块分为两个步骤：
+1. （Weaviate）在Weaviate中运行搜索查询以找到相关的对象。
+2. （Cohere）使用Cohere大型语言模型根据结果（来自上一步骤）和提供的提示或任务生成回复。
 
 :::note
 You can use the Generative Cohere module with non-Cohere upstream modules. For example, you could use `text2vec-openai` or `text2vec-huggingface` to vectorize and query your data, but then rely on the `generative-cohere` module to generate a response.
 :::
 
-The generative module can provide results for:
-* each returned object - `singleResult{ prompt }`
-* the group of all results together – `groupedResult{ task }`
+生成模块可以提供以下结果：
+* 每个返回对象 - `singleResult{ prompt }`
+* 所有结果的组合 - `groupedResult{ task }`
 
-You need to input both a query and a prompt (for individual responses) or a task (for all responses).
+您需要输入查询和提示（用于单个回复）或任务（用于所有回复）。
 
-## Cohere API key
+## Cohere API密钥
 
-`generative-cohere` requires an [Cohere API key](https://dashboard.cohere.com/welcome/login) to perform the generation task.
+`generative-cohere`需要一个[Cohere API密钥](https://dashboard.cohere.com/welcome/login)来执行生成任务。
 
-### Providing the key to Weaviate
+### 将密钥提供给Weaviate
 
-You can provide your Cohere API key in two ways:
+您可以通过两种方式提供您的Cohere API密钥：
 
-1. During the **configuration** of your Docker instance, by adding `COHERE_APIKEY` under `environment` to your `docker-compose` file, like this:
+1. 在配置Docker实例时，在您的`docker-compose`文件中的`environment`下添加`COHERE_APIKEY`，如下所示:
 
   ```
   environment:
@@ -50,13 +50,13 @@ You can provide your Cohere API key in two ways:
     ...
   ```
 
-2. At **run-time** (recommended), by providing `"X-Cohere-Api-Key"` to the Weaviate client, like this:
+2. 在运行时（推荐），通过向Weaviate客户端提供`"X-Cohere-Api-Key"`，如下所示:
 
 import ClientKey from '/_includes/code/core.client.cohere.apikey.mdx';
 
 <ClientKey />
 
-## Module configuration
+## 模块配置
 
 :::tip Not applicable to WCS
 This module is enabled and pre-configured on Weaviate Cloud Services.
@@ -68,15 +68,15 @@ Your Weaviate instance must be on `1.19.0` or newer.
 If your instance is older than `1.19.0` then you need to migrate or upgrade it to a newer version.
 :::
 
-### Configuration file (Weaviate open source only)
+### 配置文件（仅适用于 Weaviate 开源版本）
 
-You can enable the Generative Cohere module in your configuration file (e.g. `docker-compose.yaml`). Add the `generative-cohere` module (alongside any other module you may need) to the `ENABLE_MODULES` property, like this:
+您可以在配置文件（例如 `docker-compose.yaml`）中启用生成式 Cohere 模块。将 `generative-cohere` 模块（以及您可能需要的其他模块）添加到 `ENABLE_MODULES` 属性中，如下所示：
 
 ```
 ENABLE_MODULES: 'text2vec-cohere,generative-cohere'
 ```
 
-Here is a full example of a Docker configuration, which uses the `generative-cohere` module in combination with `text2vec-cohere`:
+以下是一个完整的Docker配置示例，其中使用了`generative-cohere`模块和`text2vec-cohere`模块的组合:
 
 ```yaml
 ---
@@ -106,11 +106,11 @@ services:
       CLUSTER_HOSTNAME: 'node1'
 ```
 
-## Schema configuration
+## 架构配置
 
-In your Weaviate schema, you can define settings for this module.
+在您的Weaviate架构中，您可以为该模块定义设置。
 
-For example, the following schema configuration will set Weaviate to use the `generative-cohere` module with the `Document` class, with the `command-xlarge-nightly` model. You can also configure additional parameters for the Cohere endpoint through the parameters shown below. Other models you can use from Cohere are `command-xlarge-beta` and `command-xlarge`.
+例如，以下架构配置将设置Weaviate使用`generative-cohere`模块与`Document`类，以及`command-xlarge-nightly`模型。您还可以通过下面显示的参数配置Cohere端点的其他参数。您还可以使用Cohere的其他模型，如`command-xlarge-beta`和`command-xlarge`。
 
 ```json
 {
@@ -137,29 +137,29 @@ For example, the following schema configuration will set Weaviate to use the `ge
 ```
 
 <details>
-  <summary>New to Weaviate Schemas?</summary>
+  <summary>初次接触Weaviate模式？</summary>
 
-If you are new to Weaviate, check out the [Weaviate schema tutorial](/developers/weaviate/tutorials/schema.md).
+如果您是Weaviate的新手，请查看[Weaviate模式教程](/developers/weaviate/tutorials/schema.md)。
 
 </details>
 
 
-## How to use
+## 如何使用
 
-This module extends the  `_additional {...}` property with a `generate` operator.
+此模块通过`_additional {...}`属性扩展了`generate`运算符。
 
-`generate` takes the following arguments:
+`generate`接受以下参数：
 
-| Field | Data Type | Required | Example | Description |
+| 字段 | 数据类型 | 是否必需 | 示例 | 描述 |
 |- |- |- |- |- |
-| `singleResult {prompt}`  | string | no | `Summarize the following in a tweet: {summary}`  | Generates a response for each individual search result. You need to include at least one result field in the prompt, between braces. |
-| `groupedResult {task}`  | string | no | `Explain why these results are similar to each other`  | Generates a single response for all search results |
+| `singleResult {prompt}`  | string | no | `将以下内容以推文的形式总结：{summary}`  | 为每个单独的搜索结果生成响应。在提示中，您需要在大括号之间包含至少一个结果字段。 |
+| `groupedResult {task}`  | string | no | `解释为什么这些结果彼此相似`  | 为所有搜索结果生成单个响应。 |
 
-### Example of properties in the prompt
+### 提示中属性的示例
 
-When piping the results to the prompt, at least one field returned by the query must be added to the prompt. If you don't add any fields, Weaviate will throw an error.
+当将结果导入到提示符中时，查询返回的至少一个字段必须添加到提示符中。如果您没有添加任何字段，Weaviate将会抛出一个错误。
 
-For example, assume your schema looks like this:
+例如，假设您的模式如下所示：
 
 ```graphql
 {
@@ -170,7 +170,7 @@ For example, assume your schema looks like this:
 }
 ```
 
-You can add both `title` and `summary` to the prompt by enclosing them in curly brackets:
+您可以通过将标题和摘要放在花括号中来添加它们到提示中：
 
 ```graphql
 {
@@ -197,18 +197,18 @@ You can add both `title` and `summary` to the prompt by enclosing them in curly 
 }
 ```
 
-### Example - single result
+### 示例 - 单一结果
 
-Here is an example of a query where:
-* we run a vector search (with `nearText`) to find articles about "Italian food"
-* then we ask the generator module to describe each result as a Facebook ad.
-  * the query asks for the `summary` field, which it then includes in the `prompt` argument of the `generate` operator.
+下面是一个查询的示例，其中:
+* 我们运行一个向量搜索（使用`nearText`）来找到关于"意大利美食"的文章
+* 然后我们要求生成器模块将每个结果描述为Facebook广告。
+  * 查询要求`summary`字段，并将其包含在`generate`操作符的`prompt`参数中。
 
 import CohereSingleResult from '/_includes/code/generative.cohere.singleresult.mdx';
 
 <CohereSingleResult/>
 
-### Example response - single result
+### 示例响应 - 单一结果
 
 ```json
 {
@@ -231,17 +231,17 @@ import CohereSingleResult from '/_includes/code/generative.cohere.singleresult.m
 }
 ```
 
-### Example - grouped result
+### 示例 - 分组结果
 
-Here is an example of a query where:
-* we run a vector search (with `nearText`) to find publications about finance,
-* then we ask the generator module to explain why these articles are about finance.
+这是一个查询的示例，其中：
+* 我们运行了一个向量搜索（使用 `nearText`）来查找关于金融的出版物，
+* 然后我们要求生成器模块解释为什么这些文章与金融有关。
 
 import CohereGroupedResult from '/_includes/code/generative.cohere.groupedresult.mdx';
 
 <CohereGroupedResult />
 
-### Example response - grouped result
+### 示例响应 - 分组结果
 
 ```json
 {
@@ -275,17 +275,17 @@ import CohereGroupedResult from '/_includes/code/generative.cohere.groupedresult
 }
 ```
 
-## Additional information
+## 附加信息
 
-### Supported models
+### 支持的模型
 
-You can use any of
+您可以使用以下任何一个模型：
 
-* [`command-xlarge-nightly`](https://docs.cohere.com/docs/command-beta)(default)
+* [`command-xlarge-nightly`](https://docs.cohere.com/docs/command-beta)（默认）
 * `command-xlarge-beta`
 * `command-xlarge`
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

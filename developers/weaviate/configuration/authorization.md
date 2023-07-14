@@ -1,40 +1,36 @@
 ---
-title: Authorization
-sidebar_position: 35
 image: og/docs/configuration.jpg
-# tags: ['authorization']
+sidebar_position: 35
+title: Authorization
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-The authorization plugin allows Weaviate to provide differentiated access to users based on their [authentication](./authentication.md) status. Along with allowing or disallowing anonymous access, Weaviate can differentiate between a user who is in the admin list, or on the read-only list.
+授权插件允许Weaviate根据用户的[身份验证](./authentication.md)状态提供差异化的访问权限。除了允许或禁止匿名访问外，Weaviate还可以区分管理员列表中的用户和只读列表中的用户。
 
-## Admin list
+## 管理员列表
 
-The admin list relies on the configured `Authentication Schema` to correctly identify
+管理员列表依赖于配置的`身份验证模式`来正确识别用户的身份
 the user. On each request, a check against a pre-configured admin list is done.
-If the user is contained in this list, they get all permissions. If they aren't,
-they get none. It is not currently possible to assign only some rights to a specific user.
+如果用户在预配置的管理员列表中，则拥有所有权限。如果不在列表中，则没有任何权限。目前无法只为特定用户分配部分权限。
 
-## Read-only list
+## 只读列表
 
-Other than a list of admins, it is also possible to specify a list of read-only users.
-Those users have permissions on all `get` and `list` operations, but no other
-permissions.
+除了管理员列表外，还可以指定只读用户列表。这些用户对所有`get`和`list`操作拥有权限，但没有其他权限。
 
-If a subject is present on both the admin and read-only list, Weaviate will
-throw an error on startup due to the invalid configuration.
+如果一个主题同时存在于管理员列表和只读列表中，Weaviate在启动时会抛出错误，因为配置无效。
 
-## Usage
+## 使用方法
 
 :::info Using Kubernetes?
 See [this page](../installation/kubernetes.md#authentication-and-authorization) for how to set up `values.yaml` for authentication & authorization.
 :::
 
-Configure the admin plugin in the configuration yaml like so:
+在配置yaml文件中配置管理插件，如下所示：
 
 ```yaml
 services:
@@ -47,8 +43,7 @@ services:
       AUTHORIZATION_ADMINLIST_READONLY_USERS: 'ian-smith,roberta@doe.com'
 ```
 
-The above would enable the plugin and make users `jane@doe.com` and
-`john@doe.com` admins. Additionally, users `ian-smith` and `roberta@doe.com` will have read-only permissions.
+以上内容将启用插件，并使用户`jane@doe.com`和`john@doe.com`成为管理员。此外，用户`ian-smith`和`roberta@doe.com`将具有只读权限。
 
 :::note User identifier
 As shown in the above example, any string can be used to identify the user. This depends on what you configured in the authentication settings. For example, OIDC users may be identified by their email address by setting `AUTHENTICATION_OIDC_USERNAME_CLAIM` as `email`, whereas API key-authenticated users may be identified as a plain string such as `ian-smith`.
@@ -56,11 +51,9 @@ As shown in the above example, any string can be used to identify the user. This
 
 ## RBAC
 
-More fine-grained Role-Based Access Control (RBAC) coming soon. As of now the
-only possible distinction is between Admins (CRUD), Read-Only Users and
-entirely unauthorized users.
+更精细化的基于角色的访问控制（RBAC）即将推出。目前，唯一可能的区分是管理员（CRUD）、只读用户和完全未授权的用户。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

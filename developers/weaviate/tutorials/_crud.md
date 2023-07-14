@@ -1,22 +1,22 @@
 ---
-title: (NEW) Perform CRUD operations
-sidebar_position: 5
 image: og/docs/tutorials.jpg
-# tags: ['how to', 'CRUD']
+sidebar_position: 5
+title: (NEW) Perform CRUD operations
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Overview
+## 概述
 
-In this tutorial, you will learn how to perform various CRUD operations with Weaviate.
+在本教程中，您将学习如何使用Weaviate执行各种CRUD操作。
 
-<!-- :::caution This page is under construction.
+<!-- :::caution 此页面正在建设中。
 ::: -->
 
 :::tip
-When working with a database, you want [full CRUD support](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete). Not all approximate nearest neighbor algorithms support this, and not all incumbent databases (or search engines) are optimized for this type of indexing. These reasons are -among others- the most important to why Weaviate exists. You can also learn more about this by reading [this blog post](https://db-engines.com/en/blog_post/87).
+当使用数据库时，您希望获得[完整的CRUD支持](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)。并非所有的近似最近邻算法都支持此功能，并且并非所有现有的数据库（或搜索引擎）都针对此类型的索引进行了优化。这些原因是Weaviate存在的最重要的原因之一。您还可以通过阅读[这篇博文](https://db-engines.com/en/blog_post/87)来了解更多相关信息。
 :::
 
 ## Prerequisites

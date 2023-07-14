@@ -1,18 +1,18 @@
 ---
-title: Concepts - Advanced
-sidebar_position: 0
 image: og/docs/advanced-concepts.jpg
-# tags: ['architecture']
+sidebar_position: 0
+title: Concepts - Advanced
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-<!-- TODO: Remove explanatory header once layout review complete -->
-<!-- :::caution Migrated From:
+<!-- TODO: 在布局审核完成后删除解释性标题 -->
+<!-- :::caution 迁移自：
 - `Architecture`
-- `Vector indexing` from `Vector Index (ANN) Plugins:Index` + `HNSW`
-  - Note: Configuration options from `HNSW` are now in `References: Configuration/Vector index#How to configure HNSW`
+- 从 `Vector Index (ANN) Plugins:Index` + `HNSW` 的 `Vector indexing`
+  - 注意：`HNSW` 的配置选项现在在 `References: Configuration/Vector index#How to configure HNSW` 中 -->
 ::: -->
 ## Overview
 

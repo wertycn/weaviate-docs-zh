@@ -1,35 +1,35 @@
 ---
-title: img2vec-neural
-sidebar_position: 5
 image: og/docs/modules/img2vec-neural.jpg
-# tags: ['img2vec', 'img2vec-neural']
+sidebar_position: 5
+title: img2vec-neural
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Introduction
+## 简介
 
-This module vectorizes images using neural networks. Pre-trained modules can be used. `resnet50` is the first model that is supported, other models will be released soon. [`resnet50`](https://arxiv.org/abs/1512.03385) is a residual convolutional neural network with 25.5 million parameters trained on more than a million images from the [ImageNet database](https://www.image-net.org/). As the name suggests, it has a total of 50 layers: 48 convolution layers, 1 MaxPool layer and 1 Average Pool layer.
+该模块使用神经网络对图像进行向量化。可以使用预训练的模块。`resnet50`是第一个支持的模型，其他模型即将发布。[`resnet50`](https://arxiv.org/abs/1512.03385)是一个具有2550万参数的残差卷积神经网络，训练于来自[ImageNet数据库](https://www.image-net.org/)的超过一百万张图像。顾名思义，它总共有50层：48个卷积层，1个最大池化层和1个平均池化层。
 
-## Available img2vec-neural models
+## 可用的img2vec-neural模型
 
-There are two different inference models you can choose from. Depending on your machine (`arm64` or other) and whether you prefer to use multi-threading to extract feature vectors or not, you can choose between `keras` and `pytorch`. There are no other differences between the two models.
-- `resnet50` (`keras`):
-  - Supports `amd64`, but not `arm64`.
-  - Does not support `CUDA` (yet)
-  - Supports multi-threaded inference
-- `resnet50` (`pytorch`):
-  - Supports both `amd64` and `arm64`.
-  - Supports `CUDA`
-  - Does not support multi-threaded inference
+有两个不同的推理模型可以选择。根据您的机器（`arm64`或其他）以及是否希望使用多线程提取特征向量，您可以在`keras`和`pytorch`之间进行选择。两个模型之间没有其他区别。
+- `resnet50`（`keras`）：
+  - 支持`amd64`，但不支持`arm64`。
+  - 尚不支持`CUDA`。
+  - 支持多线程推理
+- `resnet50`（`pytorch`）：
+  - 支持 `amd64` 和 `arm64`。
+  - 支持 `CUDA`
+  - 不支持多线程推理
 
-## How to enable in Weaviate
+## 如何在Weaviate中启用
 
-Note: you can also use the [Weaviate configuration tool](/developers/weaviate/installation/docker-compose.md#configurator).
+注意：您也可以使用[Weaviate配置工具](/developers/weaviate/installation/docker-compose.md#configurator)。
 
-### Docker-compose file
-You can find an example Docker-compose file below, which will spin up Weaviate with the image vectorization module. This example spins up a Weaviate with only one vectorization module, the  `img2vec-neural` module of `pytorch` with the `resnet50` model.
+### Docker-compose文件
+您可以在下面找到一个示例的Docker-compose文件，它将使用图像向量化模块启动Weaviate。这个示例只会启动一个向量化模块，即`pytorch`的`img2vec-neural`模块，并且使用`resnet50`模型。
 
 ```yaml
 ---
@@ -59,9 +59,9 @@ services:
     image: semitechnologies/img2vec-pytorch:resnet50
 ```
 
-You can substitute `semitechnologies/img2vec-pytorch:resnet50` with `semitechnologies/img2vec-keras:resnet50` in case you want to use the `keras` module.
+如果您想使用`keras`模块，可以将`semitechnologies/img2vec-pytorch:resnet50`替换为`semitechnologies/img2vec-keras:resnet50`。
 
-You can combine the image vectorization module with a text vectorization module. In the following example, we use both the [`text2vec-contextionary`](./text2vec-contextionary.md) module as well as the `img2vec-neural` module. We set `text2vec-contextionary` as the default vectorizer module, which means we need to specify in the schema when we want a class to be vectorized as with the `img2vec-neural` module instead of the `text2vec-contextionary` module.
+您可以将图像矢量化模块与文本矢量化模块结合使用。在下面的示例中，我们同时使用了[`text2vec-contextionary`](./text2vec-contextionary.md)模块和`img2vec-neural`模块。我们将`text2vec-contextionary`设置为默认的矢量化模块，这意味着当我们希望使用`img2vec-neural`模块而不是`text2vec-contextionary`模块来进行类的矢量化时，需要在模式中进行指定。
 
 ```yaml
 ---
@@ -104,18 +104,18 @@ You can combine the image vectorization module with a text vectorization module.
 ```
 
 
-### Other methods
-If you prefer not to use Docker-compose (but instead for example [Kubernetes](../../installation/kubernetes.md) in a production setup), then you can use the `img2vec-neural` module after taking the following steps:
-1. Enable the `img2vec-neural` module. Make sure you set the `ENABLE_MODULES=img2vec-neural` environment variable. This can be combined with a text vectorization module: `ENABLE_MODULES: 'text2vec-contextionary,img2vec-neural'`. Additionally, you can make one of the modules the default vectorizer, so you don't have to specify it on each schema class: `DEFAULT_VECTORIZER_MODULE=text2vec-contextionary`
-2. Run the `img2vec-neural` module, for example using `docker run -itp "8000:8080" semitechnologies/img2vec-neural:resnet50-61dcbf8`.
-3. Tell Weaviate where to find the inference module. Set the Weaviate environment variable `IMAGE_INFERENCE_API`to where your inference container is running, for example `IMAGE_INFERENCE_API="http://localhost:8000"`
-4. You can now use Weaviate normally and all vectorization of images during import and search time will be done with the selected image vectorization model (given that the schema is configured correctly).
+### 其他方法
+如果您不想使用Docker-compose（而是在生产环境中使用例如[Kubernetes](../../installation/kubernetes.md)），那么您可以按照以下步骤使用`img2vec-neural`模块：
+1. 启用 `img2vec-neural` 模块。确保设置了 `ENABLE_MODULES=img2vec-neural` 环境变量。可以与文本向量化模块一起使用：`ENABLE_MODULES: 'text2vec-contextionary,img2vec-neural'`。另外，您还可以将其中一个模块设置为默认的向量化器，这样您就不必在每个模式类上指定它：`DEFAULT_VECTORIZER_MODULE=text2vec-contextionary`。
+2. 运行`img2vec-neural`模块，例如使用`docker run -itp "8000:8080" semitechnologies/img2vec-neural:resnet50-61dcbf8`。
+3. 告诉Weaviate去哪里找推理模块。将Weaviate环境变量`IMAGE_INFERENCE_API`设置为您的推理容器所在的位置，例如`IMAGE_INFERENCE_API="http://localhost:8000"`。
+4. 您现在可以正常使用Weaviate，并且在导入和搜索时所有的图像向量化将使用所选的图像向量化模型进行处理（前提是模式配置正确）。
 
-## Schema configuration
+## 模式配置
 
-You can specify to use the image vectorizer per class in the schema. To find details on how to configure a data schema, go [here](/developers/weaviate/configuration/schema-configuration.md). When you set the `vectorizer` of a class to `img2vec-neural`, only the property fields that are specified in the `moduleConfig` will be taken into the computation of the vector.
+您可以在模式中为每个类别指定使用图像向量化器。有关如何配置数据模式的详细信息，请转到[这里](/developers/weaviate/configuration/schema-configuration.md)。当您将类别的`vectorizer`设置为`img2vec-neural`时，只有在`moduleConfig`中指定的属性字段才会被计算为向量。
 
-When setting a class vectorizer to `img2vec-neural`, the module configuration must contain information about which field holds the image. The dataType of the fields specified in `imageFields` should be [`blob`](/developers/weaviate/config-refs/datatypes.md#datatype-blob). This can be achieved with the following config in a class object:
+当将类别向量化器设置为`img2vec-neural`时，模块配置必须包含关于哪个字段保存图像的信息。在`imageFields`中指定的字段的数据类型应为[`blob`](/developers/weaviate/config-refs/datatypes.md#datatype-blob)。可以通过以下配置在类对象中实现这一点:
 
 ```json
   "moduleConfig": {
@@ -127,9 +127,9 @@ When setting a class vectorizer to `img2vec-neural`, the module configuration mu
   }
 ```
 
-If multiple fields are specified, the module will vectorize them separately and use their mean vector.
+如果指定了多个字段，模块将分别对它们进行向量化，并使用它们的平均向量。
 
-A full example of a class using the `img2vec-neural` module is shown below. This module makes use of the `blob` dataType.
+下面是一个使用`img2vec-neural`模块的完整示例。该模块使用了`blob`数据类型。
 
 
 ```json
@@ -181,38 +181,38 @@ Other properties, for example the name of the image that is given in another fie
 2. If you don't want to create multiple classes, you are limited to using a `where` filter to find images by other search terms than an `image`, `data object`, or `vector`. A `where` filter does not use semantic features of a module.
 :::
 
-## Adding image data objects
+## 添加图像数据对象
 
-When adding data, make sure that the specified fields are filled with valid image data (e.g. jpg, png, etc.), encoded as a `base64` (string) value in the property that has a `blob` dataType. The blob type itself (see below) requires that all blobs are base64 encoded. To obtain the base64-encoded value of an image, you can use the helper methods in the Weaviate clients or run the following command:
+在添加数据时，请确保指定的字段填充有效的图像数据（例如jpg，png等），并将其编码为具有`blob`数据类型的属性中的`base64`（字符串）值。blob类型本身（见下文）要求所有blob都是base64编码的。要获取图像的base64编码值，您可以使用Weaviate客户端中的辅助方法，或者运行以下命令：
 
 ```bash
 cat my_image.png | base64
 ```
 
-You can then import data with `blob` dataType in to Weaviate as follows:
+然后，您可以按照以下方式将数据以`blob`数据类型导入到Weaviate中：
 
 import CodeImg2Vec from '/_includes/code/img2vec-neural.create.mdx';
 
 <CodeImg2Vec />
 
-## Additional GraphQL API parameters
+## 附加的GraphQL API参数
 
-### nearImage search
+### nearImage搜索
 
-You can search for similar images using the vector-search operators `nearVector` and `nearObject`. But in addition, you can also vectorize a new image at search time and search by the image's vector. To do so, you can use the `nearImage` search operator with a `base64`-encoded `image` parameter:
+您可以使用向量搜索运算符`nearVector`和`nearObject`来搜索相似的图像。此外，您还可以在搜索时将新图像转换为向量，并通过图像的向量进行搜索。为此，您可以使用带有`base64`编码的`image`参数的`nearImage`搜索运算符：
 
 import CodeNearImage from '/_includes/code/img2vec-neural.nearimage.mdx';
 
 <CodeNearImage />
 
-Alternatively, you can use a helper function in the Python, Java or Go client (not with the TypeScript client). With an encoder function, you can input your image as `png` file, and the helper function encodes this to a `base64` encoded value.
+或者，您可以在Python、Java或Go客户端中使用一个辅助函数（不适用于TypeScript客户端）。使用编码器函数，您可以将图像作为`png`文件输入，并将其编码为`base64`编码的值。
 
 import CodeNearImageEncode from '/_includes/code/img2vec-neural.nearimage.encode.mdx';
 
 <CodeNearImageEncode />
 
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

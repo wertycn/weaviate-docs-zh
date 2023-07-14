@@ -1,8 +1,7 @@
 ---
-title: Search basics
-sidebar_position: 10
 image: og/docs/howto.jpg
-# tags: ['how to', 'semantic search']
+sidebar_position: 10
+title: Search basics
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,21 +10,21 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PythonCode from '!!raw-loader!/_includes/code/howto/search.basics.py';
 import TSCode from '!!raw-loader!/_includes/code/howto/search.basics.ts';
 
-## Overview
+## 概述
 
-This section includes the essentials of performing searches and retrieving objects with the `Get` function.
+本节包括使用`Get`函数执行搜索和检索对象的基本知识。
 
 :::info Related pages
 - [API References: GraphQL: Get](../api/graphql/get.md)
 :::
 
-## `Get` function requirements
+## `Get`函数要求
 
-To retrieve objects from Weaviate, you must use the [`Get` function](../api/graphql/get.md) and specify at least:
-- The target `class` to search, and
-- One or more `properties` to retrieve.
+要从Weaviate检索对象，您必须使用[`Get`函数](../api/graphql/get.md)，并至少指定以下内容：
+- 要搜索的目标`class`，
+- 以及要检索的一个或多个`properties`。
 
-## Simple `Get` example
+## 简单的`Get`示例
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -61,9 +60,9 @@ To retrieve objects from Weaviate, you must use the [`Get` function](../api/grap
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成一个类似下面的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -78,9 +77,9 @@ It should produce a response like the one below:
 The [`objects` endpoint](../api/rest/objects.md) in Weaviate is designed for CRUD operations and is not capable of performing searches.
 :::
 
-## `limit` returned objects
+## `limit`返回的对象
 
-Often, you will only want the top `n` results from the query. This can be achieved by setting a `limit` as shown below.
+通常，您只希望从查询中获取前`n`个结果。可以通过设置`limit`来实现，如下所示。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -116,9 +115,9 @@ Often, you will only want the top `n` results from the query. This can be achiev
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+应该生成如下所示的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -130,11 +129,11 @@ It should produce a response like the one below:
 </details>
 
 
-## Paginate with `limit` and `offset`
+## 使用 `limit` 和 `offset` 进行分页
 
-If you only want the `n` results after the first `m` results from the query, you can do this with `limit` and `offset` as shown below.
+如果您只想获取查询结果中第 `m` 个之后的 `n` 个结果，可以使用 `limit` 和 `offset`，如下所示。
 
-Be aware that although you will only see `n` results, this could become an expensive operation as `m` grows larger, as Weaviate must fetch `n+m` results.
+请注意，尽管您只会看到 `n` 个结果，但随着 `m` 的增大，这可能会变得更加昂贵，因为 Weaviate 必须获取 `n+m` 个结果。
 
 :::tip For exhaustive retrieval, use `after` instead.
 If you want to list and retrieve all objects from a `class`, use the cursor API instead with the `after` parameter. Read [this guide](../manage-data/read-all-objects.mdx) for more information on how.
@@ -145,8 +144,8 @@ If you want to list and retrieve all objects from a `class`, use the cursor API 
 
 <FilteredTextBlock
   text={PythonCode}
-  startMarker="# GetWithLimitOffsetPython"
-  endMarker="# END GetWithLimitOffsetPython"
+  startMarker="# 获取具有限制偏移的Python"
+  endMarker="# 结束 获取具有限制偏移的Python"
   language="py"
 />
 
@@ -155,8 +154,8 @@ If you want to list and retrieve all objects from a `class`, use the cursor API 
 
 <FilteredTextBlock
   text={TSCode}
-  startMarker="// GetWithLimitOffsetJS"
-  endMarker="// END GetWithLimitOffsetJS"
+  startMarker="// 获取具有限制偏移的JS"
+  endMarker="// 结束 获取具有限制偏移的JS"
   language="js"
 />
 
@@ -174,9 +173,9 @@ If you want to list and retrieve all objects from a `class`, use the cursor API 
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成如下所示的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -188,13 +187,13 @@ It should produce a response like the one below:
 </details>
 
 
-## Specify the fetched properties
+## 指定获取的属性
 
-You can specify the properties to be fetched, as long as one or more are specified.
+您可以指定要获取的属性，只要指定一个或多个即可。
 
-### Object `properties`
+### 对象 `properties`
 
-You can specify object properties as below.
+您可以按如下方式指定对象属性。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -230,9 +229,9 @@ You can specify object properties as below.
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+应该生成如下所示的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -243,9 +242,9 @@ It should produce a response like the one below:
 
 </details>
 
-### Retrieve the object `vector`
+### 检索对象`vector`
 
-To retrieve the object vector, request the `_additional` property and `vector` sub-property. You can do so as shown below.
+要检索对象的向量，请求 `_additional` 属性和 `vector` 子属性。您可以按照下面的示例进行操作。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -281,9 +280,9 @@ To retrieve the object vector, request the `_additional` property and `vector` s
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该会生成以下类似的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -294,9 +293,9 @@ It should produce a response like the one below:
 
 </details>
 
-### Retrieve the object `id`
+### 检索对象的`id`
 
-To retrieve the object ID, request the `_additional` property and `id` sub-property. You can do so as shown below.
+要检索对象的ID，请请求`_additional`属性和`id`子属性。可以按照以下示例进行操作。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -332,9 +331,9 @@ To retrieve the object ID, request the `_additional` property and `id` sub-prope
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成类似下面的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -346,14 +345,14 @@ It should produce a response like the one below:
 </details>
 
 
-### Retrieve cross-referenced properties
+### 检索交叉引用的属性
 
-You can retrieve any properties of cross-referenced objects by specifying:
-- The cross-reference property,
-- The target cross-referenced object class, and
-- The desired properties to retrieve (of the cross-referenced objects).
+您可以通过指定以下内容来检索交叉引用对象的任何属性：
+- 交叉引用属性，
+- 目标交叉引用对象的类，以及
+- 要检索的期望属性（交叉引用对象的属性）。
 
-The following example, retrieves for each `JeopardyQuestion` object the cross-referenced `JeopardyCategory` object, and the `JeopardyCategory` object's `title` property is returned. The property is accessed using the [inline fragment](http://spec.graphql.org/June2018/#sec-Inline-Fragments) GraphQL syntax.
+下面的示例中，对于每个`JeopardyQuestion`对象，检索交叉引用的`JeopardyCategory`对象，并返回`JeopardyCategory`对象的`title`属性。使用[内联片段](http://spec.graphql.org/June2018/#sec-Inline-Fragments) GraphQL语法访问属性。
 
 <Tabs groupId="languages">
 <TabItem value="py" label="Python">
@@ -389,9 +388,9 @@ The following example, retrieves for each `JeopardyQuestion` object the cross-re
 </Tabs>
 
 <details>
-  <summary>Example response</summary>
+  <summary>示例响应</summary>
 
-It should produce a response like the one below:
+它应该生成以下类似的响应：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -402,11 +401,11 @@ It should produce a response like the one below:
 
 </details>
 
-## Multi-tenancy
+## 多租户
 
-For classes where [multi-tenancy](../concepts/data.md#multi-tenancy) is enabled, you must specify the tenant parameter in each query.
+对于启用了[multi-tenancy](../concepts/data.md#multi-tenancy)的类，您必须在每个查询中指定租户参数。
 
-The below example shows how to fetch one object in the `MultiTenancyClass` class from the tenant `tenantA`:
+以下示例展示了如何从租户`tenantA`中的`MultiTenancyClass`类中获取一个对象：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -434,13 +433,13 @@ The below example shows how to fetch one object in the `MultiTenancyClass` class
     .withTenant('TenantA')
     .do();
 
-  console.log(JSON.stringify(result, null, 2));
-  ```
+console.log(JSON.stringify(result, null, 2));
+```
 
-  </TabItem>
+</TabItem>
 </Tabs>
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

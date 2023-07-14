@@ -1,110 +1,109 @@
 ---
-title: Resource Planning
-sidebar_position: 90
 image: og/docs/concepts.jpg
-# tags: ['architecture', 'resource', 'cpu', 'memory', 'gpu']
+sidebar_position: 90
+title: Resource Planning
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Introduction
+## 介绍
 
-When using Weaviate for medium to large-scale cases, it is recommended to plan your resources accordingly. Typically, small use cases (less than 1M objects) do not require resource planning. For use cases larger than that, you should be aware of the roles of CPU and memory which are the primary resources used by Weaviate. Depending on the (optional) modules used, GPUs may also play a role.
+在使用Weaviate进行中大型案例时，建议您合理规划资源。通常，小型用例（少于1百万个对象）不需要资源规划。对于超过此规模的用例，您应该了解CPU和内存是Weaviate主要使用的资源。根据使用的（可选）模块，GPU也可能起到一定的作用。
 
-Note that Weaviate has an option to limit the amount of vectors held in memory to prevent unexpected Out-of-Memory ("OOM") situations. This limit is entirely configurable and by default is set to one trillion (i.e. `1e12`) objects per class.
+请注意，Weaviate具有限制内存中向量数量的选项，以防止意外的内存溢出（"OOM"）情况发生。此限制是完全可配置的，默认设置为每个类别一万亿（即`1e12`）个对象。
 
-## The role of CPUs
+## CPU的角色
 
 :::tip Rule of thumb
 The amount of available CPUs has a direct effect on query and import speed, but does not affect dataset size.
 :::
 
-The most common operation that is CPU-bound in Weaviate is a vector search. Vector searches occur at query time, but also at import time. When using the HNSW vector index, an insert operation makes use of several search operations. This is how the HNSW algorithm knows where to place new entries in the existing graph.
+在Weaviate中，最常见的CPU密集型操作是向量搜索。向量搜索发生在查询时，也发生在导入时。当使用HNSW向量索引时，插入操作会利用多个搜索操作。这就是HNSW算法知道在现有图中放置新条目的方式。
 
-A single insert or single search is single-threaded. But multiple searches or inserts can occur at the same time and will make use of multiple threads. A batch insert will run over multiple threads in parallel. It is therefore quite common to max out CPU utilization by using decently sized batches for importing.
+单个插入或单个搜索是单线程的。但是多个搜索或插入可以同时进行，并且会利用多个线程。批量插入将在多个线程中并行运行。因此，通过使用适当大小的批次进行导入，通常可以充分利用CPU利用率。
 
-### Motivations to add more CPUs to your Weaviate machine or cluster
+### 增加Weaviate机器或集群的CPU的动机
 
-Typically you should consider adding more CPUs if:
-- you want to increase import speed and CPU utilization is high during importing
-- you want to increase search throughput (measured in queries per second)
+通常情况下，如果满足以下条件，您应该考虑增加更多的CPU：
+- 如果您希望增加导入速度，并且在导入过程中 CPU 利用率很高
+- 如果您希望增加搜索吞吐量（以每秒查询数来衡量）
 
-## The role of memory
+## 内存的作用
 
 :::tip Rule of thumb
 The amount of available Memory has a direct effect on the maximum supported dataset size, but does not directly influence query speed.
 :::
 
-Memory has two distinct roles in Weaviate with one role typically being more critical than the other. Weaviate uses [memory-mapped files](https://en.wikipedia.org/wiki/Memory-mapped_file) for data stored on disks, which helps make disk lookups more efficient. In addition, Weaviate must hold portions of the HNSW index in memory. The latter is typically more restrictive, as memory required for holding the HNSW index is purely related to the size of your dataset and has no correlation to the current query load.
+在Weaviate中，内存具有两个不同的角色，其中一个角色通常比另一个角色更为关键。Weaviate使用[内存映射文件](https://en.wikipedia.org/wiki/Memory-mapped_file)来存储在磁盘上的数据，这有助于提高磁盘查找的效率。此外，Weaviate必须将HNSW索引的部分保留在内存中。后者通常更具限制性，因为用于保存HNSW索引所需的内存完全与数据集的大小相关，与当前的查询负载无关。
 
-### Which concrete factors drive memory usage?
+### 哪些具体因素影响内存使用？
 
-On an otherwise idle machine, memory usage is driven almost entirely by the HNSW vector index. Factors that influence the amount of memory include:
+在一个空闲的机器上，内存使用量主要受HNSW向量索引的影响。影响内存使用量的因素包括：
 
-- **The total number of objects with vectors**. The raw size of an object (e.g. how many KB of text are included) does not influence memory consumption, as the object itself is not kept in memory, but only its vector.
-- **The HNSW index setting `maxConnections`**. This setting describes the outgoing edges of an object in the HNSW index, each edge uses 8-10B of memory. Each object has at most `maxConnections` edges. The base layer allows for `2 * maxConnections` as per the HNSW specification.
+- **具有向量的对象总数**。对象的原始大小（例如包含的文本的KB数）不会影响内存消耗，因为对象本身不会保存在内存中，只有它的向量会保存在内存中。
+- **HNSW索引设置 `maxConnections`**。该设置描述了HNSW索引中对象的出边，每个边使用8-10B的内存。每个对象最多有`maxConnections`个边。根据HNSW规范，基本层允许`2 * maxConnections`。
 
-### An example calculation
+### 一个示例计算
 
 :::note
 The following calculation assumes that you want to hold all vectors in memory. For a memory/disk hybrid approach, see [Vector Cache](#vector-cache) below.
 :::
 
-To find an approximate number for your memory needs, you can use the following rule of thumb:
+要找到您的内存需求的近似数值，您可以使用以下经验法则：
 
-`Memory usage = 2x the memory footprint of all vectors`
+`内存使用量 = 所有向量的内存占用的两倍`
 
-For example, if you are using a model that uses 384-dimensional vectors of type `float32`, the size of a single vector is `384 * 4B == 1536 B`. With the above rule of thumb, the memory requirements for 1M objects would be `2 * 1e6 * 1536 B == 3 GB`
+例如，如果您正在使用一个使用384维的`float32`类型向量的模型，那么单个向量的大小为`384 * 4B == 1536 B`。根据上述经验法则，1百万个对象的内存需求将为`2 * 1e6 * 1536 B == 3 GB`。
 
-For a more accurate calculation you need to take the `maxConnections` setting into account. Assuming a value of 64, the more accurate calculation would be `1e6 * (1536B + 64*10) = 2.2 GB`. This value appears smaller than what the approximate formula produced, however this calculation does not yet take into account overhead for Garbage Collection which is explained in the next section.
+为了更准确地计算，您需要考虑`maxConnections`设置。假设其值为64，更准确的计算公式是`1e6 * (1536B + 64*10) = 2.2 GB`。这个值看起来比近似公式产生的值要小，然而这个计算还没有考虑垃圾回收的开销，垃圾回收的开销将在下一节中解释。
 
-### Motivations to add more Memory to your Weaviate machine or cluster
+### 增加内存到您的Weaviate服务器或集群的动机
 
-Typically you should consider adding more memory if:
-- (more common) you want to import a larger dataset
-- (less common) exact lookups are disk-bound and could be sped up by more memory for page-caching.
+通常，如果满足以下条件之一，您应该考虑增加更多内存：
+- （更常见的情况）您想导入一个更大的数据集
+- （较少见的情况）精确查找受到磁盘限制，并且可以通过增加内存进行页面缓存来加快速度。
 
-## Effect of Garbage Collection
+## 垃圾回收的影响
 
-Weaviate is written in Go, which is a Garbage-Collected Language. This means in-heap memory (that is memory that has a lifetime longer than a typical function call stack) is not made available to the application or the OS immediately after it is no longer in use. Instead an asynchronous process, the Garbage Collection cycle, will free up the memory, eventually. This has two distinct effects on memory utilization:
+Weaviate是使用Go语言编写的，Go是一种垃圾回收语言。这意味着堆内存（即比典型函数调用栈寿命更长的内存）在不再使用后不会立即对应用程序或操作系统提供。相反，一个异步进程，即垃圾回收循环，将最终释放内存。这对内存利用率有两个明显的影响：
 
-### Effect 1: Memory Overhead for the Garbage Collector
-The exact memory footprint formula from above describes the state at rest. However, while importing, more temporary memory is allocated and eventually freed up. Due to the async nature of Garbage collection, this additional memory must be accounted for, which is done by the approximate formula from above.
+### 影响1：垃圾回收器的内存开销
+上面的精确内存占用公式描述了空闲状态下的状态。然而，在导入过程中，会分配更多的临时内存，并最终释放。由于垃圾回收的异步性质，必须考虑这额外的内存，这是通过上面的近似公式完成的。
 
-### Effect 2: Out-of-Memory issues due to Garbage Collection
-In rare situations - typically on large machines with very high import speeds - Weaviate may get into situations where memory is allocated faster than the Garbage Collector can free it up, leading to an OOM-Kill from the system's Kernel. This is a known issue, which is constantly being improved upon by Weaviate's contributors.
+### 效果2：由于垃圾回收导致的内存不足问题
+在极少数情况下 - 通常在具有非常高导入速度的大型机器上 - Weaviate可能会出现内存分配速度快于垃圾回收器释放内存的情况，导致系统内核进行OOM-Kill。这是一个已知的问题，Weaviate的贡献者正在不断改进。
 
-Noticeably, the `v1.8.0` release contains a large series of memory improvements which make the above situation considerably more unlikely. These improvements include rewriting structures to be allocation-free or reduce the number of allocations required. This means temporary memory can be used on the stack and does not have to be allocated on the heap. As a result, this temporary memory is not subject to garbage collection. This is an ongoing improvement process and future releases will further reduce the number of heap-allocations for temporary usage.
+值得注意的是，`v1.8.0` 版本包含了一系列的内存优化，使得上述情况变得更加不太可能发生。这些优化包括重写结构以实现无分配或减少所需分配的数量。这意味着临时内存可以在堆栈上使用，而不必在堆上分配。因此，这些临时内存不会受到垃圾回收的影响。这是一个持续改进的过程，未来的版本将进一步减少用于临时使用的堆分配数量。
 
-## Strategies to reduce Memory Requirements
+## 减少内存需求的策略
 
-If memory usage (or expected memory usage) is higher than your resources permit, you may choose one of the following strategies to reduce memory requirements:
+如果内存使用量（或预期内存使用量）超过了您的资源限制，您可以选择以下策略来减少内存需求：
 
-- **Reduce the dimensionality of your vectors.** The most effective approach is often to make sure that vectors have fewer dimensions. If you are using one of the out-of-the-box models, consider using a model that uses fewer dimensions (e.g. 384d instead of 768d or 300d instead of 600d). Very often, there is no noticeable quality impact on real-life queries.
+- **减少向量的维度。** 最有效的方法通常是确保向量具有较少的维度。如果您正在使用现成的模型，可以考虑使用维度更少的模型（例如，使用384维代替768维，或者使用300维代替600维）。在实际查询中，往往没有明显的质量影响。
 
-- **Reduce the number of `maxConnections` in your HNSW index**. Reducing this setting will typically reduce the quality of your HNSW index. However, you can make up for the quality loss of fewer edges by increasing either the `efConstruction` or `ef` parameters. Increasing the `efConstruction` parameter will increase the import time without affecting query times. Increasing the `ef` parameter, will increase query times without affecting import times.
+- **减少HNSW索引中的`maxConnections`数量**。减少这个设置通常会降低HNSW索引的质量。然而，您可以通过增加`efConstruction`或`ef`参数来弥补较少边的质量损失。增加`efConstruction`参数会增加导入时间，而不会影响查询时间。增加`ef`参数会增加查询时间，而不会影响导入时间。
 
-- **Use a vector cache that is smaller than the total amount of your vectors**. This strategy is described under [Vector Cache](#vector-cache) below. It does however come with a drastic performance impact and is only recommended in specific situations.
+- **使用比您的向量总量更小的向量缓存**。该策略在下面的[向量缓存](#vector-cache)中有描述。但是，它会带来严重的性能影响，并且只推荐在特定情况下使用。
 
-## Vector Cache
+## 向量缓存
 
-For optimal search and import performance, all previously imported vectors need to be held in memory. However, Weaviate also allows for limiting the number of vectors in memory. By default, when creating a new class, this limit is set to one trillion (i.e. `1e12`) objects. A disk lookup for a vector
-is orders of magnitudes slower than memory lookup, so the cache should be used sparingly.
+为了获得最佳的搜索和导入性能，所有先前导入的向量都需要保存在内存中。然而，Weaviate也允许限制内存中向量的数量。默认情况下，当创建一个新类时，这个限制被设置为一万亿（即`1e12`）个对象。与内存查找相比，磁盘查找向量的速度慢了几个数量级，因此应该谨慎使用缓存。
 
-Generally we recommend that:
-- During imports, set the limit so that all vectors can be held in memory. Each import requires multiple searches so import performance will drop drastically as not all vectors can be held in the cache.
-- When only or mostly querying (as opposed to bulk importing), you can experiment with vector cache limits which are lower than your total dataset size. Vectors which aren't currently in cache will be added to the cache if there is still room. If the cache runs full, it is dropped entirely and all future vectors need to be read from disk the first time. Subsequent queries will be taken from the cache, until it runs full again and the procedure repeats. Note that the cache can be a very valuable tool if you have a large dataset, but a large percentage of users only query a specific subset of vectors. In this case, you might be able to serve the largest user group from cache while requiring disk lookups for "irregular" queries.
+一般我们建议：
+- 在导入过程中，设置限制以便将所有向量保存在内存中。每次导入都需要多次搜索，因此如果不能将所有向量保存在缓存中，则导入性能会大幅下降。
+- 当只进行查询（而不是批量导入）时，您可以尝试使用比总数据集大小更低的向量缓存限制。如果当前缓存中不存在的向量，将在还有空间的情况下添加到缓存中。如果缓存已满，则会完全清空，并且所有未来的向量都需要首次从磁盘读取。随后的查询将从缓存中获取，直到再次满了为止，然后重复这个过程。注意，如果您有一个大型数据集，缓存可以是非常有价值的工具，但是只有一个特定子集的查询占比较大。在这种情况下，您可以从缓存中为最大的用户群提供服务，同时对于“非常规”查询需要进行磁盘查找。
 
-## The role of GPUs in Weaviate
+## GPUs在Weaviate中的作用
 
-Weaviate Core itself does not make use of GPUs, however some of the models included in various modules (`text2vec-transformers`, `qna-transformers`, `ner-transformers`, etc.) are meant to be run with GPUs. These modules run in isolated containers, so you can run them on GPU-accelerated hardware while running Weaviate Core on low-cost CPU-only hardware.
+Weaviate Core本身不使用GPU，但是一些包含在各个模块中的模型（`text2vec-transformers`，`qna-transformers`，`ner-transformers`等）是为了在GPU上运行而设计的。这些模块在隔离的容器中运行，因此您可以在GPU加速的硬件上运行它们，同时在低成本的仅CPU硬件上运行Weaviate Core。
 
-## Disks: SSD vs Spinning Disk
+## 磁盘：SSD vs 机械硬盘
 
-Weaviate is optimized to work with Solid-State Disks (SSDs). However, spinning hard-disks can be used with some performance penalties.
+Weaviate被优化用于与固态硬盘（SSD）一起工作。然而，一些性能损失可以使用旋转硬盘来弥补。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

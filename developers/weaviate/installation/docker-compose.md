@@ -1,17 +1,16 @@
 ---
-title: Docker Compose
-sidebar_position: 2
 image: og/docs/installation.jpg
-# tags: ['installation', 'Docker']
+sidebar_position: 2
+title: Docker Compose
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## Configurator
+## 配置工具
 
-You can use the configuration tool below to customize your Weaviate setup for
-your desired runtime.
+您可以使用下面的配置工具来自定义您的Weaviate设置，以适应您所需的运行环境。
 
 <!-- {% include docs-config-gen.html %} -->
 
@@ -19,23 +18,23 @@ import DocsConfigGen from '/_includes/docs-config-gen.mdx';
 
 <DocsConfigGen />
 
-## Example configurations
+## 示例配置
 
 :::note
 If you are new to Docker (Compose) and containerization, check out our [Docker Introduction for Weaviate Users](https://medium.com/semi-technologies/what-weaviate-users-should-know-about-docker-containers-1601c6afa079).
 :::
 
-To start Weaviate with docker-compose, you need a docker-compose configuration file, typically called `docker-compose.yml`. You can obtain it from the configuration tool above or alternatively pick one of the examples below. Additional environment variables can be set in this file, which control your Weaviate setup, authentication and authorization, module settings, and data storage settings.
+要使用docker-compose启动Weaviate，您需要一个docker-compose配置文件，通常称为`docker-compose.yml`。您可以从上面的配置工具获取它，或者从下面的示例中选择一个。您可以在此文件中设置其他环境变量，这些变量控制您的Weaviate设置、身份验证和授权、模块设置以及数据存储设置。
 
 :::info List of environment variables
 A comprehensive of list environment variables [can be found on this page](../config-refs/env-vars.md).
 :::
 
-### Persistent volume
+### 持久卷
 
-It's recommended to set a persistent volume to avoid data loss and improve reading and writing speeds.
+建议设置持久卷以避免数据丢失并提高读写速度。
 
-Add the following snippet to your Docker Compose YAML file:
+将以下代码段添加到您的Docker Compose YAML文件中:
 
 ```yaml
 services:
@@ -45,14 +44,11 @@ services:
     # etc
 ```
 
-Make sure to run `docker-compose down` when shutting down. This writes all the files from memory to disk.
+确保在关闭时运行`docker-compose down`。这会将所有文件从内存写入磁盘。
 
-### Weaviate without any modules
+### 没有任何模块的Weaviate
 
-An example docker-compose setup for Weaviate without any modules can be found
-below. In this case, no model inference is performed at either import or search
-time. You will need to provide your own vectors (e.g. from an outside ML model)
-at import and search time:
+下面是一个没有任何模块的Weaviate的示例docker-compose设置。在这种情况下，无论在导入还是搜索时都不会执行模型推断。您需要在导入和搜索时提供自己的向量（例如来自外部ML模型）：
 
 ```yaml
 version: '3.4'
@@ -70,9 +66,9 @@ services:
       CLUSTER_HOSTNAME: 'node1'
 ```
 
-### Weaviate with the `text2vec-transformers` module
+### 使用 `text2vec-transformers` 模块的 Weaviate
 
-An example docker-compose setup file with the transformers model [`sentence-transformers/multi-qa-MiniLM-L6-cos-v1`](https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1) is:
+一个使用 transformers 模型 [`sentence-transformers/multi-qa-MiniLM-L6-cos-v1`](https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1) 的示例 docker-compose 设置文件如下:
 
 ```yaml
 version: '3.4'
@@ -97,28 +93,22 @@ services:
       # NVIDIA_VISIBLE_DEVICES: all # enable if running with CUDA
 ```
 
-Note that transformer models are Neural Networks built to run on
-GPUs. Running Weaviate with the `text2vec-transformers` module and without GPU is
-possible, but it will be slower. Enable CUDA if you have a GPU available
-(`ENABLE_CUDA=1`).
+请注意，Transformer模型是构建在GPU上运行的神经网络。使用`text2vec-transformers`模块在没有GPU的情况下运行Weaviate是可能的，但速度会较慢。如果您有可用的GPU，请启用CUDA（`ENABLE_CUDA=1`）。
 
-For more information on how to set up the environment with the
-`text2vec-transformers` module, see [this
-page](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers.md).
+有关如何使用`text2vec-transformers`模块设置环境的更多信息，请参阅[此页面](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-transformers.md)。
 
-The `text2vec-transformers` module requires at least Weaviate version `v1.2.0`.
+`text2vec-transformers`模块要求至少使用Weaviate版本`v1.2.0`。
 
+## 多节点设置
 
-## Multi-node setup
+您可以使用Docker-Compose在Weaviate上创建一个多节点设置。为此，您需要：
+- 将一个节点设置为“创始”成员，并使用`CLUSTER_JOIN`变量配置集群中的其他节点加入它。
+- 为每个节点配置`CLUSTER_GOSSIP_BIND_PORT`和`CLUSTER_DATA_BIND_PORT`。
+- 可选地，您可以使用`CLUSTER_HOSTNAME`为每个节点设置主机名。
 
-You can create a multi-node setup with Weaviate using Docker-Compose. To do so, you need to:
-- Set up one node as a "founding" member, and configure the other nodes in the cluster to join it using the `CLUSTER_JOIN` variable.
-- Configure `CLUSTER_GOSSIP_BIND_PORT` and `CLUSTER_DATA_BIND_PORT` for each node.
-- Optionally, you can set the hostname for each node using `CLUSTER_HOSTNAME`.
+（详细了解[Weaviate中的水平复制](../concepts/cluster.md)。）
 
-(Read more about [horizontal replication in Weaviate](../concepts/cluster.md).)
-
-So, the configuration file will include environment variables for the "founding" member that looks like the below:
+因此，配置文件将包括以下形式的环境变量，用于“创始”成员：
 
 ```yaml
   weaviate-node-1:  # Founding member service name
@@ -129,7 +119,7 @@ So, the configuration file will include environment variables for the "founding"
       CLUSTER_DATA_BIND_PORT: '7101'
 ```
 
-And the other members' configurations may look like this:
+其他成员的配置可能如下所示：
 
 ```yaml
   weaviate-node-2:
@@ -141,11 +131,10 @@ And the other members' configurations may look like this:
       CLUSTER_JOIN: 'weaviate-node-1:7100'  # This must be the service name of the "founding" member node.
 ```
 
-Below is an example configuration for a 3-node setup. You may be able to test [replication](../configuration/replication.md) examples locally using this configuration.
-
+以下是一个3节点设置的示例配置。您可以使用这个配置在本地测试[复制](../configuration/replication.md)示例。
 
 <details>
-  <summary>Docker Compose configuration file for a replication setup with 3 nodes</summary>
+  <summary>使用Docker Compose配置文件进行3节点复制设置</summary>
 
 ```yaml
 services:
@@ -240,24 +229,24 @@ It is a Weaviate convention to set the `CLUSTER_DATA_BIND_PORT` to 1 higher than
 :::
 
 
-## Shell attachment options
+## Shell附加选项
 
-The output of `docker-compose up` is quite verbose as it attaches to the logs of all containers.
+`docker-compose up`命令的输出非常冗长，它会附加到所有容器的日志中。
 
-You can attach the logs only to Weaviate itself, for example, by running the following command instead of `docker-compose up`:
+您可以只将日志附加到Weaviate本身，例如，可以运行以下命令而不是`docker-compose up`命令：
 
 ```bash
 # Run Docker Compose
 $ docker-compose up -d && docker-compose logs -f weaviate
 ```
 
-Alternatively you can run docker-compose entirely detached with `docker-compose up -d` _and_ then poll `{bindaddress}:{port}/v1/meta` until you receive a status `200 OK`.
+或者您可以完全以分离模式运行docker-compose，使用`docker-compose up -d`命令，并且在收到状态为`200 OK`的响应前，轮询`{bindaddress}:{port}/v1/meta`。
 
 <!-- TODO:
-1. Check that all environment variables are also applicable for the kubernetes setup and associated values.yaml config file.
-2. Take this section out and into References; potentially consolidate with others as they are strewn around the docs. (E.g. backup env variables are not included here.) -->
+1. 检查所有环境变量是否也适用于Kubernetes设置和相关的values.yaml配置文件。
+2. 将此部分移到参考文档中，并且可能与其他部分合并，因为它们在文档中是分散的。（例如，备份环境变量在此处未包含。） -->
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

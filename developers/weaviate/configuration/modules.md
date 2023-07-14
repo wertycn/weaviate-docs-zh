@@ -1,22 +1,22 @@
 ---
-title: Modules
-sidebar_position: 11
 image: og/docs/configuration.jpg
-# tags: ['configuration', 'modules']
+sidebar_position: 11
+title: Modules
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-<!-- :::caution Migrated From:
-- Mostly newly written
-- Previous `Configuration/Modules` content has been migrated to `References:Modules/index`
+<!-- :::caution 迁移自：
+- 大部分是新写的内容
+- 之前的`Configuration/Modules`内容已迁移到`References:Modules/index` -->
 ::: -->
 
 :::info Related pages
-- [Concepts: Modules](../concepts/modules.md)
-- [References: Modules](../modules/index.md)
-- [References: REST API: Modules](../api/rest/modules.md)
+- [概念：模块](../concepts/modules.md)
+- [参考：模块](../modules/index.md)
+- [参考：REST API：模块](../api/rest/modules.md)
 :::
 
 ## Introduction
@@ -24,14 +24,11 @@ import Badges from '/_includes/badges.mdx';
 You can enable and configure Weaviate's [modules](../concepts/modules.md) by setting appropriate [environment variables](../config-refs/env-vars.md) as shown below.
 
 :::tip What about WCS?
-Weaviate Cloud Services (WCS) instances come with modules pre-configured. See [this page](../../wcs/index.mdx#configuration) for details.
-:::
+Weaviate云服务（WCS）实例已预先配置了模块。有关详细信息，请参阅[此页面](../../wcs/index.mdx#configuration)。
+### 启用模块
 
-### Enable modules
+您可以通过在`ENABLE_MODULES`变量中指定模块列表来启用模块。例如，下面的示例将启用`text2vec-contextionary`模块。
 
-You can enable modules by specifying the list of modules in the `ENABLE_MODULES` variable. For example, the below will enable the `text2vec-contextionary` module.
-
-```yaml
 services:
   weaviate:
     environment:
@@ -87,29 +84,26 @@ services:
       DEFAULT_VECTORIZER_MODULE: text2vec-huggingface
 ```
 
-:::caution Multiple vectorization modules & `Explore`
-Combining text vectorization modules will disable `Explore{}`.
-:::
+组合文本向量化模块会禁用 `Explore{}`。
+## 生成模块
 
-## Generative modules
+[生成模块](../modules/reader-generator-modules/index.md) 提供了[生成搜索](../search/generative.md)功能。
 
-The [generative modules](../modules/reader-generator-modules/index.md) enable [generative search](../search/generative.md) functions.
+您可以在本节中查看可用的生成(`generative-xxx`)模块列表。
 
-You can see the list of available generative (`generative-xxx`) modules [in this section](../modules/reader-generator-modules/index.md)
+### 启用生成模块
 
-### Enable a generative module
+您可以通过将所需的模块添加到`ENABLE_MODULES`环境变量来启用生成模块。例如，下面的示例将启用`generative-cohere`模块以及`text2vec-huggingface`向量化器。
 
-You can enable generative modules by adding the desired module to the `ENABLE_MODULES` environment variable. For example, the below will enable the `generative-cohere` module along with `text2vec-huggingface` vectorizer.
-
-```yaml
 services:
   weaviate:
     environment:
       ENABLE_MODULES: 'text2vec-huggingface,generative-cohere'
 ```
 
-:::tip `generative` module selection unrelated to `text2vec` module selection
-Your choice of the `text2vec` module does not restrict your choice of `generative` module, or vice versa.
+您选择的`text2vec`模块并不限制您选择的`generative`模块，反之亦然。
+
+```
 :::
 
 ## Custom modules

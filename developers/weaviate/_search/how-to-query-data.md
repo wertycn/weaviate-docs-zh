@@ -1,16 +1,15 @@
 ---
-title: (TBC) Search Basics
-sidebar_position: 1
 image: og/docs/search.jpg
-# tags: ['how to', 'query data']
+sidebar_position: 1
+title: (TBC) Search Basics
 ---
 
-## Overview
+## 概述
 
-Learn how to perform searches using Weaviate
+学习如何使用Weaviate进行搜索
 
-<!-- :::caution Under construction.
-Migrated from "How to query data" tutorial from Weaviate Docs Classic
+<!-- :::caution 正在施工中。
+从Weaviate Docs Classic的"如何查询数据"教程迁移而来 -->
 ::: -->
 
 - Weaviate has RESTful API endpoints to query data, but Weaviate's query language is [GraphQL](https://graphql.org/).

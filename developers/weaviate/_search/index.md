@@ -1,13 +1,12 @@
 ---
-title: Search tutorials
-sidebar_position: 0
 image: og/docs/search.jpg
-# tags: []
+sidebar_position: 0
+title: Search tutorials
 ---
 
-<!-- TODO: Remove explanatory header once layout review complete -->
-<!-- :::caution UNDER CONSTRUCTION
-The various "Tutorials" sections are made up of documents from Tutorials in Weaviate Docs Classic, plus a some new documents.
+<!-- TODO: 完成布局审核后删除解释性标题 -->
+<!-- :::caution 正在建设中
+各个 "教程" 部分由 Weaviate Docs Classic 中的文档组成，还有一些新的文档。 -->
 ::: -->
 
 ## Overview

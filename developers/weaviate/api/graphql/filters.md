@@ -1,8 +1,7 @@
 ---
-title: GraphQL - Conditional filters
-sidebar_position: 4
 image: og/docs/api.jpg
-# tags: ['graphql', 'filters']
+sidebar_position: 4
+title: GraphQL - Conditional filters
 ---
 
 import Badges from '/_includes/badges.mdx';
@@ -13,9 +12,9 @@ import TryEduDemo from '/_includes/try-on-edu-demo.mdx';
 
 <TryEduDemo />
 
-## Overview
+## 概述
 
-Conditional filters can be added to queries on the class level. The operator used for filtering is also called a `where` filter.
+在类级别的查询中可以添加条件筛选器。用于筛选的运算符也被称为 `where` 筛选器。
 <!--
 import GraphQLFiltersExample from '/_includes/code/graphql.filters.example.mdx';
 
@@ -25,21 +24,21 @@ import GraphQLFiltersExample from '/_includes/code/graphql.filters.example.mdx';
 - [How-to search: Filters](../../search/filters.md)
 :::
 
-## Single operand (condition)
+## 单个操作数（条件）
 
-Each set of algebraic conditions is called an "operand". For each operand, the required properties are:
-- The GraphQL property path,
-- The operator type, and
-- The valueType with the value.
+每组代数条件被称为一个“操作数”。对于每个操作数，需要的属性有：
+- GraphQL属性路径，
+- 操作符类型，以及
+- 值类型和值。
 
-For example, this filter will only allow objects from the class `Article` with a `wordCount` that is `GreaterThan` than `1000`.
+例如，此过滤器只允许来自`Article`类且`wordCount`大于`1000`的对象。
 
 import GraphQLFiltersWhereSimple from '/_includes/code/graphql.filters.where.simple.mdx';
 
 <GraphQLFiltersWhereSimple/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>期望的响应</summary>
 
 ```
 {
@@ -61,13 +60,13 @@ import GraphQLFiltersWhereSimple from '/_includes/code/graphql.filters.where.sim
 
 </details>
 
-## Filter structure
+## 过滤器结构
 
-Supported by the [`Get{}`](./get.md) and [`Aggregate{}`](./aggregate.md) functions.
+由[`Get{}`](./get.md)和[`Aggregate{}`](./aggregate.md)函数支持。
 
-The `where` filter is an [algebraic object](https://en.wikipedia.org/wiki/Algebraic_structure), which takes the following arguments:
+`where`过滤器是一个[代数对象](https://en.wikipedia.org/wiki/Algebraic_structure)，它接受以下参数：
 
-- `Operator` (which takes one of the following values)
+- `Operator`（取以下值之一）
   - `And`
   - `Or`
   - `Equal`
@@ -79,9 +78,9 @@ The `where` filter is an [algebraic object](https://en.wikipedia.org/wiki/Algebr
   - `Like`
   - `WithinGeoRange`
   - `IsNull`
-- `Operands`: Is a list of `Operator` objects of this same structure, only used if the parent `Operator` is set to `And` or `Or`.
-- `Path`: Is a list of strings in [XPath](https://en.wikipedia.org/wiki/XPath#Abbreviated_syntax) style, indicating the property name of the class.
-  If the property is a beacon (i.e., cross-reference), the path should be followed to the property of the beacon which should be specified as a list of strings. For a schema structure like:
+- `操作数`：是一个由相同结构的`Operator`对象组成的列表，只在父`Operator`设置为`And`或`Or`时使用。
+- `路径`：是一个以[XPath](https://en.wikipedia.org/wiki/XPath#Abbreviated_syntax)风格表示的字符串列表，表示类的属性名称。
+  如果属性是一个信标（即交叉引用），则应按照路径到达信标的属性，该属性应被指定为字符串列表。对于如下的架构结构：
  ```json
  {
    "inPublication": {
@@ -91,11 +90,11 @@ The `where` filter is an [algebraic object](https://en.wikipedia.org/wiki/Algebr
    }
  }
  ```
-  Here, the path selector for `name` will be `["inPublication", "Publication", "name"]`.
+ 这里，`name` 的路径选择器将是 `["inPublication", "Publication", "name"]`。
 
 - `valueType`
 
-### Example filter structure
+### 示例过滤器结构
 
 ```graphql
 {
@@ -123,26 +122,26 @@ The `where` filter is an [algebraic object](https://en.wikipedia.org/wiki/Algebr
 }
 ```
 
-### Available `valueType` values
+### 可用的 `valueType` 值
 
-- `valueInt`: The integer value that the last property in the `Path` selector should be compared to.
-- `valueBoolean`: The boolean value that the last property in `Path` should be compared to.
-- `valueString`: The string value that the last property in `Path` should be compared to. (Note: `string` has been deprecated.)
-- `valueText`: The text value that the last property in `Path` should be compared to.
-- `valueNumber`: The number (float) value that the last property in `Path` should be compared to.
-- `valueDate`: The date (ISO 8601 timestamp, formatted as [RFC3339](https://datatracker.ietf.org/doc/rfc3339/)) value that the last property  in `Path` should be compared to.
+- `valueInt`: 应该与 `Path` 选择器中的最后一个属性进行比较的整数值。
+- `valueBoolean`: 应该与 `Path` 中的最后一个属性进行比较的布尔值。
+- `valueString`: 应该与 `Path` 中的最后一个属性进行比较的字符串值。（注意：`string` 已被弃用。）
+- `valueText`: 应该与 `Path` 中的最后一个属性进行比较的文本值。
+- `valueNumber`: 应与`Path`中的最后一个属性进行比较的数字（浮点数）值。
+- `valueDate`: 应与`Path`中的最后一个属性进行比较的日期（ISO 8601时间戳，格式为[RFC3339](https://datatracker.ietf.org/doc/rfc3339/)）值。
 
-### Filter behavior of multi-word queries in `Equal` operator
+### `Equal`运算符在多词文本属性中的过滤行为
 
-The behavior for the `Equal` operator on multi-word textual properties in `where` filters depends on the `tokenization` of the property.
+在`where`过滤器中，`Equal`运算符对多词文本属性的行为取决于属性的`tokenization`。
 
-See the [Schema property tokenization section](../../config-refs/schema.md#property-tokenization) for the difference between the available tokenization types.
+请查看[架构属性标记化部分](../../config-refs/schema.md#property-tokenization)以了解可用的标记化类型之间的区别。
 
-### Stopwords in `text`/`string` filter values
+### `text`/`string`过滤器值中的停用词
 
-Starting with `v1.12.0` you can configure your own [stopword lists for the inverted index](/developers/weaviate/config-refs/schema.md#invertedindexconfig--stopwords-stopword-lists).
+从`v1.12.0`开始，您可以为倒排索引配置自己的[停用词列表](/developers/weaviate/config-refs/schema.md#invertedindexconfig--stopwords-stopword-lists)。
 
-### Example response
+### 示例响应
 
 ```json
 {
@@ -159,16 +158,16 @@ Starting with `v1.12.0` you can configure your own [stopword lists for the inver
 }
 ```
 
-## Filter by id
+## 通过id筛选
 
-You can filter object by their unique id or uuid, where you give the `id` as `valueText`.
+您可以通过对象的唯一id或uuid进行筛选，其中将`id`作为`valueText`提供。
 
 import GraphQLFiltersWhereId from '/_includes/code/graphql.filters.where.id.mdx';
 
 <GraphQLFiltersWhereId/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 ```json
 {
@@ -186,9 +185,9 @@ import GraphQLFiltersWhereId from '/_includes/code/graphql.filters.where.id.mdx'
 
 </details>
 
-## Filter by timestamps
+## 按时间戳过滤
 
-Filtering can be performed with internal timestamps as well, such as `creationTimeUnix` and `lastUpdateTimeUnix`. These values can be represented either as Unix epoch milliseconds, or as [RFC3339](https://datatracker.ietf.org/doc/rfc3339/) formatted datetimes. Note that epoch milliseconds should be passed in as a `valueText`, and an RFC3339 datetime should be a `valueDate`.
+也可以使用内部时间戳进行过滤，例如`creationTimeUnix`和`lastUpdateTimeUnix`。这些值可以表示为Unix纪元毫秒或[RFC3339](https://datatracker.ietf.org/doc/rfc3339/)格式的日期时间。请注意，纪元毫秒应该作为`valueText`传入，而RFC3339日期时间应该作为`valueDate`传入。
 
 :::info
 Filtering by timestamp requires the target class to be configured to index  timestamps. See [here](/developers/weaviate/config-refs/schema.md#invertedindexconfig--indextimestamps) for details.
@@ -199,7 +198,7 @@ import GraphQLFiltersWhereTimestamps from '/_includes/code/graphql.filters.where
 <GraphQLFiltersWhereTimestamps />
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 ```json
 {
@@ -218,14 +217,14 @@ import GraphQLFiltersWhereTimestamps from '/_includes/code/graphql.filters.where
 
 </details>
 
-## Filter by property length
+## 根据属性长度进行筛选
 
-Filtering can be performed with the length of properties.
+可以通过属性的长度进行筛选。
 
-The length of properties is calculated differently depending on the type:
-- array types: the number of entries in the array is used, where null (property not present) and empty arrays both have the length 0.
-- strings and texts: the number of characters (unicode characters such as 世 count as one character).
-- numbers, booleans, geo-coordinates, phone-numbers and data-blobs are not supported.
+属性的长度计算方式取决于类型：
+- 数组类型：使用数组中的条目数量，其中 null（属性不存在）和空数组都具有长度为 0 的特性。
+- 字符串和文本：字符的数量（如世界中的世视为一个字符）。
+- 数字、布尔值、地理坐标、电话号码和数据 blob 不支持筛选。
 
 ```graphql
 {
@@ -237,18 +236,18 @@ The length of properties is calculated differently depending on the type:
   }
 }
 ```
-Supported operators are `(not) equal` and `greater/less than (equal)` and values need to be 0 or larger.
+支持的运算符是`(不)等于`和`大于/小于（等于）`，值需要为0或更大。
 
 :::note
 Filtering by property length requires the target class to be [configured to index the length](/developers/weaviate/config-refs/schema.md#invertedindexconfig--indexpropertylength).
 :::
 
 
-## Multiple operands
+## 多个操作数
 
-You can set multiple operands by providing an array, and you can also [nest conditions](../../search/filters.md#nested-multiple-conditions).
+您可以通过提供一个数组来设置多个操作数，并且您还可以[嵌套条件](../../search/filters.md#nested-multiple-conditions)。
 
-For example, these filters select based on the class Article with a wordCount higher than 1000 and who are published before January 1st 2020.
+例如，这些筛选器根据文章类选择单词数大于1000且在2020年1月1日之前发布的文章。
 
 :::tip
 You can filter datetimes similarly to numbers, with the `valueDate` given as `string` in [RFC3339](https://datatracker.ietf.org/doc/rfc3339/) format.
@@ -259,7 +258,7 @@ import GraphQLFiltersWhereOperands from '/_includes/code/graphql.filters.where.o
 <GraphQLFiltersWhereOperands />
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 ```json
 {
@@ -283,25 +282,25 @@ import GraphQLFiltersWhereOperands from '/_includes/code/graphql.filters.where.o
 
 </details>
 
-## Like operator
+## Like 操作符
 
-Using the `Like` operator allows you to do string searches based on partial match. The capabilities of this operator are:
+使用 `Like` 操作符可以根据部分匹配进行字符串搜索。该操作符的功能如下：
 
-- `?` -> exactly one unknown character
-  - `car?` matches `cart`, `care`, but not `car`
-- `*` -> zero, one or more unknown characters
-  - `car*` matches `car`, `care`, `carpet`, etc
-  - `*car*` matches `car`, `healthcare`, etc.
+- `?` -> 代表一个未知字符
+  - `car?` 匹配 `cart`、`care`，但不匹配 `car`
+- `*` -> 代表零个或多个未知字符
+  - `car*` 匹配 `car`、`care`、`carpet` 等
+  - `*car*` 匹配 `car`、`healthcare` 等
 
 import GraphQLFiltersWhereLike from '/_includes/code/graphql.filters.where.like.mdx';
 
 <GraphQLFiltersWhereLike/>
 
-### Notes
-Each query using the `Like` operator iterates over the entire inverted index for that property. The search time will go up linearly with the dataset size. Be aware that there might be a point where this query is too expensive and will not work anymore. We will improve this implementation in a future release. You can leave feedback or feature requests in a [GitHub issue](https://github.com/weaviate/weaviate/issues).
+### 注意事项
+使用`Like`操作符的每个查询都会遍历该属性的整个倒排索引。搜索时间会随着数据集大小的增加而线性增加。请注意，可能会达到一个查询过于昂贵而无法再使用的点。我们将在未来的版本中改进这个实现。您可以在[GitHub问题](https://github.com/weaviate/weaviate/issues)中提供反馈或功能请求。
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期回应</summary>
 
 ```json
 {
@@ -328,18 +327,18 @@ Each query using the `Like` operator iterates over the entire inverted index for
 
 </details>
 
-## Beacon (reference) filters
+## Beacon（参考）筛选器
 
-You can also search for the value of the property of a beacon.
+您还可以根据信标的属性值进行搜索。
 
-For example, these filters select based on the class Article but who have `inPublication` set to New Yorker.
+例如，这些筛选器根据类别为Article，但`inPublication`设置为New Yorker进行选择。
 
 import GraphQLFiltersWhereBeacon from '/_includes/code/graphql.filters.where.beacon.mdx';
 
 <GraphQLFiltersWhereBeacon/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 ```json
 {
@@ -371,16 +370,16 @@ import GraphQLFiltersWhereBeacon from '/_includes/code/graphql.filters.where.bea
 
 </details>
 
-## Filter objects by count of reference
+## 按引用计数筛选对象
 
-Above example shows how filter by reference can solve straightforward questions like "Find all articles that are published by New Yorker". But questions like "Find all articles that are written by authors that wrote at least two articles", cannot be answered by the above query structure. It is however possible to filter by reference count. To do so, simply provide one of the existing compare operators (`Equal`, `LessThan`, `LessThanEqual`, `GreaterThan`, `GreaterThanEqual`) and use it directly on the reference element. For example:
+上面的示例展示了如何通过引用来解决简单的问题，比如“找到所有由New Yorker出版的文章”。但是像“找到所有由至少写了两篇文章的作者写的文章”这样的问题，无法通过上述查询结构来回答。然而，可以通过引用计数进行筛选。只需提供其中一个现有的比较运算符（`Equal`、`LessThan`、`LessThanEqual`、`GreaterThan`、`GreaterThanEqual`）并直接在引用元素上使用它。例如：
 
 import GraphQLFiltersWhereBeaconCount from '/_includes/code/graphql.filters.where.beacon.count.mdx';
 
 <GraphQLFiltersWhereBeaconCount/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期响应</summary>
 
 ```json
 {
@@ -418,18 +417,18 @@ import GraphQLFiltersWhereBeaconCount from '/_includes/code/graphql.filters.wher
 
 </details>
 
-## GeoCoordinates filter
+## GeoCoordinates过滤器
 
-A special case of the `Where` filter is with geoCoordinates. This filter is only supported by the `Get{}` function. If you've set the `geoCoordinates` property type, you can search in an area based on kilometers.
+`Where`过滤器的一个特殊情况是使用`geoCoordinates`。此过滤器仅由`Get{}`函数支持。如果您设置了`geoCoordinates`属性类型，您可以根据千米在一个区域内进行搜索。
 
-For example, this curious returns all in a radius of 2KM around a specific geo-location:
+例如，以下示例返回特定地理位置周围2公里范围内的所有内容：
 
 import GraphQLFiltersWhereGeocoords from '/_includes/code/graphql.filters.where.geocoordinates.mdx';
 
 <GraphQLFiltersWhereGeocoords/>
 
 <details>
-  <summary>Expected response</summary>
+  <summary>预期的响应</summary>
 
 ```json
 {
@@ -458,9 +457,9 @@ import GraphQLFiltersWhereGeocoords from '/_includes/code/graphql.filters.where.
 
 </details>
 
-## Filter by null state
+## 按空状态过滤
 
-Using the `IsNull` operator allows you to do filter for objects where given properties are `null` or `not null`. Note that zero-length arrays and empty strings are equivalent to a null value.
+使用`IsNull`操作符可以根据对象的属性是否为`null`进行过滤。请注意，长度为零的数组和空字符串等同于`null`值。
 
 ```graphql
 {
@@ -477,7 +476,7 @@ Using the `IsNull` operator allows you to do filter for objects where given prop
 Filtering by null-state requires the target class to be configured to index this. See [here](../../config-refs/schema.md#invertedindexconfig--indexnullstate) for details.
 :::
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

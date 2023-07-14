@@ -1,9 +1,9 @@
 ---
-title: Weaviate CLI
-sidebar_position: 9
 image: og/docs/client-libraries.jpg
-# tags: ['cli']
+sidebar_position: 9
+title: Weaviate CLI
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -12,53 +12,53 @@ import Badges from '/_includes/badges.mdx';
 The current Weaviate CLI version is `v||site.weaviate_cli_version||`.
 :::
 
-## Installation
+## 安装
 
-The Weaviate CLI is available on [Pypi.org](https://pypi.org/project/weaviate-cli/). The package can be easily installed using [pip](https://pypi.org/project/pip/). The client is developed and tested for Python 3.7 and higher.
+Weaviate CLI 可以在 [Pypi.org](https://pypi.org/project/weaviate-cli/) 上获取。可以使用 [pip](https://pypi.org/project/pip/) 轻松安装该包。该客户端是为 Python 3.7 及更高版本开发和测试的。
 
-The Weaviate CLI can be installed with:
+可以使用以下命令安装 Weaviate CLI：
 
 ```sh
 $ pip install weaviate-cli
 ```
 
-To check if the cli is installed correctly, run:
+要检查CLI是否正确安装，请运行以下命令：
 
 ```sh
 $ weaviate version
 ```
 
-which should return ||site.weaviate_cli_version||.
+应该返回 ||site.weaviate_cli_version||。
 
-## Functions
+## 函数
 
-### Configuration
+### 配置
 
-You need to configure the CLI tool before you can interact with you Weaviate instance. This can be done manually or by adding flags to commands.
-- Manually (interactive):
+在与 Weaviate 实例进行交互之前，您需要配置 CLI 工具。这可以通过手动操作或向命令添加标志来完成。
+- 手动配置（交互式）：
   ```sh
   $ weaviate config set
   ```
-  or
+  或者
   ```sh
   $ weaviate init
   ```
-  After which you will be asked to enter the Weaviate URL and authentication mode.
+  之后，您将被要求输入 Weaviate 的 URL 和身份验证模式。
 
-- Flags: if you didn't configure the CLI manually, you can add a configuration flag pointing to a configuration json file (`--config-file myconfig.json`) with every command you execute.
+- 标志：如果您没有手动配置CLI，可以通过添加指向配置JSON文件的配置标志（`--config-file myconfig.json`）来执行每个命令。
 
   ```bash
   $ weaviate --config-file myconfig.json
   ```
 
-  in which `myconfig.json` should look like:
+  其中`myconfig.json`应该如下所示：
   ```json
   {
     "url": "http://localhost:8080",
     "auth": null
   }
   ```
-  or
+  或者
   ```json
   {
     "url": "http://localhost:8080",
@@ -67,79 +67,79 @@ You need to configure the CLI tool before you can interact with you Weaviate ins
     }
   }
   ```
-  or
+  或者
 
   ```json
-  {
-    "url": "http://localhost:8080",
-    "auth": {
-        "user": <user name>,
-        "pass": <user password>
-    }
+{
+  "url": "http://localhost:8080",
+  "auth": {
+      "user": <用户名>,
+      "pass": <用户密码>
   }
-  ```
+}
+```
 
-You can view the configuration with the command:
+您可以使用以下命令查看配置信息：
 
 ```sh
 $ weaviate config view
 ```
 
-### Ping
-You can ping the Weaviate URL you're connected to with:
+### Ping测试
+您可以使用以下命令对您连接的Weaviate URL进行ping测试：
 ```sh
 $ weaviate ping
 ```
 
-Which returns `Weaviate is reachable!` if the connection with the Weaviate server is set up correctly.
+如果与Weaviate服务器的连接设置正确，它将返回`Weaviate is reachable!`。
 
+### 模式
+在模式方面，有三个可用的操作：[导入](#import)、[导出](#export)和[截断](#truncate)。
 
-### Schema
-There are three operations available with regard to the schema: [import](#import), [export](#export) and [truncate](#truncate).
+#### 导入
 
-#### Import
-
-Adding a schema can be done via:
+可以通过以下方式添加模式：
 
 ```sh
 $ weaviate schema import my_schema.json
 ```
 
-Where `my_schema.json` contains the schema as described [here](../tutorials/schema.md).
+在 `my_schema.json` 文件中包含了[这里](../tutorials/schema.md)描述的模式。
 
-To overwrite your schema you can use the `--force` flag, this will clear the index and replace your schema:
+要覆盖您的模式，您可以使用 `--force` 标志，这将清除索引并替换您的模式：
 
 ```sh
 $ weaviate schema import --force my_schema.json # using --force will delete your data
 ```
 
-#### Export
-You can export a schema to a json file that is present in the Weaviate instance by:
+#### 导出
+您可以通过以下方式将模式导出为存在于Weaviate实例中的JSON文件：
 
 ```sh
 $ weaviate schema export my_schema.json
 ```
 
-Where `my_schema.json` can be replaces by a json file and local location. Naturally this function only outputs the schema to the given location when a schema is present in Weaviate.
+`my_schema.json` 可以被一个 JSON 文件和本地路径替代。当 Weaviate 中存在一个模式时，这个函数只会将模式输出到给定的位置。
 
-#### Truncate
+#### 截断
 
-With `delete` you can remove the entire schema and all the data that is associated with it. You will be asked for confirmation unless the `--force` flag is added.
+使用 `delete`，您可以删除整个模式以及与之关联的所有数据。除非添加了 `--force` 标志，否则将要求确认。
 
 ```sh
 $ weaviate schema delete
 ```
 
-### Data
+### 数据
 
-#### Import
-The `import` function enables data import from a json file. When the flag `--fail-on-error` is added, this command execution will fail if an error was thrown by Weaviate when loading the data object in.
+#### 导入
+
+`import`函数用于从JSON文件导入数据。当添加`--fail-on-error`标志时，如果Weaviate在加载数据对象时抛出错误，则此命令执行将失败。
 
 ```sh
 $ weaviate data import my_data_objects.json
 ```
 
-The json file and location is passed in the command. The file needs to be formatted according to the Weaviate data schema, for example:
+命令中传递了JSON文件和位置。文件需要按照Weaviate数据架构进行格式化，例如：
 
 ```json
 {
@@ -166,17 +166,17 @@ The json file and location is passed in the command. The file needs to be format
 }
 ```
 
-#### Empty
-With `delete` you can remove all data objects in Weaviate. You will be asked for confirmation unless the `--force` flag is added.
+#### 空
+使用 `delete` 命令，您可以删除 Weaviate 中的所有数据对象。除非添加了 `--force` 标志，否则将要求您确认删除操作。
 
 ```sh
 $ weaviate data delete
 ```
-## Change logs
+## 更新日志
 
-Check the [change logs on GitHub](https://github.com/weaviate/weaviate-cli/releases) for updates on the latest `CLI` changes.
+请查看 [GitHub 上的变更日志](https://github.com/weaviate/weaviate-cli/releases) 以获取最新 `CLI` 的更新内容。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

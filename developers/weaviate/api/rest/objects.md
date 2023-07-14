@@ -1,22 +1,22 @@
 ---
-title: REST - /v1/objects
-sidebar_position: 12
 image: og/docs/api.jpg
-# tags: ['RESTful API', 'references', 'class']
+sidebar_position: 12
+title: REST - /v1/objects
 ---
+
 import Badges from '/_includes/badges.mdx';
 import BeaconsRequireLocalhost from '/_includes/beacon-localhost.md';
 import BeaconsBackCompatOmitClassname from '/_includes/beacons-backcompat-omit-class.md'
 
 <Badges/>
 
-## List data objects
+## 列出数据对象
 
 :::tip Do you want to list all objects from Weaviate?
 Use the [`after`](#exhaustive-listing-using-a-cursor-after) parameter.
 :::
 
-List data objects in reverse order of creation. The data will be returned as an array of objects.
+按创建顺序逆序列出数据对象。数据将以对象数组的形式返回。
 
 import HowToGetObjectCount from '/_includes/how.to.get.object.count.mdx';
 
@@ -26,59 +26,59 @@ A: This `Aggregate` query will output a total object count in a class.
 <HowToGetObjectCount/>
 :::
 
-#### Method and URL
+#### 方法和URL
 
-Without any restrictions (across classes, default limit = 25):
+没有任何限制（跨类别，默认限制为25）：
 
 ```http
 GET /v1/objects
 ```
 
-With optional query params:
+包含可选查询参数：
 
 ```http
 GET /v1/objects?class={ClassName}&limit={limit}&include={include}
 ```
 
-#### Parameters
+#### 参数
 
 :::note All parameters below are optional URL query parameters
 :::
 
-| Name | Type | Description |
+| 名称 | 类型 | 描述 |
 | ---- | ---- | ----------- |
-| `class` | string | List objects by class using the class name. |
-| `limit` | integer | The maximum number of data objects to return. Default 25. |
-| `offset` | integer | The offset of objects returned (the starting index of the returned objects).<br/><br/>Cannot be used with `after`.<br/>Should be used in conjunction with `limit`. |
-| `after` | string | ID of the object after which (i.e. non-inclusive ID) objects are to be listed.<br/><br/>Must be used with `class`<br/>Cannot be used with `offset` or `sort`.<br/>Should be used in conjunction with `limit`. |
-| `include` | string | Include additional information, such as classification info. <br/><br/>Allowed values include: `classification`, `vector`, `featureProjection` and other module-specific additional properties. |
-| `sort` | string | Name of the property to sort by - i.e. `sort=city`<br/><br/>You can also provide multiple names – i.e. `sort=country,city` |
-| `order` | string | Order in which to sort by.<br/><br/>Possible values: `asc` (default) and `desc`. <br/>Should be used in conjunction with `sort`.|
+| `class` | 字符串 | 使用类名按类别列出对象。 |
+| `limit` | 整数 | 返回的数据对象的最大数量。默认为25。 |
+| `offset` | 整数 | 返回对象的偏移量（返回对象的起始索引）。<br/><br/>不能与 `after` 一起使用。<br/>应与 `limit` 结合使用。 |
+| `after` | string | 要列出对象的ID之后的对象的ID（不包括ID）。<br/><br/>必须与`class`一起使用。<br/>不能与`offset`或`sort`一起使用。<br/>应与`limit`一起使用。 |
+| `include` | string | 包括额外的信息，例如分类信息。<br/><br/>允许的值包括：`classification`，`vector`，`featureProjection`和其他模块特定的附加属性。 |
+| `sort` | string | 要排序的属性名称 - 例如 `sort=city`<br/><br/>也可以提供多个名称 - 例如 `sort=country,city` |
+| `order` | string | 排序顺序。<br/><br/>可能的值：`asc`（默认）和 `desc`。 <br/>应与 `sort` 一起使用。|
 
-### Paging: `offset`
+### 分页：`offset`
 
 :::tip
 You can use `limit` and `offset` for paging results.
 :::
 
-The `offset` parameter is a flexible way to page results as it allows use with parameters such as `sort`. It is limited by the value of `QUERY_MAXIMUM_RESULTS` which sets the maximum total number of objects that can be listed using this parameter.
+`offset`参数是一种灵活的分页结果的方式，它允许与`sort`等参数一起使用。它受到`QUERY_MAXIMUM_RESULTS`值的限制，该值设置了可以使用此参数列出的对象的最大总数。
 
-Get the first 10 objects:
+获取前10个对象：
 ```http
 GET /v1/objects?class=MyClass&limit=10
 ```
 
-Get the second batch of 10 objects:
+获取第二批10个对象：
 ```http
 GET /v1/objects?class=MyClass&limit=10&offset=10
 ```
 
-Get the next batch of 10 objects:
+获取下一个批次的10个对象：
 ```http
 GET /v1/objects?class=MyClass&limit=10&offset=20
 ```
 
-### Exhaustive listing using a cursor: `after`
+### 使用游标进行详尽列表：`after`
 
 :::tip
 - Available from version `v1.18.0`.
@@ -86,56 +86,56 @@ GET /v1/objects?class=MyClass&limit=10&offset=20
 - The `after` parameter is based on the order of ids. It can therefore only be applied to list queries without sorting.
 :::
 
-You can use the `after` parameter to retrieve all objects from a Weaviate instance . The `after` parameter ("Cursor API") retrieves objects of a class based on the order of ids. You can pass the id of the last retrieved object as a cursor to start the next page.
+您可以使用`after`参数从Weaviate实例中检索所有对象。`after`参数（“Cursor API”）根据id的顺序检索类的对象。您可以将上一个检索到的对象的id作为游标传递，以开始下一页的检索。
 
-It is not possible to use the `after` parameter without specifying a `class`.
+在没有指定`class`的情况下，无法使用`after`参数。
 
-For a null value similar to `offset=0`, set `after=` or `after` (i.e. with an empty string) in the request.
+对于类似于`offset=0`的空值，请在请求中设置`after=`或`after`（即空字符串）。
 
-#### Examples
+#### 示例
 
-Get the first 10 objects of `MyClass`:
+获取 `MyClass` 的前10个对象：
 ```http
 GET /v1/objects?class=MyClass&limit=10
 ```
 
-If the last object in the retrieved set above was `b1645a32-0c22-5814-8f35-58f142eadf7e`, you can retrieve the next 10 objects of `MyClass` after it as below:
+如果上述检索到的集合中的最后一个对象是 `b1645a32-0c22-5814-8f35-58f142eadf7e`，您可以按照以下方式检索其后的下10个 `MyClass` 对象：
 
 ```http
 GET /v1/objects?class=MyClass&limit=10&after=b1645a32-0c22-5814-8f35-58f142eadf7e
 ```
 
-### Example sorting
+### 示例排序
 
 :::tip
 You can use `sort` and `order` to sort your results.
 :::
 
-Ascending sort by author_name:
+按作者姓名升序排序:
 ```http
 GET /v1/objects?class=Book&sort=author_name
 ```
 
-Descending sort by author_name:
+按作者姓名降序排序：
 ```http
 GET /v1/objects?class=Book&sort=author_name&order=desc
 ```
 
-Sort by by author_name, and then title.
+按作者姓名排序，然后按标题排序。
 ```http
 GET /v1/objects?class=Book&sort=author_name,title
 ```
 
-Sort by author_name, and then title with order:
+按作者名排序，然后按标题排序，顺序为：
 ```http
 GET /v1/objects?class=Book&sort=author_name,title&order=desc,asc
 ```
 
-### Response fields
+### 响应字段
 
-The response of a `GET` query of a data object will give you information about all objects [(or a single object)](#get-a-data-object). Next to general information about the data objects, like schema information and property values, meta information will be shown depending on the `include` fields or `additional properties` of your request.
+对于数据对象的`GET`查询的响应将提供有关所有对象（或单个对象）的信息[(或单个对象)](#get-a-data-object)。除了关于数据对象的一般信息，如模式信息和属性值之外，还将显示基于请求中的`include`字段或`additional properties`的元信息。
 
-#### Response format
+#### 响应格式
 
 ```js
 {
@@ -144,51 +144,51 @@ The response of a `GET` query of a data object will give you information about a
 }
 ```
 
-### Object fields
+### 对象字段
 
-| Field name | Data type | Required `include` or `additional` field | Description |
-| ---------- | --------- | ---------------------------------------- | ----------- |
-| `class` | string | none | The class name. |
-| `creationTimeUnix` | unix timestamp | none | The time stamp of creation of the data object. |
-| `id` | uuid | none | The uuid of the data object. |
-| `lastUpdateTimeUnix` | unix timestamp | none | The time stamp when the data object was last updated. |
-| `properties` > `{propertyName}` | dataType | none | The name and value of an individual property. |
-| `properties` > `{crefPropertyName}` > `classification` > `closestLosingDistance` | float | `classification` | The lowest distance of a neighbor in the losing group. Optional. If `k` equals the size of the winning group, there is no losing group. |
-| `properties` > `{crefPropertyName}` > `classification` > `closestOverallDistance` | float | `classification` | The lowest distance of any neighbor, regardless of whether they were in the winning or losing. |
-| `properties` > `{crefPropertyName}` > `classification` > `closestWinningDistance` | float | `classification` | Closest distance of a neighbor from the winning group. |
-| `properties` > `{crefPropertyName}` > `classification` > `losingCount` | integer | `classification` | Size of the losing group, can be 0 if the winning group size equals `k`. |
-| `properties` > `{crefPropertyName}` > `classification` > `meanLosingDistance` | float | `classification` | The mean distance of the losing group. It is a normalized distance (between 0 and 1), where 0 means equal and 1 would mean a perfect opposite. |
-| `properties` > `{crefPropertyName}` > `classification` > `meanWinningDistance` | float | `classification` | The mean distance of the winning group. It is a normalized distance (between 0 and 1), where 0 means equal and 1 would mean a perfect opposite. |
-| `properties` > `{crefPropertyName}` > `classification` > `overallCount` | integer | `classification` | Overall neighbors checked as part of the classification. In most cases this will equal `k`, but could be lower than `k` - for example if not enough data was present. |
-| `properties` > `{crefPropertyName}` > `classification` > `winningCount` | integer | `classification` | Size of the winning group, a number between 1 and `k`. |
-| `vector` | list of floats | `vector` | The vector embedding computed for the object. |
-| `classification` > `basedOn` | string |  `classification` | The property name where the classification was based on. |
-| `classification` > `classifiedFields` | string |  `classification` | The classified property. |
-| `classification` > `completed` | timestamp |  `classification` | The time of classification completion. |
-| `classification` > `id` | uuid |  `classification` | The classification id. |
-| `classification` > `scope` | list of strings |  `classification` | The initial fields to classify. |
-| `featureProjection` > `vector` | list of floats |  `featureProjection` | The 2D or 3D vector coordinates of the feature projection. |
+| 字段名 | 数据类型 | 必需的 `include` 或 `additional` 字段 | 描述 |
+| ------ | -------- | ----------------------------------- | ---- |
+| `class` | 字符串 | 无 | 类名。 |
+| `creationTimeUnix` | Unix 时间戳 | 无 | 数据对象创建的时间戳。 |
+| `id` | UUID | 无 | 数据对象的 UUID。 |
+| `lastUpdateTimeUnix` | Unix 时间戳 | 无 | 数据对象最后更新的时间戳。 |
+| `properties` > `{propertyName}` | dataType | none | 表示一个属性的名称和值。 |
+| `properties` > `{crefPropertyName}` > `classification` > `closestLosingDistance` | float | `classification` | 失败组中最近的邻居的最小距离。可选。如果 `k` 等于获胜组的大小，则没有失败组。 |
+| `properties` > `{crefPropertyName}` > `classification` > `closestOverallDistance` | float | `classification` | 无论邻居是否属于获胜组，都是最低距离。 |
+| `properties` > `{crefPropertyName}` > `classification` > `closestWinningDistance` | float | `classification` | 距离获胜组最近的邻居的距离。 |
+| `properties` > `{crefPropertyName}` > `classification` > `losingCount` | 整数 | `classification` | 失败组的大小，如果获胜组大小等于 `k`，可能为 0。 |
+| `properties` > `{crefPropertyName}` > `classification` > `meanLosingDistance` | 浮点数 | `classification` | 失败组的平均距离。它是一个归一化的距离（介于 0 和 1 之间），其中 0 表示相等，1 表示完全相反。 |
+| `properties` > `{crefPropertyName}` > `classification` > `meanWinningDistance` | float | `classification` | 获胜组的平均距离。它是一个标准化的距离（在0到1之间），其中0表示相等，1表示完全相反。 |
+| `属性` > `{crefPropertyName}` > `分类` > `overallCount` | 整数 | `分类` | 作为分类的一部分检查的总邻居数。在大多数情况下，这将等于`k`，但可能低于`k` - 例如，如果没有足够的数据。 |
+| `属性` > `{crefPropertyName}` > `分类` > `winningCount` | 整数 | `分类` | 获胜组的大小，介于1和`k`之间的数字。 |
+| `vector` | 浮点数列表 | `vector` | 为对象计算的向量嵌入。 |
+| `classification` > `basedOn` | 字符串 | `classification` | 基于哪个属性进行分类的属性名称。 |
+| `classification` > `classifiedFields` | 字符串 | `classification` | 分类的属性。 |
+| `classification` > `completed` | 时间戳 | `classification` | 分类完成的时间。 |
+| `classification` > `id` | UUID | `classification` | 分类的ID。 |
+| `classification` > `scope` | 字符串列表 | `classification` | 进行分类的初始字段。 |
+| `featureProjection` > `vector` | 浮点数列表 | `featureProjection` | 特征投影的二维或三维向量坐标。 |
 
-### Status codes and error cases
+### 状态码和错误情况
 
-| Cause | Description | Result |
-| ----- | ----------- | ------ |
-| No objects present | No `?class` is provided. There are no objects present in the entire Weaviate instance. | `200 OK` - No error |
-| Valid class, no objects present | `?class` is provided, class exists. There are no objects present for this class. | `200 OK` - No error |
-| Invalid class | `?class` is provided, class does not exist. | `404 Not Found` |
-| Validation | Otherwise invalid user request. | `422 Unprocessable Entity` |
-| Authorization | Not allowed to view resource. | `403 Forbidden` |
-| Server-Side error | Correct user input, but request failed for another reason. | `500 Internal Server Error` - contains detailed error message |
+| 原因 | 描述 | 结果 |
+| ---- | ---- | ---- |
+| 不存在对象 | 未提供 `?class`。整个 Weaviate 实例中不存在对象。 | `200 OK` - 无错误 |
+| 有效的类，没有对象存在 | 提供了`?class`，类存在，但没有对象存在 | `200 OK` - 无错误 |
+| 无效的类 | 提供了`?class`，类不存在 | `404 Not Found` |
+| 验证 | 其他无效的用户请求 | `422 Unprocessable Entity` |
+| 授权 | 不允许查看资源 | `403 Forbidden` |
+| 服务器端错误 | 用户输入正确，但请求失败的其他原因。 | `500 Internal Server Error` - 包含详细的错误消息 |
 
-#### Example request
+#### 示例请求
 
 import SemanticKindGet from '/_includes/code/semantic-kind.get.mdx';
 
 <SemanticKindGet/>
 
-## Create a data object
+## 创建数据对象
 
-Create a new data object. The provided meta-data and schema values are validated.
+创建一个新的数据对象。提供的元数据和模式值将被验证。
 
 ### `objects` vs `batch`
 
@@ -196,12 +196,12 @@ Create a new data object. The provided meta-data and schema values are validated
 The `objects` endpoint is meant for individual object creations.
 :::
 
-If you plan on importing a large number of objects, it's much more efficient to use the [`/v1/batch`](./batch.md) endpoint. Otherwise, sending multiple single requests sequentially would incur a large performance penalty:
+如果您计划导入大量对象，最好使用 [`/v1/batch`](./batch.md) 端点，这样更加高效。否则，按顺序发送多个单独的请求会导致性能损失较大：
 
-1. Each sequential request would be handled by a single thread server-side while most of the server resources are idle. In addition, if you only send the second request once the first has been completed, you will wait for a lot of network overhead.
-1. It's much more efficient to parallelize imports. This will minimize the connection overhead and use multiple threads server-side for indexing.
-1. You do not have to do the parallelization yourself, you can use the [`/v1/batch`](./batch.md) endpoint for this. Even if you are sending batches from a single client thread, the objects within a batch will be handled by multiple server threads.
-1. Import speeds, especially for large datasets, will drastically improve when using the batching endpoint.
+1. 每个顺序请求在服务器端由单个线程处理，而大部分服务器资源是空闲的。此外，如果您只有在第一个请求完成后才发送第二个请求，那么会等待很多网络开销。
+1. 并行导入更加高效。这样可以减少连接开销，并在服务器端使用多个线程进行索引。
+2. 您不需要自己进行并行化，可以使用[`/v1/batch`](./batch.md)端点来实现。即使您从单个客户端线程发送批处理请求，批处理中的对象也会由多个服务器线程处理。
+1. 使用批处理端点时，导入速度，尤其是对于大型数据集，将显著提高。
 
 :::note Idempotence of POST requests in `objects` and `batch`
 The idempotence behavior differs between these two endpoints. POST /batch/objects is idempotent, and will overwrite any existing object given an id. POST /objects will fail if an id is provided which already exists in the class.
@@ -209,7 +209,7 @@ The idempotence behavior differs between these two endpoints. POST /batch/object
 To update an existing object with the `objects` endpoint, use the [PUT or PATCH method](#update-a-data-object).
 :::
 
-#### Method and URL
+#### 方法和URL
 
 ```http
 POST /v1/objects[?consistency_level=ONE|QUORUM|ALL]
@@ -219,56 +219,56 @@ POST /v1/objects[?consistency_level=ONE|QUORUM|ALL]
 The class name is not specified in the URL, as it is part of the request body.
 :::
 
-#### Parameters
+#### 参数
 
-The URL supports an optional [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency) query parameter:
+URL支持一个可选的[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-write-consistency)查询参数：
 
-| Name | Location | Type | Description |
+| 名称 | 位置 | 类型 | 描述 |
 | ---- | -------- | ---- |------------ |
-| `consistency_level` | query param | string | Optional [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency): `ONE`, `QUORUM` (default) or `ALL`. |
+| `consistency_level` | 查询参数 | 字符串 | 可选的一致性级别：`ONE`，`QUORUM`（默认）或`ALL`。 |
 
-The request body for a new object has the following fields:
+新对象的请求体具有以下字段：
 
-| Name | Type | Required | Description |
+| 名称 | 类型 | 是否必需 | 描述 |
 | ---- | ---- | -------- |------------ |
-| `class` | string | yes | The class name as defined in the schema |
-| `properties` | array | yes | An object with the property values of the new data object |
-| `properties` > `{propertyName}` | dataType | yes | The property and its value according to the set dataType |
-| `id` | v4 UUID | no | Optional id for the object |
-| `vector` | `[float]` | no | Optional [custom vector](#with-a-custom-vector) |
-| `tenant` | `string` | no | Optional tenant name. [Multi-tenancy](../../concepts/data.md#multi-tenancy) must be enabled first. |
+| `class` | 字符串 | 是 | 在架构中定义的类名 |
+| `properties` | 数组 | 是 | 包含新数据对象的属性值的对象 |
+| `properties` > `{propertyName}` | 数据类型 | 是 | 根据设置的数据类型定义的属性及其值 |
+| `id` | v4 UUID | 否 | 对象的可选ID |
+| `vector` | `[float]` | no | 可选的[自定义向量](#with-a-custom-vector) |
+| `tenant` | `string` | no | 可选的租户名称。必须先启用[多租户](../../concepts/data.md#multi-tenancy)。 |
 
-#### Example request
+#### 示例请求
 
 import SemanticKindCreate from '/_includes/code/semantic-kind.create.mdx';
 
 <SemanticKindCreate/>
 
-### With geoCoordinates
+### 使用地理坐标
 
-If you want to supply a [`geoCoordinates`](/developers/weaviate/config-refs/datatypes.md#datatype-geocoordinates) property, you need to specify the `latitude` and `longitude` as floating point decimal degrees:
+如果您想提供一个 [`geoCoordinates`](/developers/weaviate/config-refs/datatypes.md#datatype-geocoordinates) 属性，您需要将 `latitude` 和 `longitude` 指定为浮点型的十进制度数：
 
 import SemanticKindCreateCoords from '/_includes/code/semantic-kind.create.geocoordinates.mdx';
 
 <SemanticKindCreateCoords/>
 
-### With a custom vector
+### 使用自定义向量
 
-When creating a data object, you can configure Weaviate to generate a vector with a vectorizer module, or you can provide the vector yourself. We sometimes refer to this as a "custom" vector.
+创建数据对象时，您可以配置Weaviate使用向量化模块生成一个向量，或者您可以自己提供向量。我们有时将此称为“自定义”向量。
 
-You can provide a custom vector during object creation either when:
-- you are not using a vectorizer for that class, or
-- you are using a vectorizer, but you wish to bypass it during the object creation stage.
+在对象创建过程中，您可以在以下两种情况下提供自定义向量：
+- 您在该类别中不使用向量化器，或者
+- 您使用向量化器，但希望在对象创建阶段绕过它。
 
-You can create a data object with a custom vector as follows:
-1. Set the `"vectorizer"` in the relevant class in the [data schema](../../configuration/schema-configuration.md#specify-a-vectorizer).
-    - If you are not using a vectorizer at all, configure the class accordingly. To do this, you can:
-        - set the default vectorizer module to `"none"` (`DEFAULT_VECTORIZER_MODULE="none"`), or
-        - set the `"vectorizer"` for the class to `"none"` (`"vectorizer": "none"`) (*note: the class `vectorizer` setting will override the `DEFAULT_VECTORIZER_MODULE` parameter*).
-    - If you wish to bypass the vectorizer for object creation:
-      - set the vectorizer to the same vectorizer with identical settings used to generate the custom vector
-    > *Note: There is NO validation of this vector besides checking the vector length.*
-2. Then, attach the vector in a special `"vector"` field during object creation. For example, if adding a single object, you can:
+您可以按如下方式创建带有自定义向量的数据对象：
+1. 在[data schema](../../configuration/schema-configuration.md#specify-a-vectorizer)中的相关类中设置`"vectorizer"`。
+    - 如果您根本不使用向量化器，请相应地配置该类。您可以进行以下操作：
+        - 将默认的向量化器模块设置为`"none"`（`DEFAULT_VECTORIZER_MODULE="none"`），或者
+        - 将类的`"vectorizer"`设置为`"none"` (`"vectorizer": "none"`)（*注意：类的`vectorizer`设置将覆盖`DEFAULT_VECTORIZER_MODULE`参数*）。
+    - 如果您希望绕过向量化器进行对象创建：
+      - 将向量化器设置为与生成自定义向量时相同的向量化器，并具有相同的设置
+    > *注意：除了检查向量长度之外，不对该向量进行任何验证。*
+2. 然后，在对象创建过程中将向量附加在特殊的`"vector"`字段上。例如，如果添加单个对象，可以使用以下代码：
 
 import SemanticKindCreateVector from '/_includes/code/semantic-kind.create.vector.mdx';
 
@@ -278,15 +278,15 @@ import SemanticKindCreateVector from '/_includes/code/semantic-kind.create.vecto
 You can set custom vectors for batch imports as well as single object creation.
 :::
 
-See also [how to search using custom vectors](../graphql/vector-search-parameters.md#nearvector).
+参见[如何使用自定义向量进行搜索](../graphql/vector-search-parameters.md#nearvector)。
 
-## Get a data object
+## 获取数据对象
 
-Collect an individual data object.
+收集一个单独的数据对象。
 
-#### Method and URL
+#### 方法和URL
 
-Available since `v1.14` and the preferred way:
+自`v1.14`起可用，并且是首选方式：
 ```bash
 GET /v1/objects/{ClassName}/{id}[?consistency_level=ONE|QUORUM|ALL]
 ```
@@ -294,9 +294,9 @@ GET /v1/objects/{ClassName}/{id}[?consistency_level=ONE|QUORUM|ALL]
 import RestObjectsCRUDClassnameNote from '/_includes/rest-objects-crud-classname-note.md';
 
 <details>
-  <summary>Getting a data object without a class name is deprecated</summary>
+  <summary>获取没有类名的数据对象已被弃用</summary>
 
-The below syntax is only available for backward compatibility and deprecated:
+以下语法仅用于向后兼容，已被弃用：
 ```bash
 GET /v1/objects/{id}
 ```
@@ -306,40 +306,40 @@ GET /v1/objects/{id}
 </details>
 
 
-#### URL parameters
+#### URL参数
 
-| Name | Location | Type | Description |
+| 名称 | 位置 | 类型 | 描述 |
 | ---- |----------| ---- | ----------- |
-| `{ClassName}` | path | string | The name of the class that the object belongs to. |
-| `{id}` | query param | uuid | The uuid of the data object to retrieve. |
-| `include` | query param | string | Include additional information, such as classification info. Allowed values include: `classification`, `vector`. |
-| `consistency_level` | query param | string | Optional [consistency level](../../concepts/replication-architecture/consistency.md#tunable-read-consistency): `ONE`, `QUORUM` (default) or `ALL`. |
+| `{ClassName}` | 路径 | 字符串 | 对象所属的类的名称。 |
+| `{id}` | 查询参数 | uuid | 要检索的数据对象的uuid。 |
+| `include` | 查询参数 | 字符串 | 包含额外的信息，如分类信息。允许的值包括：`classification`，`vector`。 |
+| `consistency_level` | 查询参数 | 字符串 | 可选 [一致性级别](../../concepts/replication-architecture/consistency.md#tunable-read-consistency): `ONE`, `QUORUM` (默认) 或 `ALL`。 |
 
-#### Example request
+#### 示例请求
 
-The [response fields](#response-fields) are explained in the corresponding section above.
+[响应字段](#response-fields)在上面的对应部分中有解释。
 
 import SemanticKindObjectGet from '/_includes/code/semantic-kind.object.get.mdx';
 
 <SemanticKindObjectGet/>
 
 
-## Check if a data object exists
+## 检查数据对象是否存在
 
-The same endpoint above can be used with the `HEAD` HTTP method to check if a data object exists without retrieving it. Internally it skips reading the object from disk (other than checking if it is present), thus not using resources on marshalling, parsing, etc.
-Additionally, the resulting HTTP request has no body; the existence of an object is indicated solely by the status code (`204` when the object exists, `404` when it doesn't, `422` on invalid ID).
+可以使用相同的端点和`HEAD` HTTP方法来检查数据对象是否存在，而无需检索它。在内部，它跳过了从磁盘读取对象的过程（仅检查是否存在），因此不会使用资源进行编组、解析等操作。
+此外，生成的HTTP请求没有正文；仅通过状态代码指示对象的存在（当对象存在时为`204`，当不存在时为`404`，在无效的ID上为`422`）。
 
-#### Method and URL
+#### 方法和URL
 
-Available since `v1.14` and the preferred way:
+自 `v1.14` 版本起可用，并且是首选方式:
 ```bash
 HEAD /v1/objects/{ClassName}/{id}[?consistency_level=ONE|QUORUM|ALL]
 ```
 
 <details>
-  <summary>Checking if a data object exists without a class name is deprecated</summary>
+  <summary>检查一个没有类名的数据对象是否存在已过时</summary>
 
-The below syntax is only available for backward compatibility and deprecated:
+下面的语法仅供向后兼容，并已被弃用：
 ```bash
 HEAD /v1/objects/{id}
 ```
@@ -348,39 +348,39 @@ HEAD /v1/objects/{id}
 
 </details>
 
-#### URL parameters
+#### URL参数
 
-| Name | Location | Type | Description |
+| 名称 | 位置 | 类型 | 描述 |
 | ---- | -------- | ---- | ----------- |
-| `{ClassName}` | path | string | The name of the class that the object belongs to |
-| `{id}` | path | uuid | The uuid of the data object to retrieve |
-| `consistency_level` | query param | string | Optional [consistency level](../../concepts/replication-architecture/consistency.md#tunable-read-consistency): `ONE`, `QUORUM` (default) or `ALL`. |
-| `tenant` | query param | string | Optional tenant name. [Multi-tenancy](../../concepts/data.md#multi-tenancy) must be enabled first. |
+| `{ClassName}` | 路径 | 字符串 | 对象所属类的名称 |
+| `{id}` | 路径 | uuid | 要检索的数据对象的uuid |
+| `consistency_level` | 查询参数 | 字符串 | 可选的[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-read-consistency): `ONE`, `QUORUM` (默认) 或 `ALL`。 |
+| `tenant` | 查询参数 | 字符串 | 可选的租户名称。必须先启用[多租户](../../concepts/data.md#multi-tenancy)。 |
 
-#### Example request
+#### 示例请求
 
 import SemanticKindObjectHead from '/_includes/code/semantic-kind.object.head.mdx';
 
 <SemanticKindObjectHead/>
 
-## Update a data object
+## 更新数据对象
 
-Update an individual data object based on its uuid.
+根据其uuid更新单个数据对象。
 
-#### Method and URL
+#### 方法和URL
 
-In the RESTful API, both `PUT` and `PATCH` methods are accepted. `PUT` replaces all property values of the data object, while `PATCH` only overwrites the given properties.
+在RESTful API中，接受`PUT`和`PATCH`两种方法。`PUT`会替换数据对象的所有属性值，而`PATCH`仅覆盖给定的属性。
 
-Available since `v1.14` and the preferred way:
+从`v1.14`版本开始提供，也是首选方式：
 ```bash
 PUT /v1/objects/{ClassName}/{id}[?consistency_level=ONE|QUORUM|ALL]
 PATCH /v1/objects/{ClassName}/{id}[?consistency_level=ONE|QUORUM|ALL]
 ```
 
 <details>
-  <summary>Updating a data object without a class name are deprecated</summary>
+  <summary>更新没有类名的数据对象已废弃</summary>
 
-The below are only available for backward compatibility and deprecated:
+以下仅供向后兼容使用，已废弃：
 ```bash
 PUT /v1/objects/{id}
 PATCH /v1/objects/{id}
@@ -394,50 +394,50 @@ PATCH /v1/objects/{id}
 If the class is configured with a vectorizer, Weaviate will only compute a new vector for an updated object if the update changes the underlying text to be vectorized.
 :::
 
-#### Parameters
+#### 参数
 
-The URL has two required path parameters and supports an optional query parameter for the [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency):
+该URL具有两个必需的路径参数，并支持一个可选的查询参数用于[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-write-consistency)：
 
-| Name | Location | Type | Description |
+| 名称 | 位置 | 类型 | 描述 |
 | ---- | -------- | ---- | ----------- |
-| `{ClassName}` | path | string | The name of the class that the object belongs to |
-| `{id}` | path | uuid | The uuid of the data object to update |
-| `consistency_level` | query param | string | Optional [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency): `ONE`, `QUORUM` (default) or `ALL`. |
+| `{ClassName}` | 路径 | 字符串 | 对象所属的类的名称 |
+| `{id}` | 路径 | UUID | 要更新的数据对象的UUID |
+| `consistency_level` | 查询参数 | 字符串 | 可选的[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-write-consistency): `ONE`, `QUORUM` (默认) 或 `ALL`。 |
 
-The request body for replacing (some) properties of an object has the following fields:
+替换对象的请求体具有以下字段：
 
-| Name | Type | Required | Description |
-| ---- | ---- | -------- | ----------- |
-| `class` | string | yes | The class name as defined in the schema |
-| `id` | string | ? | Required for `PUT` to be the same id as the one passed in the URL |
-| `properties` | array | yes | An object with the property values of the new data object |
-| `properties` > `{propertyName}` | dataType | yes | The property and its value according to the set dataType |
-| `vector` | `[float]` | no | Optional [custom vector](#with-a-custom-vector) |
-| `tenant` | `string` | no | Optional tenant name. [Multi-tenancy](../../concepts/data.md#multi-tenancy) must be enabled first. |
+| 名称 | 类型 | 必需 | 描述 |
+| ---- | ---- | ---- | ---- |
+| `class` | 字符串 | 是 | 在模式中定义的类名 |
+| `id` | string | ? | `PUT` 请求需要与 URL 中传递的 id 相同 |
+| `properties` | array | yes | 包含新数据对象的属性值的对象 |
+| `properties` > `{propertyName}` | dataType | yes | 根据设置的 dataType，指定属性和其值 |
+| `vector` | `[float]` | no | 可选的 [自定义向量](#with-a-custom-vector) |
+| `tenant` | `string` | no | 可选的租户名称。必须先启用[多租户](../../concepts/data.md#multi-tenancy)功能。 |
 
-#### Example request
+#### 示例请求
 
 import SemanticKindObjectUpdate from '/_includes/code/semantic-kind.object.update.mdx';
 
 <SemanticKindObjectUpdate/>
 
-If the update was successful, no content will be returned.
+如果更新成功，将不返回任何内容。
 
-## Delete a data object
+## 删除数据对象
 
-Delete an individual data object from Weaviate.
+从Weaviate中删除单个数据对象。
 
-#### Method and URL
+#### 方法和URL
 
-Available since `v1.14` and preferred way:
+自 `v1.14` 版本起可用，且为首选方式：
 ```http
 DELETE /v1/objects/{ClassName}/{id}[?consistency_level=ONE|QUORUM|ALL]
 ```
 
 <details>
-  <summary>Deleting a data object without a class name is deprecated</summary>
+  <summary>删除没有类名的数据对象已经过时</summary>
 
-The below syntax is only available for backward compatibility and deprecated:
+下面的语法仅适用于向后兼容，已经过时：
 ```bash
 DELETE /v1/objects/{id}
 ```
@@ -446,29 +446,28 @@ DELETE /v1/objects/{id}
 
 </details>
 
-#### URL parameters
+#### URL参数
 
-| Name | Location | Type | Description |
+| 名称 | 位置 | 类型 | 描述 |
 | ---- | -------- | ---- | ----------- |
-| `{ClassName}` |  path | string | The name of the class that the object belongs to |
-| `{id}` | path | uuid | The uuid of the data object to delete |
-| `consistency_level` | query param | string | Optional [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency): `ONE`, `QUORUM` (default) or `ALL`. |
-| `tenant` | query param | string | Optional tenant name. [Multi-tenancy](../../concepts/data.md#multi-tenancy) must be enabled first. |
+| `{ClassName}` |  路径 | 字符串 | 对象所属类的名称 |
+| `{id}` | 路径 | uuid | 要删除的数据对象的uuid |
+| `consistency_level` | 查询参数 | 字符串 | 可选的[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-write-consistency): `ONE`, `QUORUM` (默认) 或 `ALL`。 |
+| `tenant` | 查询参数 | 字符串 | 可选的租户名称。必须先启用[多租户](../../concepts/data.md#multi-tenancy)。 |
 
-
-#### Example request
+#### 示例请求
 
 import SemanticKindObjectDelete from '/_includes/code/semantic-kind.object.delete.mdx';
 
 <SemanticKindObjectDelete/>
 
-If the deletion was successful, no content will be returned.
+如果删除成功，将不会返回任何内容。
 
-## Validate a data object
+## 验证数据对象
 
-You can validate an object's schema and metadata without creating it. If the schema of the object is valid, the request should return `True`/`true` in case of the clients, and nothing with a plain RESTful request. Otherwise, an error object will be returned.
+您可以在不创建对象的情况下验证其模式和元数据。如果对象的模式有效，则请求应该返回`True`/`true`（对于客户端）或在纯RESTful请求中不返回任何内容。否则，将返回一个错误对象。
 
-#### Method and URL
+#### 方法和URL
 
 ```http
 POST /v1/objects/validate
@@ -478,49 +477,48 @@ POST /v1/objects/validate
 As with creating an object, the class name is not specified through the URL, as it is part of the request body.
 :::
 
-#### Parameters
+#### 参数
 
-The request body for validating an object has the following fields:
+验证对象的请求体具有以下字段：
 
-| Name | Type | Required | Description |
+| 名称 | 类型 | 是否必需 | 描述 |
 | ---- | ---- | -------- | ----------- |
-| `class` | string | yes | The class name as defined in the schema |
-| `properties` | array | yes | An object with the property values of the new data object |
-| `properties` > `{propertyName}` | dataType | yes | The property and its value according to the set dataType |
-| `id` | v4 uuid | no<sup>*</sup> | The id of the data object.<br/><sup>*An ID is required by the clients.</sup> |
+| `class` | 字符串 | 是 | 在架构中定义的类名 |
+| `properties` | 数组 | 是 | 包含新数据对象的属性值的对象 |
+| `properties` > `{propertyName}` | 数据类型 | 是 | 属性及其值，根据设置的数据类型 |
+| `id` | v4 uuid | no<sup>*</sup> | 数据对象的ID。<br/><sup>*客户端需要提供ID。</sup> |
 
-
-#### Example request
+#### 示例请求
 
 import SemanticKindValidate from '/_includes/code/semantic-kind.validate.mdx';
 
 <SemanticKindValidate/>
 
 
-## Cross-references
+## 交叉引用
 
-[Cross-references](../../config-refs/datatypes.md#datatype-cross-reference) are object properties for establishing links from the source object to another object via a [beacon](../../more-resources/glossary.md).
+[交叉引用](../../config-refs/datatypes.md#datatype-cross-reference)是用于通过[信标](../../more-resources/glossary.md)从源对象链接到另一个对象的对象属性。
 
 :::note Cross-references do not affect vectors
 Creating cross-references does not affect object vectors in either direction.
 :::
 
-### Add a cross-reference
+### 添加交叉引用
 
-`POST` request that adds a reference to the array of cross-references of the given property in the source object specified by its class name and id.
+`POST` 请求将一个引用添加到给定属性的交叉引用数组中，该属性位于由其类名和id指定的源对象中。
 
-#### Method and URL
+#### 方法和URL
 
-Available since `v1.14` and the preferred way:
+自`v1.14`版本起可用，并且是首选方法：
 
 ```http
 POST /v1/objects/{ClassName}/{id}/references/{propertyName}[?consistency_level=ONE|QUORUM|ALL]
 ```
 
 <details>
-  <summary>Adding a cross-reference without a class name is deprecated</summary>
+  <summary>添加没有类名的交叉引用已被弃用</summary>
 
-The below syntax is only available for backward compatibility and deprecated:
+以下语法仅供向后兼容使用，已被弃用：
 ```bash
 POST /v1/objects/{id}/references/{propertyName}
 ```
@@ -529,51 +527,51 @@ POST /v1/objects/{id}/references/{propertyName}
 
 </details>
 
-#### Parameters
+#### 参数
 
-The URL includes three required path parameters and supports an optional query parameter for the [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency):
+URL包含三个必填的路径参数，并支持一个可选的查询参数，用于[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-write-consistency)：
 
-| Name | Location | Type | Description |
-| ---- | -------- | ---- | ----------- |
-| `{ClassName}` |  path | string | The name of the class that the object belongs to, e.g. `Article` |
-| `{id}` | path | uuid | The uuid of the object to add the reference to |
-| `{propertyName}` | path | string | The name of the cross-reference property, e.g. `author` |
-| `consistency_level` | query param | string | Optional [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency): `ONE`, `QUORUM` (default) or `ALL`. |
-| `tenant` | query param | string | Optional tenant name. [Multi-tenancy](../../concepts/data.md#multi-tenancy) must be enabled first. |
+| 名称 | 位置 | 类型 | 描述 |
+| ---- | ---- | ---- | ---- |
+| `{ClassName}` |  路径 | 字符串 | 对象所属的类的名称，例如 `Article` |
+| `{id}` | 路径 | uuid | 要添加引用的对象的uuid |
+| `{propertyName}` | 路径 | 字符串 | 交叉引用属性的名称，例如 `author` |
+| `consistency_level` | 查询参数 | 字符串 | 可选的[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-write-consistency)：`ONE`，`QUORUM`（默认值）或`ALL`。 |
+| `tenant` | 查询参数 | 字符串 | 可选的租户名称。必须先启用[多租户](../../concepts/data.md#multi-tenancy)。 |
 
-The request body is an object with the following field:
+请求体是一个包含以下字段的对象：
 
-| Name | Type | Required | Description |
-| ---- | ---- | -------- | ----------- |
-| `beacon` | Weaviate Beacon | yes | The beacon URL of the reference, in the format `weaviate://localhost/<ClassName>/<id>` |
+| 名称 | 类型 | 必需 | 描述 |
+| ---- | ---- | ---- | ---- |
+| `beacon` | Weaviate Beacon | 是 | 引用的 Beacon URL，格式为 `weaviate://localhost/<ClassName>/<id>` |
 
 <BeaconsRequireLocalhost />
 
 <BeaconsBackCompatOmitClassname />
 
-#### Example request
+#### 示例请求
 
 import SemanticKindObjectReferenceAdd from '/_includes/code/semantic-kind.object.reference.add.mdx';
 
 <SemanticKindObjectReferenceAdd/>
 
-If the addition was successful, no content will be returned.
+如果添加成功，将不返回任何内容。
 
-### Update a cross-reference
+### 更新交叉引用
 
-`PUT` request that updates *all* references in a specified property of an object specified by its class name and id.
+`PUT` 请求用于更新指定类名和ID的对象的指定属性中的*所有*引用。
 
-#### Method and URL
+#### 方法和URL
 
-Available since `v1.14` and the preferred way:
+自`v1.14` 版本起可用，并且是首选方法：
 ```http
 PUT /v1/objects/{ClassName}/{id}/references/{propertyName}[?consistency_level=ONE|QUORUM|ALL]
 ```
 
 <details>
-  <summary>Updating a cross-reference without a class name is deprecated</summary>
+  <summary>更新交叉引用时不带类名已经过时</summary>
 
-The below syntax is only available for backward compatibility and deprecated:
+下面的语法仅供向后兼容使用，已经过时：
 ```bash
 PUT /v1/objects/{id}/references/{propertyName}
 ```
@@ -582,52 +580,51 @@ PUT /v1/objects/{id}/references/{propertyName}
 
 </details>
 
-#### Parameters
+#### 参数
 
-The URL includes three required path parameters and supports an optional query parameter for the [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency):
+该URL包含三个必需的路径参数，并支持一个可选的查询参数，用于[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-write-consistency)：
 
-| Name | Location | Type | Description |
-| ---- | -------- | ---- | ----------- |
-| `{ClassName}` | path | string | The name of the class that the object belongs to |
-| `{id}` | path | uuid | The uuid of the object to update the reference(s) of |
-| `{propertyName}` | path | string | The name of the cross-reference property |
-| `consistency_level` | query param | string | Optional [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency): `ONE`, `QUORUM` (default) or `ALL`. |
-| `tenant` | query param | string | Optional tenant name. [Multi-tenancy](../../concepts/data.md#multi-tenancy) must be enabled first. |
+| 名称 | 位置 | 类型 | 描述 |
+| ---- | ---- | ---- | ---- |
+| `{ClassName}` | 路径 | 字符串 | 对象所属的类的名称 |
+| `{id}` | 路径 | uuid | 要更新引用的对象的uuid |
+| `{propertyName}` | 路径 | 字符串 | 交叉引用属性的名称 |
+| `consistency_level` | 查询参数 | 字符串 | 可选的[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-write-consistency): `ONE`、`QUORUM`（默认）或`ALL`。 |
+| `tenant` | 查询参数 | 字符串 | 可选的租户名称。首先必须启用[多租户](../../concepts/data.md#multi-tenancy)。 |
 
-The `PUT` request body is a list of beacons:
+`PUT`请求的请求体是一个beacons列表:
 
-| Name | Type | Required | Description |
+| 名称 | 类型 | 是否必需 | 描述 |
 | ---- | ---- | -------- | ----------- |
-| `beacon` | Weaviate Beacon array | yes | Array of beacons in the format `weaviate://localhost/<ClassName>/<id>` |
+| `beacon` | Weaviate Beacon array | 是 | 以`weaviate://localhost/<ClassName>/<id>`格式的beacons数组 |
 
 <BeaconsRequireLocalhost />
 
 <BeaconsBackCompatOmitClassname />
 
-#### Example request
+#### 示例请求
 
 import SemanticKindObjectReferenceUpdate from '/_includes/code/semantic-kind.object.reference.update.mdx';
 
 <SemanticKindObjectReferenceUpdate/>
 
-If the update was successful, no content will be returned.
+如果更新成功，将不会返回任何内容。
 
+### 删除交叉引用
 
-### Delete a cross-reference
+从给定对象的指定属性的引用列表中删除给定主体中给定的单个引用（如果存在于列表中）。无论如何，都会返回`204 No Content`。
 
-Delete the single reference that is given in the body from the list of references that the specified property of a given object has, if it exists in the list. Returns `204 No Content` either way.
+#### 方法和URL
 
-#### Method and URL
-
-Available since `v1.14` and the preferred way:
+自`v1.14`起可用，并且是首选方法：
 ```http
 DELETE /v1/objects/{ClassName}/{id}/references/{propertyName}[?consistency_level=ONE|QUORUM|ALL]
 ```
 
 <details>
-  <summary>Deleting a cross-reference without a class name is deprecated</summary>
+  <summary>删除没有类名的交叉引用已被弃用</summary>
 
-The below syntax is only available for backward compatibility and deprecated:
+以下语法仅供向后兼容并已被弃用：
 ```bash
 DELETE /v1/objects/{id}/references/{propertyName}
 ```
@@ -636,22 +633,22 @@ DELETE /v1/objects/{id}/references/{propertyName}
 
 </details>
 
-#### Parameters
+#### 参数
 
-The URL includes two required path parameters and supports an optional query parameter for the [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency):
+该URL包含两个必需的路径参数，并支持一个可选的查询参数用于[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-write-consistency)：
 
-| Name | Location | Type | Description |
+| 名称 | 位置 | 类型 | 描述 |
 | ---- | -------- | ---- | ----------- |
-| `{id}` | path | uuid | The uuid of the object to delete the reference from |
-| `{propertyName}` | path | string | The name of the cross-reference property |
-| `consistency_level` | query param | string | Optional [consistency level](../../concepts/replication-architecture/consistency.md#tunable-write-consistency): `ONE`, `QUORUM` (default) or `ALL`. |
-| `tenant` | query param | string | Optional tenant name. [Multi-tenancy](../../concepts/data.md#multi-tenancy) must be enabled first. |
+| `{id}` | 路径 | uuid | 要从中删除引用的对象的uuid |
+| `{propertyName}` | path | string | 交叉引用属性的名称 |
+| `consistency_level` | query param | string | 可选的[一致性级别](../../concepts/replication-architecture/consistency.md#tunable-write-consistency)：`ONE`，`QUORUM`（默认）或`ALL`。 |
+| `tenant` | query param | string | 可选的租户名称。首先必须启用[多租户](../../concepts/data.md#multi-tenancy)。 |
 
-The request body is a beacon object:
+请求体是一个信标对象：
 
-| Name | Type | Required | Description |
+| 名称 | 类型 | 是否必需 | 描述 |
 | ---- | ---- | -------- | ----------- |
-| `beacon` | Weaviate Beacon | yes | The beacon URL of the reference, formatted as `weaviate://localhost/<ClassName>/<id>` |
+| `beacon` | Weaviate Beacon | 是 | 引用的信标URL，格式为 `weaviate://localhost/<类名>/<id>` |
 
 <BeaconsRequireLocalhost />
 
@@ -665,22 +662,22 @@ present using the old format (without class id) you also need to specify it the
 same way.
 :::
 
-#### Example request
+#### 示例请求
 
 import SemanticKindObjectReferenceDelete from '/_includes/code/semantic-kind.object.reference.delete.mdx';
 
 <SemanticKindObjectReferenceDelete/>
 
-If the addition was successful, no content will be returned.
+如果添加成功，将不返回任何内容。
 
-### Multi-tenancy
+### 多租户
 
-When using multi-tenancy, cross-references can only be made:
+在使用多租户时，只能建立以下交叉引用：
 
-- From a multi-tenancy object to a non-multi-tenancy object.
-- From a multi-tenancy object to a multi-tenancy object, as long as they belong to the same tenant.
+- 从多租户对象到非多租户对象。
+- 从多租户对象到多租户对象，只要它们属于同一个租户。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

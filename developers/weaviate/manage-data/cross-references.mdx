@@ -1,8 +1,7 @@
 ---
-title: Cross-references
-sidebar_position: 50
 image: og/docs/howto.jpg
-# tags: ["howto"]
+sidebar_position: 50
+title: Cross-references
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,13 +10,14 @@ import FilteredTextBlock from '@site/src/components/Documentation/FilteredTextBl
 import PythonCode from '!!raw-loader!/_includes/code/howto/manage-data.cross-refs.py';
 import TSCode from '!!raw-loader!/_includes/code/howto/manage-data.cross-refs';
 
-## Overview
+## 概述
 
-You can use cross-references to establish directional relationships between classes, for example from a `Book` to its `Author`, or from an `Author` to their `Book`s.
+您可以使用交叉引用来建立类之间的方向关系，例如从`Book`到其`Author`，或者从`Author`到他们的`Book`。
 
-To define a cross-reference, you must:
-1. At the class level, set up a [`cross-reference` property](../config-refs/datatypes.md#datatype-cross-reference) in one class (`from`) referring to another (`to`) class, then
-2. For individual objects, establish the cross-reference between a particular object of the `from` class, to an object of the `to` class, using their [id](../api/graphql/additional-properties.md#id)s.
+要定义一个交叉引用，您必须：
+1. 在类级别上，在一个类（`from`）中设置一个[`cross-reference`属性](../config-refs/datatypes.md#datatype-cross-reference)，该属性引用到另一个类（`to`），
+然后
+2. 对于单个对象，使用它们的[id](../api/graphql/additional-properties.md#id)建立`from`类的特定对象与`to`类的对象之间的交叉引用关系。
 
 :::tip Multi-tenancy
 For classes where [multi-tenancy](../concepts/data.md#multi-tenancy) is enabled, you can establish a cross-reference from a multi-tenancy class object to:
@@ -36,14 +36,14 @@ Creating cross-references does not affect object vectors in either direction.
 :::
 
 
-### Data set
+### 数据集
 
-<!-- Commented this out for now as the package is unofficial -->
-<!-- (available in the [weaviate-demo-datasets](https://pypi.org/project/weaviate-demo-datasets/) Python package) -->
+<!-- 暂时注释掉，因为该软件包是非官方的 -->
+<!-- （可以在 [weaviate-demo-datasets](https://pypi.org/project/weaviate-demo-datasets/) Python软件包中找到） -->
 
-The example for this howto is a dataset consisting of 1000 questions & answers from the popular quiz show "Jeopardy!". The two classes of interest are: `JeopardyQuestion` and `JeopardyCategory`. Let's pick some objects of interest:
+本教程的示例数据集包含来自知名问答节目“危险边缘”的1000个问题和答案。感兴趣的两个类别是：`JeopardyQuestion`和`JeopardyCategory`。让我们选择一些感兴趣的对象：
 
-Questions:
+问题：
 
 ```json
 {
@@ -55,7 +55,7 @@ Questions:
 }
 ```
 
-Categories:
+分类:
 
 ```json
 [
@@ -75,13 +75,13 @@ Categories:
 ```
 
 
-## Add a one-way cross-reference property
+## 添加单向交叉引用属性
 
-This requires adding one reference property `from` a class referring `to` another, and adding one cross-reference per object pair.
+这需要在一个类中添加一个引用属性`from`，该属性引用另一个类`to`，并且为每对对象添加一个交叉引用。
 
-To add a cross-reference property in the class definition, specify its `dataType` as the name of another class in the [schema](../tutorials/schema.md).
+要在类定义中添加交叉引用属性，请将其`dataType`指定为[schema](../tutorials/schema.md)中另一个类的名称。
 
-For example to specify the cross-reference from `JeopardyQuestion` to `JeopardyCategory`:
+例如，要将交叉引用从`JeopardyQuestion`指定到`JeopardyCategory`：
 
 <FilteredTextBlock
   text={PythonCode}
@@ -90,7 +90,7 @@ For example to specify the cross-reference from `JeopardyQuestion` to `JeopardyC
   language="json"
 />
 
-To add a cross-reference from an object to another, specify its source class and id, the property name, and the class and id of the target object. In the example below, we'll _add_ (not set) the "U.S. CITIES" category to the "San Francisco" Q&A (which by default only has the "MUSEUMS" category):
+要在一个对象中添加对另一个对象的交叉引用，需要指定源类和id、属性名称以及目标对象的类和id。在下面的示例中，我们将向“San Francisco”问答中添加（而不是设置）“U.S. CITIES”类别（默认情况下只有“MUSEUMS”类别）：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -116,13 +116,13 @@ To add a cross-reference from an object to another, specify its source class and
 </Tabs>
 
 
-## Add two-way cross-references
+## 添加双向交叉引用
 
-This requires adding reference properties in both directions, and adding two cross-references per object pair (`from` A -> `to` B and `from` B -> `to` A).
+这需要在两个方向上添加引用属性，并为每个对象对添加两个交叉引用（从 A 到 B 和从 B 到 A）。
 
-To define a bidirectional reference between two classes, add a property to each class with the `dataType` set to the name of the other class:
+要在两个类之间定义双向引用，请向每个类添加一个属性，其中`dataType`设置为另一个类的名称:
 
-`JeopardyQuestion` class:
+`JeopardyQuestion` 类:
 <FilteredTextBlock
   text={PythonCode}
   startMarker="# CrossRefDefinition"
@@ -130,7 +130,7 @@ To define a bidirectional reference between two classes, add a property to each 
   language="json"
 />
 
-`JeopardyCategory` class:
+`JeopardyCategory` 类:
 ```json
     {
         "class": "JeopardyCategory",
@@ -148,7 +148,7 @@ To define a bidirectional reference between two classes, add a property to each 
     }
 ```
 
-To set up a two-way cross-reference between two objects, set each cross-reference in turn:
+要在两个对象之间建立双向交叉引用，依次设置每个交叉引用：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -174,11 +174,11 @@ To set up a two-way cross-reference between two objects, set each cross-referenc
 </Tabs>
 
 
-## Add multiple (one-to-many) cross-references
+## 添加多个（一对多）交叉引用
 
-To add a one-to-many cross-reference relationship, add to the source object each of the cross-references to the target objects that you need.
+要添加一个一对多的交叉引用关系，需要在源对象中添加到目标对象的每个交叉引用。
 
-For example, to mark that the "San Francisco" Q&A belongs to multiple categories, e.g. "US. CITIES" and "MUSEUMS":
+例如，要标记“旧金山”问答属于多个类别，比如“美国城市”和“博物馆”：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
@@ -204,19 +204,19 @@ For example, to mark that the "San Francisco" Q&A belongs to multiple categories
 </Tabs>
 
 
-## Delete a cross-reference
+## 删除交叉引用
 
-Deleting a cross-reference requires specifying the parameters that define the cross-reference.
+删除交叉引用需要指定定义交叉引用的参数。
 
-To delete a cross-reference, specify the class, id and cross-reference property name of the source object, and the class and id of the target object:
+要删除交叉引用，需要指定源对象的类、ID和交叉引用属性名称，以及目标对象的类和ID:
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
 
   <FilteredTextBlock
     text={PythonCode}
-    startMarker="# Delete Python"
-    endMarker="# END Delete Python"
+    startMarker="# 删除 Python"
+    endMarker="# END 删除 Python"
     language="py"
   />
 
@@ -225,7 +225,7 @@ To delete a cross-reference, specify the class, id and cross-reference property 
 
   <FilteredTextBlock
     text={TSCode}
-    startMarker="// Delete TS"
+    startMarker="// 删除 TS"
     endMarker="// END Delete TS"
     language="ts"
   />
@@ -239,17 +239,17 @@ If an object is deleted, cross-references to it will be left intact. A [Get quer
 :::
 
 
-## Update a cross-reference
+## 更新交叉引用
 
-To update the cross-references stored in a property of an object, specify the object's UUID, class name and cross-references property name, as well as the new list of cross-referenced UUIDs and their class (if all objects are of the same class) or classes (one class per each UUID):
+要更新存储在对象属性中的交叉引用，需要指定对象的UUID、类名和交叉引用属性名，以及新的交叉引用UUID列表和它们的类（如果所有对象属于同一类）或类（每个UUID对应一个类）：
 
 <Tabs groupId="languages">
   <TabItem value="py" label="Python">
 
   <FilteredTextBlock
     text={PythonCode}
-    startMarker="# Update Python"
-    endMarker="# END Update Python"
+    startMarker="# 更新Python"
+    endMarker="# END 更新Python"
     language="py"
   />
 
@@ -266,20 +266,19 @@ To update the cross-references stored in a property of an object, specify the ob
   </TabItem>
 </Tabs>
 
-## Batch creation
+## 批量创建
 
-Cross-references can be created using batches just like data objects. This can be done by using the same batch process, but by adding cross-references to the batch instead of data objects.
+可以像创建数据对象一样使用批处理来创建交叉引用。这可以通过将交叉引用添加到批处理中来完成，而不是添加数据对象。
 
-Please see the [batch import how-to](./import.mdx) for more on batch imports.
+请参阅[批量导入操作指南](./import.mdx)以了解更多关于批量导入的信息。
 
+## 获取交叉引用
 
-## Retrieve cross-references
+在Weaviate中，交叉引用本身并不是对象，而是对象的属性。因此，您可以通过以下两种方式之一来获取交叉引用：
+1. [获取所属对象](../api/rest/objects.md#get-a-data-object)。这将返回对象的属性中包含的交叉引用。
+1. [检索交叉引用](../search/basics.md#retrieve-cross-referenced-properties) 作为查询的一部分。就像您可以检索搜索结果的任何其他属性一样，您可以检索交叉引用属性。
 
-Cross-references in Weaviate are not themselves objects, but properties of objects. As such, you can retrieve cross-reference in one of two ways:
-1. [Retrieve the object](../api/rest/objects.md#get-a-data-object) that it belongs to. This will return the cross-reference as a property of the object.
-1. [Retrieve the cross-reference](../search/basics.md#retrieve-cross-referenced-properties) as a part of a query. Just as you can retrieve any other property of search results, you can retrieve cross-reference properties.
-
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

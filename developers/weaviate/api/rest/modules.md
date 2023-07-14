@@ -1,16 +1,16 @@
 ---
-title: REST - /v1/modules
-sidebar_position: 19
 image: og/docs/api.jpg
-# tags: ['RESTful API', 'modules']
+sidebar_position: 19
+title: REST - /v1/modules
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-The `/v1/modules` endpoint is available for all modules that are connected to your Weaviate instance. The available module endpoints thus depend on how you configured your weaviate. For API references of specific modules offered by Weaviate, visit the specific [modules](/developers/weaviate/modules/index.md) pages, for example the [`text2vec-contextionary`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md#module-endpoints-api-reference).
+`/v1/modules`端点适用于与您的Weaviate实例连接的所有模块。可用的模块端点取决于您如何配置Weaviate。有关Weaviate提供的特定模块的API参考，请访问特定的[模块](/developers/weaviate/modules/index.md)页面，例如[`text2vec-contextionary`](/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-contextionary.md#module-endpoints-api-reference)。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

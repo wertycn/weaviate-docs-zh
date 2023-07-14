@@ -1,29 +1,28 @@
 ---
-title: reranker-cohere
-sidebar_position: 10
 image: og/docs/modules/text2vec-cohere.jpg
-# tags: ['rerank', 'cohere']
+sidebar_position: 10
+title: reranker-cohere
 ---
 
-## Introduction
+## 简介
 
-The `reranker-cohere` module enables using [Cohere reranking](https://txt.cohere.com/rerank/) as a [second stage re-ranking for vector, bm25 and hybrid search](../../search/rerank.md) results. The model supports [100+ languages](https://docs.cohere.com/docs/supported-languages?ref=txt.cohere.com).
+`reranker-cohere` 模块使得可以将[Cohere reranking](https://txt.cohere.com/rerank/)作为向量、bm25和混合搜索的[第二阶段重新排序](../../search/rerank.md)结果。该模型支持[100+种语言](https://docs.cohere.com/docs/supported-languages?ref=txt.cohere.com)。
 
-This module uses a third-party API and may incur costs. Make sure to check the Cohere [pricing page](https://cohere.com/pricing) before applying reranking to large amounts of data.
+该模块使用第三方API，可能会产生费用。在对大量数据应用重新排序之前，请务必查看Cohere的[定价页面](https://cohere.com/pricing)。
 
-## How to enable
+## 如何启用
 
-Requests to Cohere will need an API key. If you want to provide the API key with your Weaviate instance, you'll need a Cohere API key, obtained via [their dashboard](https://dashboard.cohere.com). If you want to have clients supply their own Cohere API key (recommended), this step is not necessary.
+对Cohere的请求需要一个API密钥。如果您想要在Weaviate实例中提供API密钥，您需要一个通过[其仪表板](https://dashboard.cohere.com)获得的Cohere API密钥。如果您希望客户自己提供Cohere API密钥（推荐），则此步骤是不必要的。
 
-### Weaviate Cloud Services
+### Weaviate云服务
 
-This module is enabled by default on the WCS.
+此模块在WCS上默认启用。
 
-### Weaviate open source
+### Weaviate开源版
 
-Add `reranker-cohere` to the `ENABLE_MODULES` environment variable.
+将 `reranker-cohere` 添加到 `ENABLE_MODULES` 环境变量中。
 
-Below is an example Docker Compose file, which will spin up Weaviate with the [Cohere text2vec](./text2vec-cohere.md) and reranker modules.
+以下是一个示例的Docker Compose文件，它将启动Weaviate，并使用[Cohere text2vec](./text2vec-cohere.md)和reranker模块。
 
 ```yaml
 ---
@@ -50,14 +49,13 @@ import T2VInferenceYamlNotes from './_components/text2vec.inference.yaml.notes.m
 <T2VInferenceYamlNotes apiname="COHERE_APIKEY"/>
 
 
-## Usage
+## 使用方法
 
-* If the `COHERE_APIKEY` environment variable is not set, clients can set the API key at query time by adding this HTTP header: `X-Cohere-Api-Key: YOUR-COHERE-API-KEY`.
-* Using this module will enable the [`rerank` GraphQL _additional property](../../api/graphql/additional-properties.md#rerank).
-* For usage examples, see the [Howto: Search - Reranking](../../search/rerank.md) page.
+* 如果未设置`COHERE_APIKEY`环境变量，客户端可以在查询时通过添加以下HTTP头部来设置API密钥：`X-Cohere-Api-Key: YOUR-COHERE-API-KEY`。
+* 使用此模块将启用[`rerank` GraphQL _additional property](../../api/graphql/additional-properties.md#rerank)。
+* 查看使用示例，请参阅[如何使用：搜索 - 重新排名](../../search/rerank.md)页面。
 
-
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

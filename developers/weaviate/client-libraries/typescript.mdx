@@ -1,9 +1,9 @@
 ---
-title: TypeScript / JavaScript
-sidebar_position: 2
 image: og/docs/client-libraries.jpg
-# tags: ['TypeScript', 'client library']
+sidebar_position: 2
+title: TypeScript / JavaScript
 ---
+
 import Badges from '/_includes/badges.mdx';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -14,28 +14,28 @@ import TabItem from '@theme/TabItem';
 The current TypeScript client version is `v||site.typescript_client_version||`.
 :::
 
-## Overview
+## 概述
 
-The TypeScript client can be used for both JavaScript and TypeScript scripts.
+TypeScript客户端可以用于JavaScript和TypeScript脚本。
 
 import JavaScriptMaintenanceWarning from '/_includes/javascript-maintenance-warning.mdx';
 
 <JavaScriptMaintenanceWarning />
 
-## Installation and setup
+## 安装和设置
 
-The TypeScript client library package can be installed using [npm](https://www.npmjs.com/).
+TypeScript客户端库可以使用[npm](https://www.npmjs.com/)进行安装。
 
-<!-- Replace $ .. examples to remove the prompt ($) as it gets copied too along with the actual command -->
+<!-- 将示例中的$ ..替换为实际命令，以删除提示符($)，因为它会与实际命令一起复制 -->
 ```bash
 npm install weaviate-ts-client
 ```
 
-## Usage and type definitions
+## 使用和类型定义
 
-Once installed, you can use the client in your TypeScript and JavaScript scripts, as shown in the following examples.
+安装完成后，您可以在TypeScript和JavaScript脚本中使用客户端，如下面的示例所示。
 
-### Usage
+### 使用方法
 
 <Tabs groupId="languages">
 <TabItem value="js" label="JavaScript">
@@ -90,23 +90,23 @@ client
 If you are having any issues with the import statement in TypeScript (e.g. if `weaviate` is `undefined`), try adding `"esModuleInterop": true` to your `"compilerOptions"` in `tsconfig.json`.
 :::
 
-### Type definitions
+### 类型定义
 
-The type definitions can be found under the `types` subdirectory of the package in the `*.d.ts` files, for example as shown on the [npm package page](https://www.npmjs.com/package/weaviate-ts-client?activeTab=code).
+类型定义可以在包的`types`子目录下的`*.d.ts`文件中找到，例如在[npm包页面](https://www.npmjs.com/package/weaviate-ts-client?activeTab=code)上显示的那样。
 
-## Authentication
+## 认证
 
 import ClientAuthIntro from '/developers/weaviate/client-libraries/_components/client.auth.introduction.mdx'
 
 <ClientAuthIntro clientName="TypeScript"/>
 
-### WCS authentication
+### WCS认证
 
 import ClientAuthWCS from '/developers/weaviate/client-libraries/_components/client.auth.wcs.mdx'
 
 <ClientAuthWCS />
 
-### API key authentication
+### API密钥认证
 
 import ClientAuthApiKey from '/developers/weaviate/client-libraries/_components/client.auth.api.key.mdx'
 
@@ -143,7 +143,7 @@ const client: WeaviateClient = weaviate.client({
 </TabItem>
 </Tabs>
 
-### OIDC authentication
+### OIDC身份验证
 
 import ClientAuthOIDCIntro from '/developers/weaviate/client-libraries/_components/client.auth.oidc.introduction.mdx'
 
@@ -155,7 +155,7 @@ When using OIDC with the TypeScript client, its background token refresh process
 1. Stop the process via `client.oidcAuth?.stopTokenRefresh()`, e.g. when a script is expected to exit, or token refresh is no longer needed.
 :::
 
-#### <i class="fa-solid fa-key"></i> Resource Owner Password Flow
+#### <i class="fa-solid fa-key"></i> 资源拥有者密码流
 
 import ClientAuthFlowResourceOwnerPassword from '/developers/weaviate/client-libraries/_components/client.auth.flow.resource.owner.password.mdx'
 
@@ -200,7 +200,7 @@ const client: WeaviateClient = weaviate.client({
 </TabItem>
 </Tabs>
 
-#### <i class="fa-solid fa-key"></i> Client Credentials flow
+#### <i class="fa-solid fa-key"></i> 客户端凭证流程
 
 import ClientAuthFlowClientCredentials from '/developers/weaviate/client-libraries/_components/client.auth.flow.client.credentials.mdx'
 
@@ -243,7 +243,7 @@ const client: WeaviateClient = weaviate.client({
 </TabItem>
 </Tabs>
 
-#### <i class="fa-solid fa-key"></i> Refresh Token flow
+#### <i class="fa-solid fa-key"></i> 刷新令牌流程
 
 import ClientAuthBearerToken from '/developers/weaviate/client-libraries/_components/client.auth.bearer.token.mdx'
 
@@ -288,9 +288,9 @@ const client: WeaviateClient = weaviate.client({
 </TabItem>
 </Tabs>
 
-## Custom headers
+## 自定义标题
 
-You can pass custom headers to the client, which are added at initialization:
+您可以将自定义标题传递给客户端，在初始化时添加：
 
 <Tabs groupId="languages">
 <TabItem value="js" label="JavaScript">
@@ -321,34 +321,34 @@ const client: WeaviateClient = weaviate.client({
 </TabItem>
 </Tabs>
 
-These headers will then be included in every request that the client makes.
+这些标头将包含在客户端发出的每个请求中。
 
-## References
+## 参考文献
 
 :::note JS → TS migration
 We are in the process of migrating our JavaScript code examples to TypeScript as necessary. Please be patient.
 :::
 
-Our [RESTful endpoints](../api/rest/index.md) and [GraphQL functions](../api/graphql/index.md) covered by the TypeScript client currently have JavaScript examples in the code blocks.
+我们当前使用TypeScript客户端覆盖的[RESTful端点](../api/rest/index.md)和[GraphQL函数](../api/graphql/index.md)在代码块中有JavaScript示例。
 
-## Design
+## 设计
 
-### Builder pattern
+### 构建器模式
 
-The TypeScript client is designed following the [Builder pattern](https://en.wikipedia.org/wiki/Builder_pattern). The pattern is used to build complex query objects. This means that calls (for example to retrieve data with a RESTful GET request, or using a more complex GraphQL query) are built with chained objects to reduce complexity. Some builder objects are optional, others are required to perform specific functions. Builder examples can be found in the [RESTful API reference pages](../api/rest/index.md) and the [GraphQL reference pages](../api/graphql/index.md).
+TypeScript客户端是按照[建造者模式](https://en.wikipedia.org/wiki/Builder_pattern)设计的。该模式用于构建复杂的查询对象。这意味着调用（例如使用RESTful GET请求检索数据，或者使用更复杂的GraphQL查询）是通过链接的对象构建的，以减少复杂性。某些构建器对象是可选的，而其他构建器对象则需要执行特定功能。在[RESTful API参考页面](../api/rest/index.md)和[GraphQL参考页面](../api/graphql/index.md)中可以找到构建器示例。
 
-The code snippet at the top of this page shows a simple query corresponding to the RESTful request `GET /v1/schema`. The client is initialized by requiring the package and connecting to a local instance. Then, a query is constructed by getting the `.schema` with `.getter()`. The query will be sent with the `.do()` call. `do()` is required for every function you want to build and execute.
+此页面顶部的代码片段展示了一个简单的查询，相应的RESTful请求是`GET /v1/schema`。客户端通过引入包并连接到本地实例来进行初始化。然后，通过使用`.getter()`来获取`.schema`构建查询。查询将在`.do()`调用中发送。对于您想要构建和执行的每个函数，都需要使用`do()`。
 
-### General notes
-- All methods use ES6 Promises to deal with asynchronous code, so you need to use `.then()` after function calls, or have `async`/`await` support.
-- In the case of an error, the Promise rejects with the specific error message. (If using `async`/`await`, a rejected promises acts like a thrown exception).
-- Internally the client uses `isomorphic-fetch` to make the REST calls, so it should work from both the browser and NodeJS applications without any required changes.
+### 一般注意事项
+- 所有方法都使用ES6 Promises来处理异步代码，所以您需要在函数调用后使用`.then()`，或者支持`async`/`await`。
+- 在发生错误的情况下，Promise将以特定的错误消息拒绝。（如果使用`async`/`await`，则拒绝的Promise的行为类似于抛出异常）。
+- 客户端内部使用`isomorphic-fetch`来进行REST调用，因此它可以在浏览器和NodeJS应用程序中正常工作，无需进行任何必需的更改。
 
-## Changelog
+## 更新日志
 
-See the [change logs on GitHub](https://github.com/weaviate/typescript-client/releases).
+请查看GitHub上的[变更日志](https://github.com/weaviate/typescript-client/releases)。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

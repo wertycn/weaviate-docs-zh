@@ -1,20 +1,20 @@
 ---
-title: How to configure Weaviate
-sidebar_position: 0
 image: og/docs/configuration.jpg
-# tags: ['configuration']
+sidebar_position: 0
+title: How to configure Weaviate
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-<!-- :::caution Migrated From:
-- `Configuration`
-- `Schema` is from `Schema/Schema configuration`
-- `Data types` is from `Schema/Data types`
-- `Distance metrics` from `Vector index plugins/Distance metrics`
-- `Modules` is mostly new - the previous `Configuration/Modules` content has been migrated to `References:Modules/index`
-- `Vector index` adds text re: configuration options from `Vector index plugins/HNSW`
+<!-- :::caution 迁移自:
+- `配置`
+- `模式`来自于`模式/模式配置`
+- `数据类型`来自于`模式/数据类型`
+- `距离度量`来自于`向量索引插件/距离度量`
+- `模块`基本上是新的 - 之前的`配置/模块`内容已迁移到`参考:模块/index`
+- `向量索引`添加了有关配置选项的文本，来自`向量索引插件/HNSW`
 ::: -->
 
 ## Overview

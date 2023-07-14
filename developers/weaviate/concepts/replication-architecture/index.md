@@ -1,9 +1,9 @@
 ---
-title: Replication Architecture
-sidebar_position: 0
 image: og/docs/concepts.jpg
-# tags: ['architecture']
+sidebar_position: 0
+title: Replication Architecture
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -15,127 +15,126 @@ import Badges from '/_includes/badges.mdx';
 :::info Available in Weaviate `v1.17.0` and higher
 :::
 
-Weaviate can automatically replicate data across nodes in the background in a cluster with multiple server nodes. This enables a variety of [use cases](./motivation.md). For example, if a node goes down, another node can shoulder the load without loss of availability or data. Database replication improves reliability, scalability, and/or performance.
+Weaviate可以在具有多个服务器节点的集群中，在后台自动复制数据。这可以实现各种[用例](./motivation.md)。例如，如果一个节点宕机，另一个节点可以承担负载，而不会丢失可用性或数据。数据库复制提高了可靠性、可扩展性和/或性能。
 
-The user can control trade-offs between consistency and availability through [tunable consistency](./consistency.md).
+用户可以通过[可调一致性](./consistency.md)来控制一致性和可用性之间的权衡。
 
-Weaviate adopts a leaderless replication design, so there is no distinction between primary and secondary nodes, thereby removing all single points of failures.
+Weaviate采用无主复制设计，因此没有主节点和从节点之分，从而消除了所有单点故障。
 
-In this Replication Architecture section, you will find information about:
+在这个复制架构部分，您将找到以下信息：
 
-* **General Concepts**, on this page
-  * What is replication?
-  * CAP Theorem
-  * Why replication for Weaviate?
-  * Replication vs. Sharding
-  * How does replication work in Weaviate?
-  * Roadmap
+* **通用概念**，在本页面上
+  * 什么是复制？
+  * CAP定理
+  * 为什么要在Weaviate中使用复制？
+  * 复制 vs. 分片
+  * Weaviate中的复制工作原理是什么？
+  * 路线图
 
 
-* **[Use Cases](./motivation.md)**
-  * Motivation
-  * High Availability
-  * Increased (Read) Throughput
-  * Zero Downtime Upgrades
-  * Regional Proximity
+* **[使用案例](./motivation.md)**
+  * 动机
+  * 高可用性
+  * 增加（读取）吞吐量
+  * 零停机升级
+  * 区域接近度
 
 
 * **[Philosophy](./philosophy.md)**
-  * Typical Weaviate use cases
-  * Reasons for a leaderless architecture
-  * Gradual rollout
-  * Large-scale testing
+  * 典型的Weaviate使用案例
+  * 无领导架构的原因
+  * 渐进式发布
+  * 大规模测试
 
 
 * **[Cluster Architecture](./cluster-architecture.md)**
-  * Leaderless design
-  * Replication Factor
-  * Write and Read operations
+  * 无领导设计
+  * 复制因子
+  * 写入和读取操作
 
 
 * **[Consistency](./consistency.md)**
-  * Schema
-  * Data objects
-  * Repairs
+  * 架构
+  * 数据对象
+  * 修复
 
 
-* **[Multi-DataCenter](./multi-dc.md)**
-  * Regional Proximity
+* **[多数据中心](./multi-dc.md)**
+  * 区域接近性
 
-<p align="center"><img src="/img/docs/replication-architecture/replication-rf3-c-QUORUM.png" alt="Read consistency QUORUM" width="75%"/></p>
+<p align="center"><img src="/img/docs/replication-architecture/replication-rf3-c-QUORUM.png" alt="读一致性 QUORUM" width="75%"/></p>
 
-## What is replication?
+## 什么是复制？
 
-Database replication refers to keeping a copy of the same data point on multiple nodes of a cluster, which in turn creates a distributed database. A distributed database consists of multiple nodes, all of which can contain a copy of the data. So if one node (server) goes down, users can still access data from another node. In addition, query throughput can be improved with replication. In short, a distributed database is more reliable and can achieve higher performance than a centralized system.
+数据库复制是指在集群的多个节点上保留相同数据点的副本，从而创建一个分布式数据库。分布式数据库由多个节点组成，每个节点都可以包含数据的副本。因此，如果一个节点（服务器）宕机，用户仍然可以从另一个节点访问数据。此外，通过复制可以提高查询吞吐量。简而言之，分布式数据库比集中式系统更可靠，并且可以实现更高的性能。
 
-## CAP Theorem
+## CAP 定理
 
-The primary goal of introducing replication is to improve reliability. [Eric Brewer](https://en.wikipedia.org/wiki/Eric_Brewer_(scientist)) states that there are some limits on reliability for distributed databases, described by the [CAP theorem](https://en.wikipedia.org/wiki/CAP_theorem). The CAP theorem states that a distributed database can only provide two of the following three guarantees:
-* **Consistency (C)** - Every database read receives the most recent write after creation or modification (or an error).
-* **Availability (A)** - Every request receives a non-error response all the time, without the guarantee that it contains the most recent write.
-* **Partition tolerance (P)** - The system continues to operate despite an arbitrary number of messages being dropped (or delayed) by the network between nodes.
+引入复制的主要目标是提高可靠性。[Eric Brewer](https://en.wikipedia.org/wiki/Eric_Brewer_(scientist)) 表示分布式数据库的可靠性存在一些限制，这些限制由 [CAP 定理](https://en.wikipedia.org/wiki/CAP_theorem) 描述。CAP 定理指出，分布式数据库只能提供以下三个保证中的两个：
+* **一致性 (C)** - 在创建或修改后，每次数据库读取都会获得最新的写入内容（或错误）。
+* **可用性 (A)** - 每个请求都始终收到非错误的响应，但不能保证它包含最新的写入内容。
+* **分区容忍性 (P)** - 即使网络节点之间丢失（或延迟）了任意数量的消息，系统仍然可以继续运行。
 
-<p align="center"><img src="/img/docs/replication-architecture/repliction-cap.png" alt="CAP Theorem" width="60%"/></p>
+<p align="center"><img src="/img/docs/replication-architecture/repliction-cap.png" alt="CAP理论" width="60%"/></p>
 
-Ideally you want a database, like Weaviate, to have the highest reliability as possible, but this is limited by the tradeoff between consistency, availability and partition tolerance. Only two out of three concepts can be guaranteed. Since by definition a cluster is a distributed system in which network partitions are present, only two options are left for designing the system: **consistency (C)** or **availability (A)**. When you prioritize **consistency** over availability, the database will return an error or timeout when it cannot be guaranteed that the data is up to date due to network partitioning. When prioritizing **availability** over consistency, the database will always process the query and try to return the most recent version of data even if it cannot guarantee it is up to date due to network partitioning.
+理想情况下，您希望像Weaviate这样的数据库具有尽可能高的可靠性，但这受到一致性、可用性和分区容忍性之间的权衡的限制。只能保证其中的两个概念。由于集群的定义是存在网络分区的分布式系统，所以系统设计只剩下两个选项：**一致性（C）**或**可用性（A）**。当您将**一致性**优先于可用性时，数据库在由于网络分区而无法保证数据更新时，将返回错误或超时。当您将**可用性**优先于一致性时，数据库将始终处理查询并尝试返回最新版本的数据，即使无法保证数据由于网络分区而是最新的。
 
-C over A is preferred when the database contains critical data, such as transactional bank account data. For transactional data, you want the data to always be consistent (otherwise your bank balance is not guaranteed to be correct if you make transactions while some nodes (e.g. ATMs) are down).
-When a database involves less critical data, A over C can be preferred. An example can be a messaging service, where you can tolerate showing some old data but the application should be highly available and handle large amounts of writes with minimal latency. Weaviate follows this latter design, since Weaviate typically deals with less critical data and  is used for approximate search as a secondary database in use cases with more critical data. More about this design decision in [Philosophy](./philosophy.md).
+在数据库包含关键数据（如交易银行账户数据）时，首选C over A。对于交易数据，您希望数据始终保持一致（否则，如果在某些节点（例如ATM）关闭时进行交易，您的银行余额可能不被保证正确）。
+当数据库涉及的数据不太重要时，可以优先选择A而不是C。一个例子是消息服务，您可以容忍显示一些旧数据，但应用程序应具有高可用性，并以最小的延迟处理大量写入操作。Weaviate遵循这种后一种设计，因为Weaviate通常处理的是较不重要的数据，并且作为辅助数据库用于近似搜索，用于具有更重要数据的用例。关于这个设计决策的更多信息，请参阅[Philosophy](./philosophy.md)。
 
-## Why replication for Weaviate?
+## 为什么需要Weaviate的复制？
 
-Weaviate is a database which must provide reliable answers to users' requests. As discussed above, database reliability consists of various parts. Below are Weaviate use cases in which replication is desired. For detailed information, visit the [Replication Use Cases (Motivation) page](./motivation.md).
+Weaviate是一个数据库，必须为用户的请求提供可靠的答案。如上所述，数据库的可靠性由多个部分组成。以下是希望进行复制的Weaviate用例。有关详细信息，请访问[复制用例（动机）页面](./motivation.md)。
 
-1. **High availability (redundancy)**<br/>
-  With a distributed (replicated) database structure, service will not be interrupted if one server node goes down. The database can still be available, read queries will just be (unnoticeably) redirected to an available node.
-2. **Increased (read) throughput**<br/>
-  Adding extra server nodes to your database setup means that the throughput scales with it. The more server nodes, the more users (read operations) the system will be able to handle. When reading is set to a low consistency level, then scaling the replication factor (i.e. how many database server nodes) increases the throughput linearly.
-3. **Zero downtime upgrades**<br/>
-  Without replication, there is a window of downtime when you update a Weaviate instance. This is because the single node needs to stop, update and restart before it's ready to serve again. With replication, upgrades are done using a rolling update, in which at most one node is unavailable at any point in time while the other nodes can still serve traffic.
-4. **Regional proximity**<br/>
-  When users are located in different regional areas (e.g. Iceland and Australia as extreme examples), you cannot ensure low latency for all users due to the physical distance between the database server and the users. With a distributed database, you can place nodes in different local regions to decrease this latency. This depends on the Multi-Datacenter feature of replication.
+1. **高可用性（冗余）**<br/>
+  通过分布式（复制）数据库结构，如果一个服务器节点宕机，服务将不会中断。数据库仍然可用，读取查询只是会被（不可察觉地）重定向到可用节点。
+2. **增加的（读取）吞吐量**<br/>
+  将额外的服务器节点添加到数据库设置中意味着吞吐量会随之扩展。服务器节点越多，系统能够处理的用户（读操作）就越多。当读取设置为低一致性级别时，增加复制因子（即数据库服务器节点数量）会线性增加吞吐量。
+3. **零停机升级**<br/>
+  没有复制时，更新 Weaviate 实例时会出现停机时间窗口。这是因为单个节点需要停止、更新和重新启动才能再次提供服务。通过复制，升级使用滚动更新进行，其中任何时刻最多只有一个节点不可用，而其他节点仍然可以提供流量服务。
+4. **区域接近**<br/>
+  当用户位于不同的地区时（例如冰岛和澳大利亚作为极端示例），由于数据库服务器与用户之间的物理距离，您无法确保所有用户的低延迟。通过使用分布式数据库，您可以将节点放置在不同的本地区域以减少这种延迟。这取决于复制的多数据中心功能。
 
+## 复制 vs. 分片
 
-## Replication vs. Sharding
+复制与分片不同。分片是指水平扩展，并在Weaviate v1.8中引入。
 
-Replication is not the same as [sharding](../cluster.md). Sharding refers to horizontal scaling, and was introduced to Weaviate in v1.8.
+* **复制** 将数据复制到不同的服务器节点。对于Weaviate来说，这增加了数据的可用性，并在单个节点故障时提供冗余。复制可以提高查询吞吐量。
+* **分片**通过将数据分割成多个片段（分片）并将这些片段分发到多个副本集，从而实现跨服务器的水平扩展。数据被分割后，所有分片共同组成了整个数据集。您可以在Weaviate中使用分片来处理更大的数据集并加快导入速度。
 
-* **Replication** copies the data to different server nodes. For Weaviate, this increases data availability and provides redundancy in case a single node fails. Query throughput can be improved with replication.
-* **Sharding** handles horizontal scaling across servers by dividing the data and sending the pieces of data (shards) to multiple replica sets. The data is thus divided, and all shards together form the entire set of data. You can use sharding with Weaviate to run larger datasets and speed up imports.
+<p align="center"><img src="/img/docs/replication-architecture/replication-replication-vs-sharding.png" alt="复制 vs 分片" width="60%"/></p>
 
-<p align="center"><img src="/img/docs/replication-architecture/replication-replication-vs-sharding.png" alt="Replication vs Sharding" width="60%"/></p>
+复制和分片可以在设置中结合使用，以提高吞吐量、可用性、导入速度和对大型数据集的支持。例如，您可以有3个数据库副本和设置为3的分片，这意味着您总共有9个分片，每个服务器节点持有3个不同的分片。
 
-Replication and sharding can be combined in a setup, to improve throughput and availability as well as import speed and support for large datasets. For example, you can have 3 replicas of the database and shards set to 3, which means you have 9 shards in total, where each server node holds 3 different shards.
+## Weaviate中的复制是如何工作的？
 
-## How does replication work in Weaviate?
+Weaviate的复制实现受到了Cassandra等其他数据库的启发。可用性优先于一致性。Weaviate的复制使用了无主设计，这意味着没有主节点和从节点。在写入和读取数据时，客户端会与一个或多个节点联系。负载均衡器存在于用户和节点之间，所以用户不知道他们正在与哪个节点通信（如果用户请求了错误的节点，Weaviate会在内部进行转发）。
 
-Weaviate’s implementation of replication is inspired by other databases like Cassandra. Availability is favored over Consistency. Weaviate's replication uses a leaderless design, which means there are no primary and secondary nodes. When writing and reading data, the client contacts one or more nodes. A load balancer exists between the user and the nodes, so the user doesn't know which node they are talking to (Weaviate will forward internally if a user is requesting a wrong node).
+Weaviate的数据模式更改是强一致的，因为这很少改变，但非常重要。模式更改将使用分布式事务和两阶段提交进行。这是“慢”的，但是由于它不允许在同一时间进行冲突的模式更改，所以是一致的。
 
-Weaviate’s data schema changes are strongly consistent, since this is rarely changed, but critical. Schema changes will happen with a distributed transaction with a two-phase commit. This is 'slow', but consistent because it disallows conflicting schema changes at the same time.
+从v1.18版本开始，需要确认读取或写入操作的节点数量是可调的，可以设置为`ONE`，`QUORUM`（n/2+1）或`ALL`。当写入操作配置为`ALL`时，数据库同步工作。如果写入没有设置为`ALL`（从v1.18版本开始可行），则从用户的角度来看，写入数据是异步的。
 
-The number of nodes that need to acknowledge the read or write (from v1.18) operation is tunable, to `ONE`, `QUORUM` (n/2+1) or `ALL`. When write operations are configured to `ALL`, the database works synchronously. If write is not set to `ALL` (possible from v1.18), writing data is asynchronous from the user's perspective.
+副本的数量不必与节点（集群大小）的数量相匹配。可以根据类别在Weaviate中拆分数据。请注意，这与分片（Sharding）不同。
 
-The number of replicas doesn't have to match the number of nodes (cluster size). It is possible to split data in Weaviate based on Classes. Note that this is [different from Sharding](#replication-vs-sharding).
+详细了解Weaviate中的复制工作原理，请参阅[Philosophy](./philosophy.md)、[Cluster Architecture](./cluster-architecture.md)和[Consistency](./consistency.md)。
 
-Read more about how replication works in Weaviate in [Philosophy](./philosophy.md), [Cluster Architecture](./cluster-architecture.md) and [Consistency](./consistency.md).
+我如何在Weaviate中启用复制？
 
-## How do I enable replication in Weaviate?
+请参阅[复制使用页面](/developers/weaviate/configuration/replication.md)。您可以在Weaviate实例的数据模式中启用类级别的复制。在查询过程中，您可以指定所需的一致性级别。
 
-See the [Replication Usage page](/developers/weaviate/configuration/replication.md). You can enable replication at the class level in the data schema of your Weaviate instance. During querying, you can specify the desired consistency level.
+## 路线图
 
-## Roadmap
+* v1.17 (2022年12月)
+  * 无领导复制
+  * 可调整的按ID请求的读一致性
+* v1.18 (2023年2月)
+  * 可调整的写一致性
+  * 所有请求的可调整的读一致性
+  * 修复（读修复或后台/异步修复）
+* 尚未安排
+  * 多数据中心复制（您可以在此处支持此功能 [here](https://github.com/weaviate/weaviate/issues/2436)）
 
-* v1.17 (12/2022)
-  * Leaderless Replication
-  * Tunable Read Consistency for Get-by-ID requests
-* v1.18 (02/2023)
-  * Tunable Write Consistency
-  * Tunable Read Consistency for all requests
-  * Repairs (Read-Repairs or Background/Async Repairs)
-* Not scheduled yet
-  * Multi-Datacenter replication (you can upvote this feature [here](https://github.com/weaviate/weaviate/issues/2436))
-
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

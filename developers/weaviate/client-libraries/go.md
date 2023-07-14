@@ -1,9 +1,9 @@
 ---
-title: Go
-sidebar_position: 7
 image: og/docs/client-libraries.jpg
-# tags: ['go', 'client library']
+sidebar_position: 7
+title: Go
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
@@ -12,16 +12,17 @@ import Badges from '/_includes/badges.mdx';
 The current Go client version is `v||site.go_client_version||`.
 :::
 
-## Installation and setup
-To get the latest stable version of the Go client library, run the following:
+## 安装和设置
+
+要获取最新的稳定版本的Go客户端库，请运行以下命令:
 
 ```bash
 go get github.com/weaviate/weaviate-go-client/v4
 ```
 
-This API client is compatible with Go 1.16+.
+这个 API 客户端兼容 Go 1.16+。
 
-You can use the client in your Go scripts as follows:
+您可以在您的 Go 脚本中使用该客户端，如下所示：
 
 ``` go
 package main
@@ -50,19 +51,19 @@ func GetSchema() {
 }
 ```
 
-## Authentication
+## 认证
 
 import ClientAuthIntro from '/developers/weaviate/client-libraries/_components/client.auth.introduction.mdx'
 
 <ClientAuthIntro clientName="Go"/>
 
-### WCS authentication
+### WCS认证
 
 import ClientAuthWCS from '/developers/weaviate/client-libraries/_components/client.auth.wcs.mdx'
 
 <ClientAuthWCS />
 
-### API key authentication
+### API密钥认证
 
 :::info Available in Weaviate Go client versions `4.7.0` and higher.
 :::
@@ -85,13 +86,13 @@ if err != nil{
 }
 ```
 
-### OIDC authentication
+### OIDC身份验证
 
 import ClientAuthOIDCIntro from '/developers/weaviate/client-libraries/_components/client.auth.oidc.introduction.mdx'
 
 <ClientAuthOIDCIntro />
 
-#### <i class="fa-solid fa-key"></i> Resource Owner Password Flow
+#### <i class="fa-solid fa-key"></i> 资源所有者密码流程
 
 import ClientAuthFlowResourceOwnerPassword from '/developers/weaviate/client-libraries/_components/client.auth.flow.resource.owner.password.mdx'
 
@@ -114,7 +115,7 @@ if err != nil{
 }
 ```
 
-#### <i class="fa-solid fa-key"></i> Client Credentials flow
+#### <i class="fa-solid fa-key"></i> 客户端凭证流程
 
 import ClientAuthFlowClientCredentials from '/developers/weaviate/client-libraries/_components/client.auth.flow.client.credentials.mdx'
 
@@ -136,7 +137,7 @@ if err != nil{
 }
 ```
 
-#### <i class="fa-solid fa-key"></i> Refresh Token flow
+#### <i class="fa-solid fa-key"></i> 刷新令牌流程
 
 import ClientAuthBearerToken from '/developers/weaviate/client-libraries/_components/client.auth.bearer.token.mdx'
 
@@ -159,9 +160,9 @@ if err != nil{
 }
 ```
 
-## Custom headers
+## 自定义头部
 
-You can pass custom headers to the client, which are added at initialization:
+您可以在初始化时向客户端传递自定义头部：
 
 ```go
 cfg := weaviate.Config{
@@ -179,48 +180,48 @@ if err != nil{
 }
 ```
 
-## References
+## 参考资料
 
-All [RESTful endpoints](../api/rest/index.md) and [GraphQL functions](../api/graphql/index.md) references covered by the Go client, and explained on those reference pages in the code blocks.
+所有[RESTful端点](../api/rest/index.md)和[GraphQL函数](../api/graphql/index.md)的参考都由Go客户端提供，并在这些参考页面的代码块中进行了解释。
 
-## Design
+## 设计
 
-### Builder pattern
+### 构建者模式
 
-The Go client functions are designed with a 'Builder pattern'. A pattern is used to build complex query objects. This means that a function (for example to retrieve data from Weaviate with a request similar to a RESTful GET request, or a more complex GraphQL query) is built with single objects to reduce complexity. Some builder objects are optional, others are required to perform specific functions. All is documented on the [RESTful API reference pages](../api/rest/index.md) and the [GraphQL reference pages](../api/graphql/index.md).
+Go客户端函数采用了“构建器模式”。该模式用于构建复杂的查询对象。这意味着一个函数（例如，用于通过类似于RESTful GET请求的请求从Weaviate中检索数据，或者更复杂的GraphQL查询）是通过单个对象来构建的，以减少复杂性。一些构建器对象是可选的，而其他构建器对象则是执行特定功能的必需的。所有这些都在[RESTful API参考页面](../api/rest/index.md)和[GraphQL参考页面](../api/graphql/index.md)上进行了文档记录。
 
-The code snippet above shows a simple query similar to `RESTful GET /v1/schema`. The client is initiated by requiring the package and connecting to the running instance. Then, a query is constructed by getting the `.Schema` with `.Getter()`. The query will be sent with the `.Go()` function, this object is thus required for every function you want to build and execute.
+以上代码片段显示了一个类似于 `RESTful GET /v1/schema` 的简单查询。客户端通过引入包并连接到正在运行的实例来初始化。然后，通过使用 `.Getter()` 获取 `.Schema` 来构建查询。查询将使用 `.Go()` 函数发送，因此对于您想要构建和执行的每个函数都需要该对象。
 
-## Migration Guides
+## 迁移指南
 
-### From `v2` to `v4`
+### 从 `v2` 到 `v4`
 
-#### Unnecessary `.Objects()` removed from `GraphQL.Get()`
+#### 从 `GraphQL.Get()` 中删除不必要的 `.Objects()`
 
-Before:
+之前：
 
 ```go
 client.GraphQL().Get().Objects().WithClassName...
 ```
 
-After:
+之后：
 
 ```go
 client.GraphQL().Get().WithClassName
 ```
 
-#### GraphQL `Get().WithNearVector()` uses a builder pattern
+#### GraphQL的`Get().WithNearVector()`使用了建造者模式
 
-In `v2` specifying a `nearVector` argument to `client.GraphQL().Get()` required passing a string. As a result the user had to know the structure of the GraphQL API. `v4` fixes this by using a builder pattern like so:
+在`v2`中，将`nearVector`参数传递给`client.GraphQL().Get()`需要传递一个字符串。结果用户必须了解GraphQL API的结构。`v4`通过使用建造者模式来解决这个问题，如下所示：
 
-Before:
+之前的方式：
 
 ```go
 client.GraphQL().Get().
   WithNearVector("{vector: [0.1, -0.2, 0.3]}")...
 ```
 
-After
+之后
 
 ```go
 nearVector := client.GraphQL().NearVectorArgBuilder().
@@ -231,13 +232,13 @@ client.GraphQL().Get().
 ```
 
 
-#### All `where` filters use the same builder
+#### 所有 `where` 过滤器使用相同的构建器
 
-In `v2` filters were sometimes specified as strings, sometimes in a structured way. `v4` unifies this and makes sure that you can always use the same builder pattern.
+在 `v2` 中，过滤器有时作为字符串指定，有时以结构化方式指定。`v4` 统一了这一点，并确保您始终可以使用相同的构建器模式。
 
-##### GraphQL Get
+##### GraphQL 获取
 
-Before:
+之前：
 
 ```go
 // using filter encoded as string
@@ -264,7 +265,7 @@ client.GraphQL().Get().
   WithWhere(where)...
 ```
 
-After:
+之后:
 
 ```go
 where := filters.Where().
@@ -276,9 +277,9 @@ client.GraphQL().Get().
   WithWhere(where)...
 ```
 
-##### GraphQL Aggregate
+##### GraphQL 聚合
 
-Before:
+之前：
 
 ```go
 where := client.GraphQL().WhereArgBuilder().
@@ -291,7 +292,7 @@ client.GraphQL().Aggregate().
   WithWhere(where)...
 ```
 
-After:
+之后:
 
 ```go
 where := filters.Where().
@@ -303,9 +304,9 @@ client.GraphQL().Aggregate().
   WithWhere(where)...
 ```
 
-##### Classification
+##### 分类
 
-Before:
+之前:
 
 ```go
 valueInt := 100
@@ -328,7 +329,7 @@ client.Classifications().Scheduler().
   WithTargetWhereFilter(targetWhere)...
 ```
 
-After:
+之后：
 
 ```go
 sourceWhere := filters.Where().
@@ -348,15 +349,15 @@ client.Classifications().Scheduler().
 
 #### GraphQL `Get().WithFields()`
 
-In `v2` `.WithFields()` took a GraphQL string that required knowledge of how GraphQL fields are structured. Now this can be done with a variadic function. E.g:
+在 `v2` 版本中，`.WithFields()` 接受一个需要了解 GraphQL 字段结构的 GraphQL 字符串。现在可以使用可变参数函数来实现。例如：
 
-Before:
+之前的写法：
 
 ```go
 client.GraphQL.Get().WithClassName("MyClass").WithFields("name price age")...
 ```
 
-After:
+之后：
 
 ```go
 client.GraphQL.Get().WithClassName("MyClass").
@@ -365,16 +366,16 @@ client.GraphQL.Get().WithClassName("MyClass").
 
 #### Graphql `Get().WithGroup()`
 
-In `v2` `.WithFields()` took a GraphQL string that required knowledge of how GraphQL fields are structured. Now this can be done with a builder. E.g:
+在 `v2` 版本中，`.WithFields()` 接受一个需要了解 GraphQL 字段结构的 GraphQL 字符串。现在可以使用构建器来完成。例如：
 
-Before:
+之前的写法：
 
 ```go
 client.GraphQL.Get().WithClassName("MyClass")
   .WithGroup("{type:merge force:1.0}")
 ```
 
-After:
+之后：
 
 ```go
 group := client.GraphQL().GroupArgBuilder()
@@ -383,26 +384,26 @@ group := client.GraphQL().GroupArgBuilder()
 client.GraphQL.Get().WithClassName("MyClass").WithGroup(group)
 ```
 
-#### Graphql `Data().Validator()` property renamed
+#### Graphql `Data().Validator()` 属性已重命名
 
-In `v2` the naming of the method to specify the Schema was inconsistent with other places in the client. This has been fixed in `v4`. Rename according to the following:
+在 `v2` 版本中，指定 Schema 的方法命名与客户端的其他地方不一致。在 `v4` 版本中已经修复了这个问题。根据以下方式进行重命名：
 
-Before:
+之前：
 ```go
 client.Data().Validator().WithSchema(properties)
 ```
 
-After:
+之后:
 ```go
 client.Data().Validator().WithProperties(properties)
 ```
 
 
-## Change logs
+## 更新日志
 
-Check the [change logs on GitHub](https://github.com/weaviate/weaviate-go-client/releases) for updates on the latest `Go client` changes.
+请查看GitHub上的[更新日志](https://github.com/weaviate/weaviate-go-client/releases)以获取最新`Go客户端`的更改。
 
-## More Resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

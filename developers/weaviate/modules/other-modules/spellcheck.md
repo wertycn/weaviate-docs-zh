@@ -1,29 +1,27 @@
 ---
-title: Spell Check
-sidebar_position: 1
 image: og/docs/modules/text-spellcheck.jpg
-# tags: ['modules', 'other modules', 'spellcheck']
+sidebar_position: 1
+title: Spell Check
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## In short
+## 简介
 
-* The Spell Check module is a Weaviate module for spell checking of raw text in GraphQL queries.
-* The module depends on a Python spellchecking library.
-* The module adds a `spellCheck {}` filter to the GraphQL `nearText {}` search arguments.
-* The module returns the spelling check result in the GraphQL `_additional { spellCheck {} }` field.
+* 拼写检查模块是一个用于在GraphQL查询中检查原始文本拼写的Weaviate模块。
+* 该模块依赖于一个Python拼写检查库。
+* 该模块在GraphQL的`nearText {}`搜索参数中添加了一个`spellCheck {}`过滤器。
+* 该模块在GraphQL的`_additional { spellCheck {} }`字段中返回拼写检查结果。
 
-## Introduction
+拼写检查模块是Weaviate的一个模块，用于检查GraphQL查询输入中原始文本的拼写。使用 [Python spellchecker](https://pypi.org/project/pyspellchecker/) 库，该模块分析文本，给出建议并可以强制自动更正。
 
-The Spell Check module is a Weaviate module for checking spelling in raw texts in GraphQL query inputs. Using the [Python spellchecker](https://pypi.org/project/pyspellchecker/) library, the module analyzes text, gives a suggestion and can force an autocorrection.
-
-## How to enable (module configuration)
+## 如何启用（模块配置）
 
 ### Docker-compose
 
-The Spell Check module can be added as a service to the Docker-compose file. You must have a text vectorizer like `text2vec-contextionary` or `text2vec-transformers` running. An example Docker-compose file for using the `text-spellcheck` module with the `text2vec-contextionary` is here:
+拼写检查模块可以作为一个服务添加到Docker-compose文件中。您必须运行一个文本向量化器，如`text2vec-contextionary`或`text2vec-transformers`。以下是使用`text2vec-contextionary`和`text-spellcheck`模块的示例Docker-compose文件:
 
 ```yaml
 ---
@@ -65,39 +63,39 @@ services:
 ...
 ```
 
-Variable explanations:
-* `SPELLCHECK_INFERENCE_API`: where the spellcheck module is running
+变量解释:
+* `SPELLCHECK_INFERENCE_API`: 拼写检查模块运行的位置
 
-## How to use (GraphQL)
+## 如何使用（GraphQL）
 
-Use the spellchecker module to verify at query time that user-provided search queries are spelled correctly and even suggest alternative, correct spellings. Filters that accept query text include:
+使用拼写检查模块在查询时验证用户提供的搜索查询拼写是否正确，并提供替代的正确拼写建议。接受查询文本的筛选器包括:
 
-* [`nearText`](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext), if a `text2vec-*` module is used
-* `ask`, if the [`qna-transformers`](../reader-generator-modules/qna-transformers.md) module is enabled
+* [`nearText`](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext)，如果使用了 `text2vec-*` 模块
+* `ask`，如果启用了[`qna-transformers`](../reader-generator-modules/qna-transformers.md)模块
 
-There are two ways to use this module: spell checking, and autocorrection.
+使用此模块有两种方式：拼写检查和自动纠正。
 
-### Spell checking
+### 拼写检查
 
-The module provides a new GraphQL `_additional` property which can be used to check (but not alter) the provided queries.
+该模块提供了一个新的GraphQL `_additional`属性，可以用于检查（但不修改）提供的查询。
 
-#### Example query
+#### 示例查询
 
 import SpellCheckModule from '/_includes/code/spellcheck-module.mdx';
 
 <SpellCheckModule/>
 
-#### GraphQL response
+#### GraphQL响应
 
-The result is contained in a new GraphQL `_additional` property called `spellCheck`. It contains the following fields:
-* `changes`: a list with the following fields:
-  * `corrected` (`string`): the corrected spelling if a correction is found
-  * `original` (`string`): the original word in the query
-* `didYouMean`: the corrected full text in the query
-* `originalText`: the original full text in the query
-* `location`: the location of the misspelled string in the query
+结果包含在一个新的GraphQL `_additional` 属性中，名为 `spellCheck`。它包含以下字段：
+* `changes`：包含以下字段的列表：
+  * `corrected`（`string`）：如果找到纠正，则为纠正后的拼写
+  * `original`（`string`）：查询中的原始单词
+* `didYouMean`：查询中的纠正后的完整文本
+* `originalText`：查询中的原始完整文本
+* `location`：查询中拼写错误字符串的位置
 
-#### Example response
+#### 示例响应
 
 ```json
 {
@@ -129,11 +127,11 @@ The result is contained in a new GraphQL `_additional` property called `spellChe
 }
 ```
 
-### Autocorrect
+### 自动纠正
 
-The module extends existing `text2vec-*` modules with an `autoCorrect` flag, which can be used to automatically correct the query if it was misspelled:
+该模块通过添加一个`autoCorrect`标志来扩展现有的`text2vec-*`模块，如果查询拼写错误，可以自动纠正查询：
 
-#### Example query
+#### 示例查询
 
 ```graphql
 {
@@ -159,7 +157,7 @@ The module extends existing `text2vec-*` modules with an `autoCorrect` flag, whi
 }
 ```
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 

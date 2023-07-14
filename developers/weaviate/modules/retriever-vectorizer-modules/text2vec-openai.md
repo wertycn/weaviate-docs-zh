@@ -1,43 +1,43 @@
 ---
-title: text2vec-openai
-sidebar_position: 1
 image: og/docs/modules/text2vec-openai.jpg
-# tags: ['text2vec', 'text2vec-openai', 'openai']
+sidebar_position: 1
+title: text2vec-openai
 ---
+
 import Badges from '/_includes/badges.mdx';
 
 <Badges/>
 
-## In short
+## 简而言之
 
-* This module uses a third-party API and may incur costs.
-* Check the vendor pricing (e.g. [OpenAI pricing page](https://openai.com/api/pricing/)) before vectorizing large amounts of data.
-* Weaviate automatically parallelizes requests to the API when using the batch endpoint.
-* Check out the [text2vec-openai demo](https://github.com/weaviate/DEMO-text2vec-openai).
-* You will need an API key from OpenAI or Azure OpenAI to use this module.
-* The default OpenAI model is `text-embedding-ada-002`.
+* 该模块使用第三方 API，可能会产生费用。
+* 在对大量数据进行向量化之前，请检查供应商定价（例如，[OpenAI 定价页面](https://openai.com/api/pricing/)）。
+* 当使用批处理端点时，Weaviate 会自动并行化对 API 的请求。
+* 请查看[text2vec-openai 演示](https://github.com/weaviate/DEMO-text2vec-openai)。
+* 您需要从OpenAI或Azure OpenAI获取API密钥才能使用此模块。
+* 默认的OpenAI模型是`text-embedding-ada-002`。
 
-## Overview
+## 概述
 
-The `text2vec-openai` module enables you to use [OpenAI](https://platform.openai.com/docs/guides/embeddings) in Weaviate or [Azure](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/understand-embeddings) embeddings to represent data objects.
+`text2vec-openai`模块使您能够在Weaviate或Azure中使用[OpenAI](https://platform.openai.com/docs/guides/embeddings)或[Azure](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/understand-embeddings)嵌入来表示数据对象。
 
 import OpenAIOrAzureOpenAI from '/_includes/openai.or.azure.openai.mdx';
 
 <OpenAIOrAzureOpenAI/>
 
-## Module configuration
+## 模块配置
 
 :::tip Not applicable to WCS
 This module is enabled and pre-configured on Weaviate Cloud Services.
 :::
 
-### Configuration file (Weaviate open source only)
+### 配置文件（仅适用于Weaviate开源版）
 
-You can enable the `text2vec-openai` module in your configuration file (e.g. `docker-compose.yaml`).
+您可以在配置文件（例如`docker-compose.yaml`）中启用`text2vec-openai`模块。
 
-- This configuration will start Weaviate with the OpenAI module enabled, and set as the default vectorizer module.
-- Optionally, you can specify the required API key in the file..
-    - If you do not, you must specify the API key at runtime.
+- 此配置将启动具有启用的OpenAI模块的Weaviate，并将其设置为默认的向量化模块。
+- 可选地，您可以在文件中指定所需的API密钥。
+    - 如果您没有指定，您必须在运行时指定API密钥。
 
 ```yaml
 ---
@@ -64,15 +64,15 @@ import T2VInferenceYamlNotes from './_components/text2vec.inference.yaml.notes.m
 
 <T2VInferenceYamlNotes apiname="OPENAI_APIKEY"/>
 
-## Schema configuration
+## 模式配置
 
-You can provide additional module configurations through the schema. You can [learn about schemas here](/developers/weaviate/tutorials/schema.md).
+您可以通过模式提供额外的模块配置。您可以在[这里了解有关模式的信息](/developers/weaviate/tutorials/schema.md)。
 
-For `text2vec-openai`, you can set the vectorizer model and vectorizer behavior.
+对于`text2vec-openai`，您可以设置矢量化模型和矢量化行为。
 
-### OpenAI settings
+### OpenAI 设置
 
-Set the vectorizer model using parameters `model`, `modelVersion` and `type` in the `moduleConfig` section of your schema:
+在模式的`moduleConfig`部分中，使用参数`model`、`modelVersion`和`type`来设置向量化模型：
 
 ```json
 {
@@ -93,9 +93,9 @@ Set the vectorizer model using parameters `model`, `modelVersion` and `type` in 
 }
 ```
 
-### Azure OpenAI settings
+### Azure OpenAI设置
 
-Set the parameters `resourceName` and `deploymentId` in the `moduleConfig` section of your schema:
+在模式的`moduleConfig`部分中设置参数`resourceName`和`deploymentId`：
 
 ```json
 {
@@ -115,9 +115,9 @@ Set the parameters `resourceName` and `deploymentId` in the `moduleConfig` secti
 }
 ```
 
-### Vectorizer behavior
+### 向量化器行为
 
-Set property-level vectorizer behavior using the `moduleConfig` section under each property:
+使用每个属性下的 `moduleConfig` 部分来设置属性级别的向量化器行为：
 
 ```json
 {
@@ -151,31 +151,31 @@ Set property-level vectorizer behavior using the `moduleConfig` section under ea
 }
 ```
 
-## Usage
+## 用法
 
-Enabling this module will make [GraphQL vector search operators](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext) available.
+启用此模块将使[GraphQL向量搜索运算符](/developers/weaviate/api/graphql/vector-search-parameters.md#neartext)可用。
 
-### Provide the API key
+### 提供 API 密钥
 
-If the API key is not set in the `text2vec-openai` configuration, you can supply it when making a query.
+如果在`text2vec-openai`配置中未设置 API 密钥，您可以在进行查询时提供它。
 
-You can achieve this by adding the appropriate key to the HTTP header:
-- `X-OpenAI-Api-Key: YOUR-OPENAI-API-KEY` for OpenAI, and
-- `X-Azure-Api-Key: YOUR-AZURE-API-KEY` for Azure OpenAI, and
+您可以通过将适当的密钥添加到 HTTP 标头来实现这一点：
+- `X-OpenAI-Api-Key: YOUR-OPENAI-API-KEY` 用于 OpenAI，以及
+- `X-Azure-Api-Key: YOUR-AZURE-API-KEY` 用于 Azure OpenAI，并且
 
-### Example
+### 示例
 
 import CodeNearText from '/_includes/code/graphql.filters.nearText.openai.mdx';
 
 <CodeNearText />
 
-## Additional information
+## 附加信息
 
-### Available models (OpenAI)
+### 可用的模型 (OpenAI)
 
-OpenAI has multiple models available with different trade-offs. All the models offered by OpenAI can be used within Weaviate. Note that the more dimensions a model produces, the larger your data footprint will be. To estimate the total size of your dataset use [this](/developers/weaviate/concepts/resources.md#an-example-calculation) calculation.
+OpenAI提供了多个具有不同权衡的模型。所有由OpenAI提供的模型都可以在Weaviate中使用。请注意，模型产生的维度越多，您的数据占用空间就越大。要估算数据集的总大小，请使用[此计算方法](/developers/weaviate/concepts/resources.md#an-example-calculation)。
 
-The default model is `text-embedding-ada-002` but you can also specify it in your schema. An example as part of a class definition:
+默认模型是`text-embedding-ada-002`，但您也可以在模式中指定它。以下是一个类定义的示例：
 
 ```json
 {
@@ -195,21 +195,21 @@ The default model is `text-embedding-ada-002` but you can also specify it in you
 }
 ```
 
-For document embeddings, choose from the following models:
+对于文档嵌入，可以从以下模型中选择：
 * [ada](https://platform.openai.com/docs/models/ada)
 * [babbage](https://platform.openai.com/docs/models/babbage)
 * [curie](https://platform.openai.com/docs/models/curie)
 * [davinci](https://platform.openai.com/docs/models/davinci)
 
-For code embeddings, see the [Codex models](https://platform.openai.com/docs/models/codex).
+有关代码嵌入，请参阅[Codex模型](https://platform.openai.com/docs/models/codex)。
 
-In the `moduleConfig` inside a class, you need to set two values:
+在类的`moduleConfig`中，您需要设置两个值：
 
-1. `model` – one of the models mentioned above, e.g. `davinci`.
-2. `modelVersion` – version string, e.g. `003`.
-3. `type` – `text` or `code`.
+1. `model` - 上述模型之一，例如 `davinci`。
+2. `modelVersion` - 版本字符串，例如 `003`。
+3. `type` - `text` 或 `code`。
 
-Example (as part of a class definition):
+示例（作为类定义的一部分）：
 
 ```json
 {
@@ -229,21 +229,21 @@ Example (as part of a class definition):
 }
 ```
 
-### OpenAI rate limits
+### OpenAI的速率限制
 
-Since you will obtain embeddings using your own API key, any corresponding rate limits related to your account will apply to your use with Weaviate also.
+由于您将使用自己的API密钥获取嵌入向量，因此与您的账户相关的任何速率限制也将适用于您在Weaviate中的使用。
 
-If you exceed your rate limit, Weaviate will output the error message generated by the OpenAI API. You can request to increase your rate limit by emailing OpenAI at `support@openai.com` describing your use case with Weaviate.
+如果您超过了速率限制，Weaviate将输出由OpenAI API生成的错误消息。您可以通过发送电子邮件到`support@openai.com`来描述您在Weaviate中的用例，以请求增加您的速率限制。
 
-### Throttle the import inside your application
+### 在应用程序中限制导入速度
 
-One way of dealing with rate limits is to throttle the import within your application. For example, when using the Weaviate client in Python or Java:
+一种处理速率限制的方法是在应用程序中进行导入节流。例如，在使用Python或Java中的Weaviate客户端时：
 
 import CodeThrottlingExample from '/_includes/code/text2vec-api.throttling.example.mdx';
 
 <CodeThrottlingExample />
 
-The current rate limit will appear in the error message, as shown below:
+当前速率限制将显示在错误消息中，如下所示：
 
 ```json
 {
@@ -251,7 +251,7 @@ The current rate limit will appear in the error message, as shown below:
 }
 ```
 
-## More resources
+## 更多资源
 
 import DocsMoreResources from '/_includes/more-resources-docs.md';
 
