@@ -1,6 +1,6 @@
 # weaviate 中文文档
 
-本站基于
+本文档由AnthenaTranscript  基于ChatGPT 进行翻译
 
 # 网站
 
